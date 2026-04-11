@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rpa-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rpa_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: rpa-api
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/rpa_db?schema=public
+      JWT_SECRET: change-this-to-a-long-random-secret-with-32-chars
+      JWT_EXPIRES_IN: 1h
+      INGEST_API_KEY: change-this-to-a-long-random-ingest-api-key
+      PROVISION_SECRET: change-this-to-a-long-random-provision-secret-32chars
+      CORS_ORIGIN: http://localhost:5173,http://localhost:8080
+      TRUST_PROXY: 0
+    ports:
+      - "4000:4000"
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: rpa-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres_data:

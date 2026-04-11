@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique @db.VarChar(254)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Record {
+  id               String   @id @default(uuid()) @db.Uuid
+  dataHora         DateTime @map("data_hora") @db.Timestamp(3)
+  numeroNota       String   @map("numero_nota") @db.VarChar(64)
+  notaOriginal     String   @map("nota_original") @db.VarChar(255)
+  status           String   @db.VarChar(64)
+  motoristaNome    String   @map("motorista_nome") @db.VarChar(120)
+  motoristaCelular String   @map("motorista_celular") @db.VarChar(24)
+  placa            String   @db.VarChar(16)
+  terminal         String   @db.VarChar(120)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([dataHora])
+  @@index([status])
+  @@index([motoristaNome])
+  @@index([placa])
+  @@index([terminal])
+  @@map("records")
+}
