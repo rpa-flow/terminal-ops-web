@@ -82,6 +82,16 @@ npm run dev
 
 ## API
 
+### Swagger
+
+- UI interativa: `GET /api/docs`
+- OpenAPI JSON: `GET /api/docs/openapi.json`
+
+Na UI voce pode usar:
+- `Authorize` com bearer token para rotas protegidas por login
+- header `x-api-key` para `/api/ingest/records`
+- header `x-provision-key` para `/api/provision/users`
+
 ### Login
 
 `POST /api/auth/login`

@@ -10,6 +10,7 @@ import { notFoundHandler } from "./middlewares/not-found";
 import { csrfProtection } from "./middlewares/csrf-protection";
 import { enforceHttps } from "./middlewares/enforce-https";
 import { authRoutes } from "./routes/auth.routes";
+import { docsRoutes } from "./routes/docs.routes";
 import { ingestRoutes } from "./routes/ingest.routes";
 import { provisionRoutes } from "./routes/provision.routes";
 import { recordRoutes } from "./routes/record.routes";
@@ -66,6 +67,7 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+app.use("/api/docs", docsRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/ingest", ingestRoutes);
 app.use("/api/provision", provisionRoutes);
