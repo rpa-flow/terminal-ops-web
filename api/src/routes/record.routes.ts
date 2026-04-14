@@ -2,10 +2,17 @@ import { Router } from "express";
 import multer from "multer";
 import { parse } from "csv-parse";
 
+import { requireApiKey } from "../middlewares/api-key";
 import { requireAuth } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
-import { createRecordService, listRecordsService } from "../services/record.service";
-import { createRecordSchema, csvRowSchema, listRecordsQuerySchema } from "../validators/record.validator";
+import { createRecordService, listRecordsService, updateRecordStatusByNumeroNotaService } from "../services/record.service";
+import {
+  createRecordSchema,
+  csvRowSchema,
+  listRecordsQuerySchema,
+  updateStatusBodySchema,
+  updateStatusParamsSchema
+} from "../validators/record.validator";
 
 const recordRoutes = Router();
 
@@ -20,6 +27,44 @@ const upload = multer({
     cb(null, true);
   }
 });
+
+recordRoutes.post(
+  "/:numeroNota/status",
+  requireApiKey,
+  validate(updateStatusParamsSchema, "params"),
+  validate(updateStatusBodySchema),
+  async (req, res) => {
+    const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
+    const { status } = req.body as { status: string };
+
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status);
+    if (!updated) {
+      res.status(404).json({ message: "Record not found" });
+      return;
+    }
+
+    res.status(200).json(updated);
+  }
+);
+
+recordRoutes.patch(
+  "/:numeroNota/status",
+  requireApiKey,
+  validate(updateStatusParamsSchema, "params"),
+  validate(updateStatusBodySchema),
+  async (req, res) => {
+    const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
+    const { status } = req.body as { status: string };
+
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status);
+    if (!updated) {
+      res.status(404).json({ message: "Record not found" });
+      return;
+    }
+
+    res.status(200).json(updated);
+  }
+);
 
 recordRoutes.use(requireAuth);
 
