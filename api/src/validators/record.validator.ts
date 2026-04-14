@@ -22,12 +22,12 @@ export const createRecordSchema = z
     motorista: z
       .object({
         nome: z.string().trim().min(1).max(120),
-        celular: z.string().trim().regex(/^\d{10,13}$/)
+        celular: z.string().trim().min(1).max(120)
       })
       .strict(),
     veiculo: z
       .object({
-        placa: z.string().trim().regex(/^[A-Z0-9-]{6,8}$/i)
+        placa: z.string().trim().min(1).max(32)
       })
       .strict(),
     terminal: z.string().trim().min(1).max(120)
@@ -105,8 +105,8 @@ export const csvRowSchema = z
     notaOriginal: z.string().trim().min(1).max(255),
     status: z.string().trim().min(1).max(64),
     motoristaNome: z.string().trim().min(1).max(120),
-    motoristaCelular: z.string().trim().regex(/^\d{10,13}$/),
-    placa: z.string().trim().regex(/^[A-Z0-9-]{6,8}$/i),
+    motoristaCelular: z.string().trim().min(1).max(120),
+    placa: z.string().trim().min(1).max(32),
     terminal: z.string().trim().min(1).max(120)
   })
   .strict()
