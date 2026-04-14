@@ -24,6 +24,7 @@ services:
       NODE_ENV: development
       PORT: 4000
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/rpa_db?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@postgres:5432/rpa_db?schema=public
       JWT_SECRET: change-this-to-a-long-random-secret-with-32-chars
       JWT_EXPIRES_IN: 1h
       INGEST_API_KEY: change-this-to-a-long-random-ingest-api-key
