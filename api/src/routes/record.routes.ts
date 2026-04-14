@@ -22,14 +22,12 @@ const upload = multer({
   }
 });
 
-recordRoutes.use(requireAuth);
-
-recordRoutes.post("/", validate(createRecordSchema), async (req, res) => {
+recordRoutes.post("/", requireAuth, validate(createRecordSchema), async (req, res) => {
   const saved = await createRecordService(req.body);
   res.status(201).json(saved);
 });
 
-recordRoutes.post("/csv", upload.single("file"), async (req, res) => {
+recordRoutes.post("/csv", requireAuth, upload.single("file"), async (req, res) => {
   if (!req.file) {
     res.status(400).json({ message: "No CSV file provided" });
     return;
@@ -78,7 +76,7 @@ recordRoutes.post("/csv", upload.single("file"), async (req, res) => {
   res.status(207).json({ inserted, errors });
 });
 
-recordRoutes.get("/", validate(listRecordsQuerySchema, "query"), async (req, res) => {
+recordRoutes.get("/", requireAuth, validate(listRecordsQuerySchema, "query"), async (req, res) => {
   const query = (res.locals.validatedQuery ?? req.query) as never;
   const result = await listRecordsService(query);
   res.status(200).json({
