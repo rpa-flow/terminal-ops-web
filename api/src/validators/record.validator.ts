@@ -1,12 +1,48 @@
 import { z } from "zod";
 
-const parseDateTime = (value: string): Date => {
-  const normalized = value.includes("T") ? value : value.replace(" ", "T");
-  const parsed = new Date(normalized);
-  if (Number.isNaN(parsed.getTime())) {
-    throw new Error("Invalid date");
+const parseDateTime = (value: string): Date | null => {
+  const input = value.trim();
+
+  const direct = new Date(input);
+  if (!Number.isNaN(direct.getTime())) {
+    return direct;
   }
-  return parsed;
+
+  const isoLike = input.includes("T") ? input : input.replace(" ", "T");
+  const normalized = new Date(isoLike);
+  if (!Number.isNaN(normalized.getTime())) {
+    return normalized;
+  }
+
+  const brMatch = input.match(
+    /^(\d{2})[\/-](\d{2})[\/-](\d{4})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?$/
+  );
+
+  if (!brMatch) {
+    return null;
+  }
+
+  const day = Number(brMatch[1]);
+  const month = Number(brMatch[2]);
+  const year = Number(brMatch[3]);
+  const hour = Number(brMatch[4] ?? "0");
+  const minute = Number(brMatch[5] ?? "0");
+  const second = Number(brMatch[6] ?? "0");
+
+  const candidate = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+
+  if (
+    candidate.getUTCFullYear() !== year ||
+    candidate.getUTCMonth() !== month - 1 ||
+    candidate.getUTCDate() !== day ||
+    candidate.getUTCHours() !== hour ||
+    candidate.getUTCMinutes() !== minute ||
+    candidate.getUTCSeconds() !== second
+  ) {
+    return null;
+  }
+
+  return candidate;
 };
 
 export const createRecordSchema = z
@@ -33,8 +69,13 @@ export const createRecordSchema = z
     terminal: z.string().trim().min(1).max(120)
   })
   .strict()
+  .superRefine((value, ctx) => {
+    if (!parseDateTime(value.dataHora)) {
+      ctx.addIssue({ code: "custom", message: "Invalid dataHora", path: ["dataHora"] });
+    }
+  })
   .transform((input) => ({
-    dataHora: parseDateTime(input.dataHora),
+    dataHora: parseDateTime(input.dataHora) as Date,
     numeroNota: input.nota.numero,
     notaOriginal: input.nota.original,
     status: input.nota.status,
@@ -58,25 +99,21 @@ export const listRecordsQuerySchema = z
   .strict()
   .superRefine((value, ctx) => {
     if (value.startDate) {
-      try {
-        parseDateTime(value.startDate);
-      } catch {
+      if (!parseDateTime(value.startDate)) {
         ctx.addIssue({ code: "custom", message: "Invalid startDate", path: ["startDate"] });
       }
     }
 
     if (value.endDate) {
-      try {
-        parseDateTime(value.endDate);
-      } catch {
+      if (!parseDateTime(value.endDate)) {
         ctx.addIssue({ code: "custom", message: "Invalid endDate", path: ["endDate"] });
       }
     }
   })
   .transform((input) => ({
     ...input,
-    startDate: input.startDate ? parseDateTime(input.startDate) : undefined,
-    endDate: input.endDate ? parseDateTime(input.endDate) : undefined,
+    startDate: input.startDate ? (parseDateTime(input.startDate) as Date) : undefined,
+    endDate: input.endDate ? (parseDateTime(input.endDate) as Date) : undefined,
     placa: input.placa?.toUpperCase()
   }));
 
@@ -110,8 +147,13 @@ export const csvRowSchema = z
     terminal: z.string().trim().min(1).max(120)
   })
   .strict()
+  .superRefine((row, ctx) => {
+    if (!parseDateTime(row.dataHora)) {
+      ctx.addIssue({ code: "custom", message: "Invalid dataHora", path: ["dataHora"] });
+    }
+  })
   .transform((row) => ({
-    dataHora: parseDateTime(row.dataHora),
+    dataHora: parseDateTime(row.dataHora) as Date,
     numeroNota: row.numeroNota,
     notaOriginal: row.notaOriginal,
     status: row.status,
