@@ -1,6 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 
+import { rateLimitKeyGenerator, rateLimitValidationConfig } from "../lib/rate-limit";
 import { requireProvisionKey } from "../middlewares/provision-key";
 import { validate } from "../middlewares/validate";
 import { createUserService } from "../services/user.service";
@@ -12,6 +13,8 @@ provisionRoutes.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 10,
+    keyGenerator: rateLimitKeyGenerator,
+    validate: rateLimitValidationConfig,
     standardHeaders: true,
     legacyHeaders: false,
     message: { message: "Too many requests. Try again later." }

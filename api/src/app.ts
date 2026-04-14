@@ -5,6 +5,7 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 
 import { env } from "./config";
+import { rateLimitKeyGenerator, rateLimitValidationConfig } from "./lib/rate-limit";
 import { errorHandler } from "./middlewares/error-handler";
 import { notFoundHandler } from "./middlewares/not-found";
 import { csrfProtection } from "./middlewares/csrf-protection";
@@ -17,7 +18,8 @@ import { recordRoutes } from "./routes/record.routes";
 
 const app = express();
 
-app.set("trust proxy", env.TRUST_PROXY);
+const trustProxy = env.TRUST_PROXY === 1 || Boolean(process.env.VERCEL) ? 1 : 0;
+app.set("trust proxy", trustProxy);
 app.disable("x-powered-by");
 
 const allowedOrigins = env.CORS_ORIGIN.split(",").map((origin) => origin.trim());
@@ -49,6 +51,8 @@ app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 300,
+    keyGenerator: rateLimitKeyGenerator,
+    validate: rateLimitValidationConfig,
     standardHeaders: true,
     legacyHeaders: false,
     message: { message: "Too many requests. Try again later." }

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 
+import { rateLimitKeyGenerator, rateLimitValidationConfig } from "../lib/rate-limit";
 import { requireApiKey } from "../middlewares/api-key";
 import { validate } from "../middlewares/validate";
 import { createRecordService } from "../services/record.service";
@@ -12,6 +13,8 @@ ingestRoutes.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 600,
+    keyGenerator: rateLimitKeyGenerator,
+    validate: rateLimitValidationConfig,
     standardHeaders: true,
     legacyHeaders: false,
     message: { message: "Too many requests. Try again later." }
