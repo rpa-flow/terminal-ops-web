@@ -18,14 +18,18 @@ authRoutes.post(
     message: { message: "Too many login attempts. Try again later." }
   }),
   validate(loginSchema),
-  async (req, res) => {
-    const result = await login(req.body);
-    if (!result) {
-      res.status(401).json({ message: "Invalid credentials" });
-      return;
-    }
+  async (req, res, next) => {
+    try {
+      const result = await login(req.body);
+      if (!result) {
+        res.status(401).json({ message: "Invalid credentials" });
+        return;
+      }
 
-    res.status(200).json(result);
+      res.status(200).json(result);
+    } catch (err) {
+      next(err);
+    }
   }
 );
 
