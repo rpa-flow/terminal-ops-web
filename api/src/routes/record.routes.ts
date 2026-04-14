@@ -87,7 +87,7 @@ recordRoutes.get("/", requireAuth, validate(listRecordsQuerySchema, "query"), as
   });
 });
 
-recordRoutes.patch(
+recordRoutes.post(
   "/:numeroNota/status",
   requireApiKey,
   validate(updateStatusParamsSchema, "params"),

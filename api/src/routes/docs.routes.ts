@@ -457,10 +457,10 @@ const buildOpenApiDocument = (baseUrl: string) => ({
       }
     },
     "/api/records/{numeroNota}/status": {
-      patch: {
+      post: {
         tags: ["Records"],
         summary: "Atualiza o status do registro mais recente pela nota",
-        security: [{ bearerAuth: [] }],
+        security: [{ ingestApiKey: [] }],
         parameters: [
           {
             in: "path",
