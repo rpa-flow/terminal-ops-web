@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import { parse } from "csv-parse/sync";
+import { parse } from "csv-parse";
 
 import { requireAuth } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
@@ -34,13 +34,28 @@ recordRoutes.post("/csv", upload.single("file"), async (req, res) => {
     return;
   }
 
+  const fileBuffer = req.file.buffer;
+
   let rows: Record<string, string>[];
   try {
-    rows = parse(req.file.buffer, {
-      columns: true,
-      skip_empty_lines: true,
-      trim: true
-    }) as Record<string, string>[];
+    rows = await new Promise<Record<string, string>[]>((resolve, reject) => {
+      parse(
+        fileBuffer,
+        {
+          columns: true,
+          skip_empty_lines: true,
+          trim: true
+        },
+        (error, output) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          resolve(output as Record<string, string>[]);
+        }
+      );
+    });
   } catch {
     res.status(400).json({ message: "Invalid CSV format" });
     return;
