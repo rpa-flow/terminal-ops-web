@@ -456,10 +456,49 @@ const buildOpenApiDocument = (baseUrl: string) => ({
         }
       }
     },
-    "/api/records/{numeroNota}/status": {
+    "/api/ingest/records/{numeroNota}/status": {
       post: {
         tags: ["Records"],
-        summary: "Atualiza o status do registro mais recente pela nota",
+        summary: "Atualiza o status do registro mais recente pela nota (ingest key)",
+        security: [{ ingestApiKey: [] }],
+        parameters: [
+          {
+            in: "path",
+            name: "numeroNota",
+            required: true,
+            schema: { type: "string", example: "12345" }
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/UpdateRecordStatusRequest" }
+            }
+          }
+        },
+        responses: {
+          "200": {
+            description: "Registro atualizado",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/RecordResponse" }
+              }
+            }
+          },
+          "404": {
+            description: "Registro nao encontrado",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      patch: {
+        tags: ["Records"],
+        summary: "Atualiza o status do registro mais recente pela nota (ingest key)",
         security: [{ ingestApiKey: [] }],
         parameters: [
           {

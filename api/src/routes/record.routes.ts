@@ -2,11 +2,10 @@ import { Router } from "express";
 import multer from "multer";
 import { parse } from "csv-parse/sync";
 
-import { requireApiKey } from "../middlewares/api-key";
 import { requireAuth } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
-import { createRecordService, listRecordsService, updateRecordStatusByNumeroNotaService } from "../services/record.service";
-import { createRecordSchema, csvRowSchema, listRecordsQuerySchema, updateStatusBodySchema, updateStatusParamsSchema } from "../validators/record.validator";
+import { createRecordService, listRecordsService } from "../services/record.service";
+import { createRecordSchema, csvRowSchema, listRecordsQuerySchema } from "../validators/record.validator";
 
 const recordRoutes = Router();
 
@@ -22,12 +21,14 @@ const upload = multer({
   }
 });
 
-recordRoutes.post("/", requireAuth, validate(createRecordSchema), async (req, res) => {
+recordRoutes.use(requireAuth);
+
+recordRoutes.post("/", validate(createRecordSchema), async (req, res) => {
   const saved = await createRecordService(req.body);
   res.status(201).json(saved);
 });
 
-recordRoutes.post("/csv", requireAuth, upload.single("file"), async (req, res) => {
+recordRoutes.post("/csv", upload.single("file"), async (req, res) => {
   if (!req.file) {
     res.status(400).json({ message: "No CSV file provided" });
     return;
@@ -76,7 +77,7 @@ recordRoutes.post("/csv", requireAuth, upload.single("file"), async (req, res) =
   res.status(207).json({ inserted, errors });
 });
 
-recordRoutes.get("/", requireAuth, validate(listRecordsQuerySchema, "query"), async (req, res) => {
+recordRoutes.get("/", validate(listRecordsQuerySchema, "query"), async (req, res) => {
   const query = (res.locals.validatedQuery ?? req.query) as never;
   const result = await listRecordsService(query);
   res.status(200).json({
@@ -86,24 +87,5 @@ recordRoutes.get("/", requireAuth, validate(listRecordsQuerySchema, "query"), as
     items: result.items
   });
 });
-
-recordRoutes.post(
-  "/:numeroNota/status",
-  requireApiKey,
-  validate(updateStatusParamsSchema, "params"),
-  validate(updateStatusBodySchema),
-  async (req, res) => {
-    const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
-    const { status } = req.body as { status: string };
-
-    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status);
-    if (!updated) {
-      res.status(404).json({ message: "Record not found" });
-      return;
-    }
-
-    res.status(200).json(updated);
-  }
-);
 
 export { recordRoutes };

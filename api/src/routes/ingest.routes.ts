@@ -4,8 +4,8 @@ import rateLimit from "express-rate-limit";
 import { rateLimitKeyGenerator, rateLimitValidationConfig } from "../lib/rate-limit";
 import { requireApiKey } from "../middlewares/api-key";
 import { validate } from "../middlewares/validate";
-import { createRecordService } from "../services/record.service";
-import { createRecordSchema } from "../validators/record.validator";
+import { createRecordService, updateRecordStatusByNumeroNotaService } from "../services/record.service";
+import { createRecordSchema, updateStatusBodySchema, updateStatusParamsSchema } from "../validators/record.validator";
 
 const ingestRoutes = Router();
 
@@ -25,5 +25,43 @@ ingestRoutes.post("/records", requireApiKey, validate(createRecordSchema), async
   const saved = await createRecordService(req.body);
   res.status(201).json(saved);
 });
+
+ingestRoutes.post(
+  "/records/:numeroNota/status",
+  requireApiKey,
+  validate(updateStatusParamsSchema, "params"),
+  validate(updateStatusBodySchema),
+  async (req, res) => {
+    const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
+    const { status } = req.body as { status: string };
+
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status);
+    if (!updated) {
+      res.status(404).json({ message: "Record not found" });
+      return;
+    }
+
+    res.status(200).json(updated);
+  }
+);
+
+ingestRoutes.patch(
+  "/records/:numeroNota/status",
+  requireApiKey,
+  validate(updateStatusParamsSchema, "params"),
+  validate(updateStatusBodySchema),
+  async (req, res) => {
+    const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
+    const { status } = req.body as { status: string };
+
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status);
+    if (!updated) {
+      res.status(404).json({ message: "Record not found" });
+      return;
+    }
+
+    res.status(200).json(updated);
+  }
+);
 
 export { ingestRoutes };
