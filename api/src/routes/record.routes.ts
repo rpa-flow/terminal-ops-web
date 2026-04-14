@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { parse } from "csv-parse/sync";
 
+import { requireApiKey } from "../middlewares/api-key";
 import { requireAuth } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
 import { createRecordService, listRecordsService, updateRecordStatusByNumeroNotaService } from "../services/record.service";
@@ -90,6 +91,7 @@ recordRoutes.get("/", validate(listRecordsQuerySchema, "query"), async (req, res
 
 recordRoutes.patch(
   "/:numeroNota/status",
+  requireApiKey,
   validate(updateStatusParamsSchema, "params"),
   validate(updateStatusBodySchema),
   async (req, res) => {
