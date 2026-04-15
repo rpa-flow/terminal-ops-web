@@ -179,7 +179,12 @@ const buildOpenApiDocument = (baseUrl: string) => ({
         additionalProperties: false,
         required: ["status"],
         properties: {
-          status: { type: "string", example: "PROCESSADO" }
+          status: { type: "string", example: "PROCESSADO" },
+          numeroOriginal: {
+            type: "string",
+            example: "NF-ORIGINAL-0001",
+            description: "Opcional. Quando enviado, atualiza notaOriginal do registro selecionado"
+          }
         }
       },
       CsvUploadResponse: {

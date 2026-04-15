@@ -128,7 +128,8 @@ export const updateStatusParamsSchema = z
 
 export const updateStatusBodySchema = z
   .object({
-    status: z.string().trim().min(1).max(64)
+    status: z.string().trim().min(1).max(64),
+    numeroOriginal: z.string().trim().min(1).max(255).optional()
   })
   .strict();
 

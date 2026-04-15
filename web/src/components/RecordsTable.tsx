@@ -7,8 +7,8 @@ export const RecordsTable = ({ items }: { items: RecordItem[] }) => {
         <thead className="bg-slate-50 text-slate-600">
           <tr>
             <th className="px-4 py-3">Data/Hora</th>
-            <th className="px-4 py-3">Numero da nota</th>
-            <th className="px-4 py-3">Numero original</th>
+            <th className="px-4 py-3">Nota Original</th>
+            <th className="px-4 py-3">Nota Bemisa</th>
             <th className="px-4 py-3">Status</th>
             <th className="px-4 py-3">Motorista</th>
             <th className="px-4 py-3">Celular motorista</th>

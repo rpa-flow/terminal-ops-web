@@ -41,12 +41,16 @@ export const listRecordsService = async (filters: ListRecordsFilters) => {
   };
 };
 
-export const updateRecordStatusByNumeroNotaService = async (numeroNota: string, status: string) => {
+export const updateRecordStatusByNumeroNotaService = async (
+  numeroNota: string,
+  status: string,
+  numeroOriginal?: string
+) => {
   const record = await findLatestRecordByNumeroNota(numeroNota);
   if (!record) {
     return null;
   }
 
-  const updated = await updateRecordStatusById(record.id, status);
+  const updated = await updateRecordStatusById(record.id, status, numeroOriginal);
   return sanitizeRecord(updated);
 };

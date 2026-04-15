@@ -33,9 +33,9 @@ ingestRoutes.post(
   validate(updateStatusBodySchema),
   async (req, res) => {
     const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
-    const { status } = req.body as { status: string };
+    const { status, numeroOriginal } = req.body as { status: string; numeroOriginal?: string };
 
-    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status);
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal);
     if (!updated) {
       res.status(404).json({ message: "Record not found" });
       return;
@@ -52,9 +52,9 @@ ingestRoutes.patch(
   validate(updateStatusBodySchema),
   async (req, res) => {
     const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
-    const { status } = req.body as { status: string };
+    const { status, numeroOriginal } = req.body as { status: string; numeroOriginal?: string };
 
-    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status);
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal);
     if (!updated) {
       res.status(404).json({ message: "Record not found" });
       return;

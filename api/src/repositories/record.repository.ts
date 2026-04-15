@@ -72,9 +72,16 @@ export const findLatestRecordByNumeroNota = async (numeroNota: string): Promise<
   });
 };
 
-export const updateRecordStatusById = async (id: string, status: string): Promise<Record> => {
+export const updateRecordStatusById = async (
+  id: string,
+  status: string,
+  numeroOriginal?: string
+): Promise<Record> => {
   return prisma.record.update({
     where: { id },
-    data: { status }
+    data: {
+      status,
+      ...(numeroOriginal ? { notaOriginal: numeroOriginal } : {})
+    }
   });
 };
