@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import { AppNavigation } from "../components/AppNavigation";
 import { CsvUploadModal } from "../components/CsvUploadModal";
 import { FiltersBar } from "../components/FiltersBar";
 import { RecordsTable } from "../components/RecordsTable";
@@ -53,6 +53,7 @@ export const RecordsPage = () => {
             <p className="text-sm text-slate-500">Operador: {user?.email}</p>
           </div>
           <div className="flex items-center gap-2">
+            <AppNavigation current="records" />
             <button className="btn-muted" onClick={() => setShowCsvModal(true)}>
               Importar CSV
             </button>

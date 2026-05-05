@@ -46,3 +46,23 @@ export type CsvUploadResponse = {
   inserted: number;
   errors: { row: number; message: string }[];
 };
+
+
+export type NoteItem = {
+  id: string;
+  codigo: string;
+  terminal: string;
+  placa: string | null;
+  motoristaNome: string | null;
+  motoristaTelefone: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PendingNotesResponse = {
+  page: number;
+  perPage: number;
+  total: number;
+  items: NoteItem[];
+};
