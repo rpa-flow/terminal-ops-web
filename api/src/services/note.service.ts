@@ -6,26 +6,40 @@ import {
   listPendingNotes,
   updateNoteStatusByCodigo
 } from "../repositories/note.repository";
-import type { ListPendingNotesQueryInput } from "../validators/note.validator";
+import type { CreateNoteInput, ListPendingNotesQueryInput } from "../validators/note.validator";
 
 const sanitizeString = (value: string): string => xss(value, { whiteList: {} });
+
+const sanitizeOptionalString = (value?: string | null): string | null => {
+  if (!value) {
+    return null;
+  }
+
+  return sanitizeString(value);
+};
 
 const sanitizeNote = (note: {
   id: string;
   codigo: string;
   status: string;
   terminal: string;
+  placa: string | null;
+  motoristaNome: string | null;
+  motoristaTelefone: string | null;
   createdAt: Date;
   updatedAt: Date;
 }) => ({
   ...note,
   codigo: sanitizeString(note.codigo),
   status: sanitizeString(note.status),
-  terminal: sanitizeString(note.terminal)
+  terminal: sanitizeString(note.terminal),
+  placa: sanitizeOptionalString(note.placa),
+  motoristaNome: sanitizeOptionalString(note.motoristaNome),
+  motoristaTelefone: sanitizeOptionalString(note.motoristaTelefone)
 });
 
-export const createNoteService = async (codigo: string, terminal: string) => {
-  const saved = await createNote(codigo, terminal);
+export const createNoteService = async (input: CreateNoteInput) => {
+  const saved = await createNote(input);
   return sanitizeNote(saved);
 };
 

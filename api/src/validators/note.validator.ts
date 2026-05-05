@@ -5,10 +5,21 @@ const notaCodigoSchema = z
   .trim()
   .regex(/^\d{44}$/, "codigo deve conter exatamente 44 digitos");
 
+const placaSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(16)
+  .transform((value) => value.toUpperCase())
+  .optional();
+
 export const createNoteSchema = z
   .object({
     codigo: notaCodigoSchema,
-    terminal: z.string().trim().min(1).max(120)
+    terminal: z.string().trim().min(1).max(120),
+    placa: placaSchema,
+    motoristaNome: z.string().trim().min(1).max(120).optional(),
+    motoristaTelefone: z.string().trim().min(1).max(24).optional()
   })
   .strict();
 

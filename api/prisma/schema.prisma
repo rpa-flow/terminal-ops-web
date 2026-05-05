@@ -43,12 +43,17 @@ model Note {
   id        String   @id @default(uuid()) @db.Uuid
   codigo    String   @unique @db.VarChar(44)
   terminal  String   @db.VarChar(120)
-  status    String   @db.VarChar(64)
-  createdAt DateTime @default(now()) @map("created_at")
+  status            String   @db.VarChar(64)
+  placa             String?  @db.VarChar(16)
+  motoristaNome     String?  @map("motorista_nome") @db.VarChar(120)
+  motoristaTelefone String?  @map("motorista_telefone") @db.VarChar(24)
+  createdAt         DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([status])
   @@index([terminal])
+  @@index([placa])
+  @@index([motoristaNome])
   @@map("notes")
 }
 

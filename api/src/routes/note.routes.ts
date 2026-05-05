@@ -15,8 +15,7 @@ const noteRoutes = Router();
 noteRoutes.use(requireAuth);
 
 noteRoutes.post("/", validate(createNoteSchema), async (req, res) => {
-  const { codigo, terminal } = req.body as { codigo: string; terminal: string };
-  const saved = await createNoteService(codigo, terminal);
+  const saved = await createNoteService(req.body);
   res.status(201).json(saved);
 });
 

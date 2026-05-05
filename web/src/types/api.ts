@@ -52,6 +52,9 @@ export type NoteItem = {
   id: string;
   codigo: string;
   terminal: string;
+  placa: string | null;
+  motoristaNome: string | null;
+  motoristaTelefone: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;

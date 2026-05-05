@@ -1,4 +1,4 @@
-import type { Note } from "@prisma/client";
+import type { Note, Prisma } from "@prisma/client";
 
 import { prisma } from "../lib/prisma";
 import type { ListPendingNotesQueryInput } from "../validators/note.validator";
@@ -8,14 +8,25 @@ type ListPendingNotesResult = {
   items: Note[];
 };
 
-export const createNote = async (codigo: string, terminal: string): Promise<Note> => {
-  return prisma.note.create({
-    data: {
-      codigo,
-      terminal,
-      status: "PENDENTE"
-    }
-  });
+type CreateNoteRepositoryInput = {
+  codigo: string;
+  terminal: string;
+  placa?: string | undefined;
+  motoristaNome?: string | undefined;
+  motoristaTelefone?: string | undefined;
+};
+
+export const createNote = async (input: CreateNoteRepositoryInput): Promise<Note> => {
+  const data: Prisma.NoteCreateInput = {
+    codigo: input.codigo,
+    terminal: input.terminal,
+    status: "PENDENTE",
+    ...(input.placa ? { placa: input.placa } : {}),
+    ...(input.motoristaNome ? { motoristaNome: input.motoristaNome } : {}),
+    ...(input.motoristaTelefone ? { motoristaTelefone: input.motoristaTelefone } : {})
+  };
+
+  return prisma.note.create({ data });
 };
 
 export const listPendingNotes = async (

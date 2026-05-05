@@ -71,6 +71,9 @@ export const NotesPage = () => {
                 <tr>
                   <th className="px-3 py-2">Codigo</th>
                   <th className="px-3 py-2">Terminal</th>
+                  <th className="px-3 py-2">Placa</th>
+                  <th className="px-3 py-2">Motorista</th>
+                  <th className="px-3 py-2">Telefone</th>
                   <th className="px-3 py-2">Status</th>
                   <th className="px-3 py-2">Inserido em</th>
                   <th className="px-3 py-2">Atualizado em</th>
@@ -81,6 +84,9 @@ export const NotesPage = () => {
                   <tr key={item.id} className="border-t border-slate-100">
                     <td className="px-3 py-2 font-mono text-xs">{item.codigo}</td>
                     <td className="px-3 py-2">{item.terminal}</td>
+                    <td className="px-3 py-2">{item.placa ?? "-"}</td>
+                    <td className="px-3 py-2">{item.motoristaNome ?? "-"}</td>
+                    <td className="px-3 py-2">{item.motoristaTelefone ?? "-"}</td>
                     <td className="px-3 py-2">{item.status}</td>
                     <td className="px-3 py-2">{new Date(item.createdAt).toLocaleString()}</td>
                     <td className="px-3 py-2">{new Date(item.updatedAt).toLocaleString()}</td>
@@ -88,7 +94,7 @@ export const NotesPage = () => {
                 ))}
                 {items.length === 0 && !loading && (
                   <tr>
-                    <td className="px-3 py-4 text-slate-500" colSpan={5}>
+                    <td className="px-3 py-4 text-slate-500" colSpan={8}>
                       Nenhuma nota pendente encontrada.
                     </td>
                   </tr>
