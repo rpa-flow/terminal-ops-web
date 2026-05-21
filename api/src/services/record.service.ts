@@ -11,6 +11,7 @@ const sanitizeRecord = (record: {
   numeroNota: string;
   notaOriginal: string;
   status: string;
+  notaPesagemId: string;
   motoristaNome: string;
   motoristaCelular: string;
   placa: string;
@@ -21,6 +22,7 @@ const sanitizeRecord = (record: {
   numeroNota: sanitizeString(record.numeroNota),
   notaOriginal: sanitizeString(record.notaOriginal),
   status: sanitizeString(record.status),
+  notaPesagemId: sanitizeString(record.notaPesagemId),
   motoristaNome: sanitizeString(record.motoristaNome),
   motoristaCelular: sanitizeString(record.motoristaCelular),
   placa: sanitizeString(record.placa),

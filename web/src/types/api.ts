@@ -17,6 +17,7 @@ export type RecordItem = {
   numeroNota: string;
   notaOriginal: string;
   status: string;
+  notaPesagemId: string;
   motoristaNome: string;
   motoristaCelular: string;
   placa: string;

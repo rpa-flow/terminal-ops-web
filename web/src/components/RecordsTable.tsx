@@ -15,6 +15,7 @@ export const RecordsTable = ({ items }: { items: RecordItem[] }) => {
             <th className="px-4 py-3">NF Recebida</th>
             <th className="px-4 py-3">NF Substituida</th>
             <th className="px-4 py-3">Status</th>
+            <th className="px-4 py-3">ID NF Pesagem</th>
             <th className="px-4 py-3">Motorista</th>
             <th className="px-4 py-3">Celular motorista</th>
             <th className="px-4 py-3">Placa</th>
@@ -30,6 +31,7 @@ export const RecordsTable = ({ items }: { items: RecordItem[] }) => {
               <td className="px-4 py-3">
                 <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{record.status}</span>
               </td>
+              <td className="px-4 py-3">{record.notaPesagemId}</td>
               <td className="px-4 py-3">{record.motoristaNome}</td>
               <td className="px-4 py-3">{record.motoristaCelular}</td>
               <td className="px-4 py-3">{record.placa}</td>
