@@ -44,7 +44,7 @@ export const CsvUploadModal = ({ onClose, onSuccess }: Props) => {
           O arquivo deve ter as colunas na ordem abaixo (com cabeçalho):
         </p>
         <div className="mb-4 overflow-x-auto rounded bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700">
-          dataHora, numeroNota, notaOriginal, status, motoristaNome, motoristaCelular, placa, terminal
+          dataHora, numeroNota, notaOriginal, status, notaPesagemId, motoristaNome, motoristaCelular, placa, terminal
         </div>
         <p className="mb-4 text-xs text-slate-400">
           Limite: 500 linhas por envio. dataHora no formato ISO-8601 (ex: 2024-01-15T10:30:00).

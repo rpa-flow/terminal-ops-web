@@ -52,6 +52,7 @@ export const createRecordSchema = z
       .object({
         numero: z.string().trim().min(1).max(64),
         original: z.string().trim().min(1).max(255),
+        pesagemId: z.string().trim().min(1).max(64),
         status: z.string().trim().min(1).max(64)
       })
       .strict(),
@@ -79,6 +80,7 @@ export const createRecordSchema = z
     numeroNota: input.nota.numero,
     notaOriginal: input.nota.original,
     status: input.nota.status,
+    notaPesagemId: input.nota.pesagemId,
     motoristaNome: input.motorista.nome,
     motoristaCelular: input.motorista.celular,
     placa: input.veiculo.placa.toUpperCase(),
@@ -142,6 +144,7 @@ export const csvRowSchema = z
     numeroNota: z.string().trim().min(1).max(64),
     notaOriginal: z.string().trim().min(1).max(255),
     status: z.string().trim().min(1).max(64),
+    notaPesagemId: z.string().trim().min(1).max(64),
     motoristaNome: z.string().trim().min(1).max(120),
     motoristaCelular: z.string().trim().min(1).max(120),
     placa: z.string().trim().min(1).max(32),
@@ -158,6 +161,7 @@ export const csvRowSchema = z
     numeroNota: row.numeroNota,
     notaOriginal: row.notaOriginal,
     status: row.status,
+    notaPesagemId: row.notaPesagemId,
     motoristaNome: row.motoristaNome,
     motoristaCelular: row.motoristaCelular,
     placa: row.placa.toUpperCase(),
