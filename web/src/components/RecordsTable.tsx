@@ -1,6 +1,11 @@
 import type { RecordItem } from "../types/api";
 
 export const RecordsTable = ({ items }: { items: RecordItem[] }) => {
+  const formatWithThreeHourOffset = (value: string) => {
+    const adjusted = new Date(new Date(value).getTime() + 3 * 60 * 60 * 1000);
+    return adjusted.toLocaleString("pt-BR");
+  };
+
   return (
     <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
       <table className="min-w-full text-left text-sm">
@@ -19,7 +24,7 @@ export const RecordsTable = ({ items }: { items: RecordItem[] }) => {
         <tbody>
           {items.map((record) => (
             <tr key={record.id} className="border-t border-slate-100">
-              <td className="px-4 py-3">{new Date(record.dataHora).toLocaleString("pt-BR")}</td>
+              <td className="px-4 py-3">{formatWithThreeHourOffset(record.dataHora)}</td>
               <td className="px-4 py-3">{record.numeroNota}</td>
               <td className="px-4 py-3">{record.notaOriginal}</td>
               <td className="px-4 py-3">
