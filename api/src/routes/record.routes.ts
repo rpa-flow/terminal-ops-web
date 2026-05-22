@@ -35,9 +35,10 @@ recordRoutes.post(
   validate(updateStatusBodySchema),
   async (req, res) => {
     const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
-    const { status, numeroOriginal } = req.body as { status: string; numeroOriginal?: string };
+    const { status, numeroOriginal, idPesagem, idPessagem } = req.body as { status: string; numeroOriginal?: string; idPesagem?: string | number; idPessagem?: string | number };
+    const notaPesagemId = idPesagem ?? idPessagem;
 
-    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal);
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal, notaPesagemId ? String(notaPesagemId) : undefined);
     if (!updated) {
       res.status(404).json({ message: "Record not found" });
       return;
@@ -54,9 +55,10 @@ recordRoutes.patch(
   validate(updateStatusBodySchema),
   async (req, res) => {
     const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
-    const { status, numeroOriginal } = req.body as { status: string; numeroOriginal?: string };
+    const { status, numeroOriginal, idPesagem, idPessagem } = req.body as { status: string; numeroOriginal?: string; idPesagem?: string | number; idPessagem?: string | number };
+    const notaPesagemId = idPesagem ?? idPessagem;
 
-    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal);
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal, notaPesagemId ? String(notaPesagemId) : undefined);
     if (!updated) {
       res.status(404).json({ message: "Record not found" });
       return;
@@ -65,6 +67,8 @@ recordRoutes.patch(
     res.status(200).json(updated);
   }
 );
+
+
 
 recordRoutes.use(requireAuth);
 

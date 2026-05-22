@@ -46,13 +46,14 @@ export const listRecordsService = async (filters: ListRecordsFilters) => {
 export const updateRecordStatusByNumeroNotaService = async (
   numeroNota: string,
   status: string,
-  numeroOriginal?: string
+  numeroOriginal?: string,
+  idPesagem?: string
 ) => {
   const record = await findLatestRecordByNumeroNota(numeroNota);
   if (!record) {
     return null;
   }
 
-  const updated = await updateRecordStatusById(record.id, status, numeroOriginal);
+  const updated = await updateRecordStatusById(record.id, status, numeroOriginal, idPesagem);
   return sanitizeRecord(updated);
 };
