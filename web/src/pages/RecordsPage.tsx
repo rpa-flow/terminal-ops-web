@@ -34,7 +34,7 @@ export const RecordsPage = () => {
       setTotal(response.total);
       setFilters((current) => ({ ...current, page: response.page, perPage: response.perPage }));
     } catch {
-      setError("Nao foi possivel carregar os registros.");
+      setError("Não foi possível carregar os registros.");
     } finally {
       setLoading(false);
     }
@@ -46,8 +46,8 @@ export const RecordsPage = () => {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+      <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
           <div>
             <h1 className="text-xl font-semibold text-slate-900">Painel de Registros RPA</h1>
             <p className="text-sm text-slate-500">Operador: {user?.email}</p>
@@ -56,7 +56,9 @@ export const RecordsPage = () => {
             <button className="btn-muted" onClick={() => setShowCsvModal(true)}>
               Importar CSV
             </button>
-            <button className="btn-muted" onClick={logout}>Sair</button>
+            <button className="btn-muted" onClick={logout}>
+              Sair
+            </button>
           </div>
         </div>
       </header>
@@ -73,36 +75,38 @@ export const RecordsPage = () => {
           }}
         />
 
-        <div className="flex items-center justify-between text-sm text-slate-600">
-          <span>Total: {total}</span>
-          <div className="flex items-center gap-2">
-            <button
-              className="btn-muted"
-              onClick={() => {
-                const next = { ...filters, page: Math.max(1, filters.page - 1) };
-                setFilters(next);
-                void loadRecords(next);
-              }}
-              disabled={filters.page <= 1 || loading}
-            >
-              Anterior
-            </button>
-            <span>Pagina {filters.page}</span>
-            <button
-              className="btn-muted"
-              onClick={() => {
-                const next = { ...filters, page: filters.page + 1 };
-                setFilters(next);
-                void loadRecords(next);
-              }}
-              disabled={loading || items.length < filters.perPage}
-            >
-              Proxima
-            </button>
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="font-medium">Total de registros: {total}</span>
+            <div className="flex items-center gap-2">
+              <button
+                className="btn-muted"
+                onClick={() => {
+                  const next = { ...filters, page: Math.max(1, filters.page - 1) };
+                  setFilters(next);
+                  void loadRecords(next);
+                }}
+                disabled={filters.page <= 1 || loading}
+              >
+                Anterior
+              </button>
+              <span className="rounded-lg bg-slate-100 px-2 py-1 text-slate-700">Página {filters.page}</span>
+              <button
+                className="btn-muted"
+                onClick={() => {
+                  const next = { ...filters, page: filters.page + 1 };
+                  setFilters(next);
+                  void loadRecords(next);
+                }}
+                disabled={loading || items.length < filters.perPage}
+              >
+                Próxima
+              </button>
+            </div>
           </div>
         </div>
 
-        {error && <p className="text-sm text-rose-600">{error}</p>}
+        {error && <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>}
         <RecordsTable items={items} />
       </section>
 
@@ -115,4 +119,3 @@ export const RecordsPage = () => {
     </main>
   );
 };
-

@@ -128,10 +128,13 @@ export const updateStatusParamsSchema = z
   })
   .strict();
 
+
 export const updateStatusBodySchema = z
   .object({
     status: z.string().trim().min(1).max(64),
-    numeroOriginal: z.string().trim().min(1).max(255).optional()
+    numeroOriginal: z.string().trim().min(1).max(255).optional(),
+    idPesagem: z.union([z.string(), z.number()]).optional(),
+    idPessagem: z.union([z.string(), z.number()]).optional()
   })
   .strict();
 
