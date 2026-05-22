@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { listMaterialsRequest, listSuppliersRequest, type CatalogItem } from "../services/catalog.service";
 
 import { AppHeader, HeaderLinkButton } from "../components/AppHeader";
 import { useAuth } from "../hooks/useAuth";
@@ -33,6 +34,8 @@ export const PurchaseOrderRulesPage = () => {
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [filters, setFilters] = useState({ materialId: "", supplierId: "", isActive: "" });
+  const [materials, setMaterials] = useState<CatalogItem[]>([]);
+  const [suppliers, setSuppliers] = useState<CatalogItem[]>([]);
 
   const load = async (nextPage = page) => {
     if (!token) return;
@@ -54,7 +57,11 @@ export const PurchaseOrderRulesPage = () => {
 
   useEffect(() => {
     void load(1);
-  }, []);
+    if (token) {
+      void listMaterialsRequest(token, { page: 1, perPage: 100, isActive: "true" }).then((r) => setMaterials(r.items));
+      void listSuppliersRequest(token, { page: 1, perPage: 100, isActive: "true" }).then((r) => setSuppliers(r.items));
+    }
+  }, [token]);
 
   const save = async () => {
     if (!token) return;
@@ -86,6 +93,7 @@ export const PurchaseOrderRulesPage = () => {
         actions={
           <>
             <HeaderLinkButton to="/">Voltar ao Painel</HeaderLinkButton>
+            <HeaderLinkButton to="/catalog">Gerir Catálogos</HeaderLinkButton>
             <button className="btn-muted" onClick={logout}>Sair</button>
           </>
         }
@@ -93,8 +101,8 @@ export const PurchaseOrderRulesPage = () => {
 
       <section className="mx-auto grid max-w-7xl gap-4 px-4 py-6">
         <section className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-2">
-          <input className="input" placeholder="Material" value={form.materialId} onChange={(e) => setForm({ ...form, materialId: e.target.value })} />
-          <input className="input" placeholder="Fornecedor" value={form.supplierId} onChange={(e) => setForm({ ...form, supplierId: e.target.value })} />
+          <select className="input" value={form.materialId} onChange={(e) => setForm({ ...form, materialId: e.target.value })}><option value="">Material</option>{materials.map((m)=><option key={m.id} value={m.id}>{m.name}</option>)}</select>
+          <select className="input" value={form.supplierId} onChange={(e) => setForm({ ...form, supplierId: e.target.value })}><option value="">Fornecedor</option>{suppliers.map((s)=> <option key={s.id} value={s.id}>{s.name}</option>)}</select>
           <input className="input md:col-span-2" placeholder="Ordem" value={form.purchaseOrderCode} onChange={(e) => setForm({ ...form, purchaseOrderCode: e.target.value })} />
           <label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />Ativo</label>
           <div className="col-span-full flex gap-2">

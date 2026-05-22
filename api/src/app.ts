@@ -16,6 +16,7 @@ import { ingestRoutes } from "./routes/ingest.routes";
 import { provisionRoutes } from "./routes/provision.routes";
 import { recordRoutes } from "./routes/record.routes";
 import { purchaseOrderRuleRoutes } from "./routes/purchase-order-rule.routes";
+import { catalogRoutes } from "./routes/catalog.routes";
 
 const app = express();
 
@@ -78,6 +79,7 @@ app.use("/api/ingest", ingestRoutes);
 app.use("/api/provision", provisionRoutes);
 app.use("/api/records", csrfProtection, recordRoutes);
 app.use("/api/purchase-order-rules", csrfProtection, purchaseOrderRuleRoutes);
+app.use("/api/catalog", csrfProtection, catalogRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
