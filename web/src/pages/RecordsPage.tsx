@@ -56,6 +56,7 @@ export const RecordsPage = () => {
             <button className="btn-muted" onClick={() => setShowCsvModal(true)}>
               Importar CSV
             </button>
+            <a className="btn-muted" href="/purchase-order-rules">Config. OC</a>
             <button className="btn-muted" onClick={logout}>
               Sair
             </button>

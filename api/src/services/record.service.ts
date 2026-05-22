@@ -2,6 +2,7 @@ import xss from "xss";
 
 import { createRecord, findLatestRecordByNumeroNota, listRecords, updateRecordStatusById } from "../repositories/record.repository";
 import type { CreateRecordInput, ListRecordsFilters } from "../validators/record.validator";
+import { resolvePurchaseOrder } from "./purchase-order-rule.service";
 
 const sanitizeString = (value: string): string => xss(value, { whiteList: {} });
 
@@ -29,7 +30,10 @@ const sanitizeRecord = (record: {
   terminal: sanitizeString(record.terminal)
 });
 
-export const createRecordService = async (input: CreateRecordInput) => {
+export const createRecordService = async (input: CreateRecordInput & { materialId?: string; supplierId?: string }) => {
+  if (input.materialId && input.supplierId) {
+    await resolvePurchaseOrder(input.materialId, input.supplierId);
+  }
   const saved = await createRecord(input);
   return sanitizeRecord(saved);
 };
