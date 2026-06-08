@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { HeaderLinkButton } from "../components/AppHeader";
 import { AppNavigation } from "../components/AppNavigation";
 import { CsvUploadModal } from "../components/CsvUploadModal";
 import { FiltersBar } from "../components/FiltersBar";
@@ -61,9 +62,9 @@ export const RecordsPage = () => {
             <button className="btn-muted" onClick={logout}>
               Sair
             </button>
-          </>
-        }
-      />
+          </div>
+        </div>
+      </header>
 
       <section className="mx-auto grid max-w-7xl gap-4 px-4 py-6">
         <FiltersBar
