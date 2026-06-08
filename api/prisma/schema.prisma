@@ -58,3 +58,63 @@ model Note {
   @@map("notes")
 }
 
+model Material {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(120)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
+
+  @@map("materials")
+}
+
+model Supplier {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(120)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
+
+  @@map("suppliers")
+}
+
+model PurchaseOrderRule {
+  id                String   @id @default(uuid()) @db.Uuid
+  materialId        String   @map("material_id") @db.VarChar(64)
+  supplierId        String   @map("supplier_id") @db.VarChar(64)
+  purchaseOrderCode String   @map("purchase_order_code") @db.VarChar(64)
+  purchaseOrderType String   @map("purchase_order_type") @db.VarChar(32)
+  description       String?  @db.VarChar(255)
+  lot               String?  @db.VarChar(64)
+  minimumQuantity   Decimal? @map("minimum_quantity") @db.Decimal(18, 4)
+  costCenter        String?  @map("cost_center") @db.VarChar(64)
+  paymentCondition  String?  @map("payment_condition") @db.VarChar(64)
+  currency          String?  @db.VarChar(16)
+  unit              String?  @db.VarChar(16)
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
+  createdBy         String   @map("created_by") @db.Uuid
+  updatedBy         String   @map("updated_by") @db.Uuid
+  histories         PurchaseOrderRuleHistory[]
+
+  @@unique([materialId, supplierId, isActive], map: "purchase_order_rules_material_supplier_active_key")
+  @@index([materialId])
+  @@index([supplierId])
+  @@map("purchase_order_rules")
+}
+
+model PurchaseOrderRuleHistory {
+  id                  String             @id @default(uuid()) @db.Uuid
+  purchaseOrderRuleId String             @map("purchase_order_rule_id") @db.Uuid
+  purchaseOrderRule   PurchaseOrderRule  @relation(fields: [purchaseOrderRuleId], references: [id])
+  action              String             @db.VarChar(16)
+  userId              String             @map("user_id") @db.Uuid
+  beforeData          Json?              @map("before_data") @db.JsonB
+  afterData           Json?              @map("after_data") @db.JsonB
+  createdAt           DateTime           @default(now()) @map("created_at") @db.Timestamp(3)
+
+  @@index([purchaseOrderRuleId])
+  @@map("purchase_order_rule_histories")
+}
+
