@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 type AppNavigationProps = {
-  current: "records" | "notes";
+  current: "records" | "notes" | "reports";
 };
 
 export const AppNavigation = ({ current }: AppNavigationProps) => {
@@ -17,6 +17,9 @@ export const AppNavigation = ({ current }: AppNavigationProps) => {
       </Link>
       <Link className={linkClass(current === "notes")} to="/notas">
         Notas
+      </Link>
+      <Link className={linkClass(current === "reports")} to="/relatorios">
+        Relatórios
       </Link>
     </nav>
   );

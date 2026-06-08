@@ -7,6 +7,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { RecordsPage } from "./pages/RecordsPage";
 import { NotesPage } from "./pages/NotesPage";
 import { PurchaseOrderRulesPage } from "./pages/PurchaseOrderRulesPage";
+import { ReportsPage } from "./pages/ReportsPage";
 
 function App() {
   return (
@@ -29,6 +30,14 @@ function App() {
           element={
             <ProtectedRoute>
               <NotesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/relatorios"
+          element={
+            <ProtectedRoute>
+              <ReportsPage />
             </ProtectedRoute>
           }
         />

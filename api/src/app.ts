@@ -18,6 +18,7 @@ import { recordRoutes } from "./routes/record.routes";
 import { noteRoutes } from "./routes/note.routes";
 import { catalogRoutes } from "./routes/catalog.routes";
 import { purchaseOrderRuleRoutes } from "./routes/purchase-order-rule.routes";
+import { reportRoutes } from "./routes/report.routes";
 
 const app = express();
 
@@ -82,6 +83,7 @@ app.use("/api/records", csrfProtection, recordRoutes);
 app.use("/api/notes", csrfProtection, noteRoutes);
 app.use("/api/catalog", csrfProtection, catalogRoutes);
 app.use("/api/purchase-order-rules", csrfProtection, purchaseOrderRuleRoutes);
+app.use("/api/reports", csrfProtection, reportRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -67,3 +67,59 @@ export type PendingNotesResponse = {
   total: number;
   items: NoteItem[];
 };
+
+export type ReportBreakdownItem = {
+  label: string;
+  total: number;
+};
+
+export type DailyVolumeItem = {
+  date: string;
+  emittedNotes: number;
+  weighedRecords: number;
+};
+
+export type PendingReportNoteItem = {
+  codigo: string;
+  terminal: string;
+  placa: string | null;
+  motoristaNome: string | null;
+  status: string;
+  createdAt: string;
+  ageHours: number;
+};
+
+export type ReportOverviewResponse = {
+  filters: {
+    startDate: string;
+    endDate: string;
+    terminal: string | null;
+  };
+  summary: {
+    emittedNotes: number;
+    weighedRecords: number;
+    matchedNotes: number;
+    pendingNotes: number;
+    pendingOver24h: number;
+    recordsWithoutPesagemId: number;
+    duplicateNotaGroups: number;
+    duplicatePesagemGroups: number;
+    reconciliationRate: number;
+    weighingCoverageRate: number;
+    averageReconciliationHours: number | null;
+  };
+  breakdowns: {
+    notesByStatus: ReportBreakdownItem[];
+    recordsByStatus: ReportBreakdownItem[];
+    notesByTerminal: ReportBreakdownItem[];
+    recordsByTerminal: ReportBreakdownItem[];
+  };
+  dailyVolumes: DailyVolumeItem[];
+  pendingOldest: PendingReportNoteItem[];
+};
+
+export type ReportFilters = {
+  startDate?: string;
+  endDate?: string;
+  terminal?: string;
+};
