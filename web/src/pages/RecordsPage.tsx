@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-
-import { AppHeader, HeaderLinkButton } from "../components/AppHeader";
+import { HeaderLinkButton } from "../components/AppHeader";
+import { AppNavigation } from "../components/AppNavigation";
 import { CsvUploadModal } from "../components/CsvUploadModal";
 import { FiltersBar } from "../components/FiltersBar";
 import { RecordsTable } from "../components/RecordsTable";
@@ -47,11 +47,14 @@ export const RecordsPage = () => {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <AppHeader
-        title="Painel de Registros RPA"
-        subtitle={`Operador: ${user?.email}`}
-        actions={
-          <>
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+          <div>
+            <h1 className="text-xl font-semibold text-slate-900">Painel de Registros RPA</h1>
+            <p className="text-sm text-slate-500">Operador: {user?.email}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <AppNavigation current="records" />
             <button className="btn-muted" onClick={() => setShowCsvModal(true)}>
               Importar CSV
             </button>
@@ -59,9 +62,9 @@ export const RecordsPage = () => {
             <button className="btn-muted" onClick={logout}>
               Sair
             </button>
-          </>
-        }
-      />
+          </div>
+        </div>
+      </header>
 
       <section className="mx-auto grid max-w-7xl gap-4 px-4 py-6">
         <FiltersBar
