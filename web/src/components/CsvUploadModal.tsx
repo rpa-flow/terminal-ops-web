@@ -38,13 +38,13 @@ export const CsvUploadModal = ({ onClose, onSuccess }: Props) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
         <h2 className="mb-1 text-lg font-semibold text-slate-900">Importar CSV</h2>
         <p className="mb-4 text-sm text-slate-500">
           O arquivo deve ter as colunas na ordem abaixo (com cabeçalho):
         </p>
-        <div className="mb-4 overflow-x-auto rounded bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700">
-          dataHora, numeroNota, notaOriginal, status, motoristaNome, motoristaCelular, placa, terminal
+        <div className="mb-4 overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700">
+          dataHora, numeroNota, notaOriginal, status, notaPesagemId, motoristaNome, motoristaCelular, placa, terminal
         </div>
         <p className="mb-4 text-xs text-slate-400">
           Limite: 500 linhas por envio. dataHora no formato ISO-8601 (ex: 2024-01-15T10:30:00).

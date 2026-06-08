@@ -23,6 +23,7 @@ model Record {
   dataHora         DateTime @map("data_hora") @db.Timestamp(3)
   numeroNota       String   @map("numero_nota") @db.VarChar(64)
   notaOriginal     String   @map("nota_original") @db.VarChar(255)
+  notaPesagemId    String   @map("nota_pesagem_id") @db.VarChar(64)
   status           String   @db.VarChar(64)
   motoristaNome    String   @map("motorista_nome") @db.VarChar(120)
   motoristaCelular String   @map("motorista_celular") @db.VarChar(24)

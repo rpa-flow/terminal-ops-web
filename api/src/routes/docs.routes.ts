@@ -76,7 +76,8 @@ const buildOpenApiDocument = (baseUrl: string) => ({
     { name: "Auth" },
     { name: "Ingest" },
     { name: "Provision" },
-    { name: "Records" }
+    { name: "Records" },
+    { name: "PurchaseOrderRules" }
   ],
   components: {
     securitySchemes: {
@@ -185,6 +186,14 @@ const buildOpenApiDocument = (baseUrl: string) => ({
             example: "NF-ORIGINAL-0001",
             description: "Opcional. Quando enviado, atualiza notaOriginal do registro selecionado"
           }
+        }
+      },
+
+      PurchaseOrderRule: {
+        type: "object",
+        properties: {
+          id: { type: "string" }, materialId: { type: "string" }, supplierId: { type: "string" },
+          purchaseOrderCode: { type: "string" }, purchaseOrderType: { type: "string" }, isActive: { type: "boolean" }
         }
       },
       CsvUploadResponse: {
