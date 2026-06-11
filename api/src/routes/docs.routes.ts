@@ -18,6 +18,11 @@ const recordPayloadSchema = {
       properties: {
         numero: { type: "string", example: "12345" },
         original: { type: "string", example: "VALOR ORIGINAL" },
+        pesagemId: {
+          type: "string",
+          example: "PES-123",
+          description: "Opcional. Quando omitido, o registro é criado sem ID de pesagem"
+        },
         status: { type: "string", example: "PROCESSADO" }
       }
     },

@@ -255,8 +255,8 @@ Ao alterar uma feature, conferir estes pontos juntos:
 
 Ponto real ja identificado:
 
-- `createRecordSchema` exige `nota.pesagemId`.
-- O OpenAPI atual de `RecordPayload` nao documenta `nota.pesagemId`.
+- `createRecordSchema` aceita `nota.pesagemId` como opcional.
+- O OpenAPI atual de `RecordPayload` documenta `nota.pesagemId` como opcional.
 
 Esse tipo de divergencia e exatamente o que um contract harness futuro deve capturar.
 
