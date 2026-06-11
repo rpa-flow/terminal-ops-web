@@ -83,7 +83,7 @@ export const updateRecordStatusById = async (
     data: {
       status,
       ...(numeroOriginal ? { notaOriginal: numeroOriginal } : {}),
-      ...(idPesagem ? { notaPesagemId: idPesagem } : {})
+      ...(idPesagem !== undefined ? { notaPesagemId: idPesagem } : {})
     }
   });
 };

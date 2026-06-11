@@ -129,14 +129,27 @@ export const updateStatusParamsSchema = z
   .strict();
 
 
+const optionalPesagemIdSchema = z.union([z.string().trim().min(1).max(64), z.number()]).optional();
+
 export const updateStatusBodySchema = z
   .object({
     status: z.string().trim().min(1).max(64),
     numeroOriginal: z.string().trim().min(1).max(255).optional(),
-    idPesagem: z.union([z.string(), z.number()]).optional(),
-    idPessagem: z.union([z.string(), z.number()]).optional()
+    idPesagem: optionalPesagemIdSchema,
+    idPessagem: optionalPesagemIdSchema,
+    pesagemId: optionalPesagemIdSchema,
+    pesagemid: optionalPesagemIdSchema
   })
-  .strict();
+  .strict()
+  .transform((input) => {
+    const pesagemId = input.idPesagem ?? input.idPessagem ?? input.pesagemId ?? input.pesagemid;
+
+    return {
+      status: input.status,
+      numeroOriginal: input.numeroOriginal,
+      idPesagem: pesagemId !== undefined ? String(pesagemId) : undefined
+    };
+  });
 
 export type UpdateStatusParamsInput = z.infer<typeof updateStatusParamsSchema>;
 export type UpdateStatusBodyInput = z.infer<typeof updateStatusBodySchema>;
