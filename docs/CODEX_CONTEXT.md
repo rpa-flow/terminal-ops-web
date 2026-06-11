@@ -153,7 +153,7 @@ Harness:
 
 ## Pontos de atencao antes de alterar codigo
 
-1. OpenAPI de `RecordPayload` parece nao documentar `nota.pesagemId`, embora o validator exija esse campo.
+1. OpenAPI de `RecordPayload` documenta `nota.pesagemId` como campo opcional, alinhado ao validator.
 2. `web/src/App.css` parece ser resquicio do template e nao esta importado por `App.tsx`.
 3. `user.service.ts` acessa Prisma diretamente, diferente do restante do padrao repository.
 4. `X-Provision-Key` nao aparece nos `allowedHeaders` do CORS em `app.ts`.

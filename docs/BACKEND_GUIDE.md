@@ -185,7 +185,7 @@ Exemplo real de transformacao em `createRecordSchema`:
   numeroNota: input.nota.numero,
   notaOriginal: input.nota.original,
   status: input.nota.status,
-  notaPesagemId: input.nota.pesagemId,
+  notaPesagemId: input.nota.pesagemId ?? "",
   motoristaNome: input.motorista.nome,
   motoristaCelular: input.motorista.celular,
   placa: input.veiculo.placa.toUpperCase(),
@@ -278,9 +278,8 @@ Ao criar ou alterar endpoint, atualizar manualmente `docs.routes.ts`.
 
 Ponto de atencao real:
 
-- `createRecordSchema` exige `nota.pesagemId`.
-- `RecordPayload` em `docs.routes.ts` nao lista `pesagemId` no schema da nota.
-- Nao foi alterado nesta etapa.
+- `createRecordSchema` aceita `nota.pesagemId` como opcional.
+- `RecordPayload` em `docs.routes.ts` lista `pesagemId` como campo opcional da nota.
 
 ## Seguranca
 

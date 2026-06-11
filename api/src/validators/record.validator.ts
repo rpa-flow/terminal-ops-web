@@ -45,6 +45,8 @@ const parseDateTime = (value: string): Date | null => {
   return candidate;
 };
 
+const optionalPesagemIdSchema = z.union([z.string().trim().min(1).max(64), z.number()]).optional();
+
 export const createRecordSchema = z
   .object({
     dataHora: z.string().min(16).max(25),
@@ -52,7 +54,10 @@ export const createRecordSchema = z
       .object({
         numero: z.string().trim().min(1).max(64),
         original: z.string().trim().min(1).max(255),
-        pesagemId: z.string().trim().min(1).max(64),
+        pesagemId: optionalPesagemIdSchema,
+        pesagemid: optionalPesagemIdSchema,
+        idPesagem: optionalPesagemIdSchema,
+        idPessagem: optionalPesagemIdSchema,
         status: z.string().trim().min(1).max(64)
       })
       .strict(),
@@ -80,7 +85,7 @@ export const createRecordSchema = z
     numeroNota: input.nota.numero,
     notaOriginal: input.nota.original,
     status: input.nota.status,
-    notaPesagemId: input.nota.pesagemId,
+    notaPesagemId: String(input.nota.pesagemId ?? input.nota.pesagemid ?? input.nota.idPesagem ?? input.nota.idPessagem ?? ""),
     motoristaNome: input.motorista.nome,
     motoristaCelular: input.motorista.celular,
     placa: input.veiculo.placa.toUpperCase(),
@@ -133,10 +138,21 @@ export const updateStatusBodySchema = z
   .object({
     status: z.string().trim().min(1).max(64),
     numeroOriginal: z.string().trim().min(1).max(255).optional(),
-    idPesagem: z.union([z.string(), z.number()]).optional(),
-    idPessagem: z.union([z.string(), z.number()]).optional()
+    idPesagem: optionalPesagemIdSchema,
+    idPessagem: optionalPesagemIdSchema,
+    pesagemId: optionalPesagemIdSchema,
+    pesagemid: optionalPesagemIdSchema
   })
-  .strict();
+  .strict()
+  .transform((input) => {
+    const pesagemId = input.idPesagem ?? input.idPessagem ?? input.pesagemId ?? input.pesagemid;
+
+    return {
+      status: input.status,
+      numeroOriginal: input.numeroOriginal,
+      idPesagem: pesagemId !== undefined ? String(pesagemId) : undefined
+    };
+  });
 
 export type UpdateStatusParamsInput = z.infer<typeof updateStatusParamsSchema>;
 export type UpdateStatusBodyInput = z.infer<typeof updateStatusBodySchema>;

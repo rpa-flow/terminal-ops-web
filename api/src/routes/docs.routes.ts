@@ -18,6 +18,11 @@ const recordPayloadSchema = {
       properties: {
         numero: { type: "string", example: "12345" },
         original: { type: "string", example: "VALOR ORIGINAL" },
+        pesagemId: {
+          type: "string",
+          example: "PES-123",
+          description: "Opcional. Quando omitido, o registro é criado sem ID de pesagem"
+        },
         status: { type: "string", example: "PROCESSADO" }
       }
     },
@@ -185,6 +190,26 @@ const buildOpenApiDocument = (baseUrl: string) => ({
             type: "string",
             example: "NF-ORIGINAL-0001",
             description: "Opcional. Quando enviado, atualiza notaOriginal do registro selecionado"
+          },
+          idPesagem: {
+            oneOf: [{ type: "string" }, { type: "number" }],
+            example: "PES-123",
+            description: "Opcional. Quando enviado, atualiza o ID de pesagem do registro selecionado"
+          },
+          pesagemId: {
+            oneOf: [{ type: "string" }, { type: "number" }],
+            example: "PES-123",
+            description: "Alias opcional de idPesagem"
+          },
+          pesagemid: {
+            oneOf: [{ type: "string" }, { type: "number" }],
+            example: "PES-123",
+            description: "Alias opcional de idPesagem, aceito em minúsculas"
+          },
+          idPessagem: {
+            oneOf: [{ type: "string" }, { type: "number" }],
+            example: "PES-123",
+            description: "Alias opcional legado de idPesagem"
           }
         }
       },
