@@ -134,6 +134,8 @@ export const updateStatusParamsSchema = z
   .strict();
 
 
+const optionalPesagemIdSchema = z.union([z.string().trim().min(1).max(64), z.number()]).optional();
+
 export const updateStatusBodySchema = z
   .object({
     status: z.string().trim().min(1).max(64),
