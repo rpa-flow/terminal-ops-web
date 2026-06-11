@@ -5,7 +5,7 @@ import { rateLimitKeyGenerator, rateLimitValidationConfig } from "../lib/rate-li
 import { requireApiKey } from "../middlewares/api-key";
 import { validate } from "../middlewares/validate";
 import { createRecordService, updateRecordStatusByNumeroNotaService } from "../services/record.service";
-import { createRecordSchema, updateStatusBodySchema, updateStatusParamsSchema } from "../validators/record.validator";
+import { createRecordSchema, updateStatusBodySchema, updateStatusParamsSchema, type UpdateStatusBodyInput } from "../validators/record.validator";
 
 const ingestRoutes = Router();
 
@@ -33,9 +33,9 @@ ingestRoutes.post(
   validate(updateStatusBodySchema),
   async (req, res) => {
     const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
-    const { status, numeroOriginal } = req.body as { status: string; numeroOriginal?: string };
+    const { status, numeroOriginal, idPesagem } = req.body as UpdateStatusBodyInput;
 
-    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal);
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal, idPesagem);
     if (!updated) {
       res.status(404).json({ message: "Record not found" });
       return;
@@ -52,9 +52,9 @@ ingestRoutes.patch(
   validate(updateStatusBodySchema),
   async (req, res) => {
     const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
-    const { status, numeroOriginal } = req.body as { status: string; numeroOriginal?: string };
+    const { status, numeroOriginal, idPesagem } = req.body as UpdateStatusBodyInput;
 
-    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal);
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal, idPesagem);
     if (!updated) {
       res.status(404).json({ message: "Record not found" });
       return;
