@@ -237,11 +237,11 @@ Ao criar endpoint:
 
 Ponto de atencao real:
 
-- O schema OpenAPI `RecordPayload` parece desatualizado em relacao ao `createRecordSchema`: o validator exige `nota.pesagemId`, mas o OpenAPI atual nao documenta esse campo.
+- O schema OpenAPI `RecordPayload` documenta `nota.pesagemId` como campo opcional.
 
 ## Contratos atuais de registro
 
-Validator de criacao espera payload externo com:
+Validator de criacao espera payload externo com `nota.pesagemId` opcional:
 
 ```json
 {

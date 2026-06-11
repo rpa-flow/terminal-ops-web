@@ -11,7 +11,8 @@ import {
   csvRowSchema,
   listRecordsQuerySchema,
   updateStatusBodySchema,
-  updateStatusParamsSchema
+  updateStatusParamsSchema,
+  type UpdateStatusBodyInput
 } from "../validators/record.validator";
 
 const recordRoutes = Router();
@@ -35,10 +36,9 @@ recordRoutes.post(
   validate(updateStatusBodySchema),
   async (req, res) => {
     const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
-    const { status, numeroOriginal, idPesagem, idPessagem } = req.body as { status: string; numeroOriginal?: string; idPesagem?: string | number; idPessagem?: string | number };
-    const notaPesagemId = idPesagem ?? idPessagem;
+    const { status, numeroOriginal, idPesagem } = req.body as UpdateStatusBodyInput;
 
-    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal, notaPesagemId ? String(notaPesagemId) : undefined);
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal, idPesagem);
     if (!updated) {
       res.status(404).json({ message: "Record not found" });
       return;
@@ -55,10 +55,9 @@ recordRoutes.patch(
   validate(updateStatusBodySchema),
   async (req, res) => {
     const numeroNota = (res.locals.validatedParams as { numeroNota: string }).numeroNota;
-    const { status, numeroOriginal, idPesagem, idPessagem } = req.body as { status: string; numeroOriginal?: string; idPesagem?: string | number; idPessagem?: string | number };
-    const notaPesagemId = idPesagem ?? idPessagem;
+    const { status, numeroOriginal, idPesagem } = req.body as UpdateStatusBodyInput;
 
-    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal, notaPesagemId ? String(notaPesagemId) : undefined);
+    const updated = await updateRecordStatusByNumeroNotaService(numeroNota, status, numeroOriginal, idPesagem);
     if (!updated) {
       res.status(404).json({ message: "Record not found" });
       return;
