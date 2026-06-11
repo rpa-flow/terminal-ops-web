@@ -45,7 +45,7 @@ const parseDateTime = (value: string): Date | null => {
   return candidate;
 };
 
-const optionalPesagemIdSchema = z.union([z.string().trim().min(1).max(64), z.number()]).optional();
+const optionalRecordPesagemIdSchema = z.union([z.string().trim().min(1).max(64), z.number()]).optional();
 
 export const createRecordSchema = z
   .object({
@@ -54,10 +54,10 @@ export const createRecordSchema = z
       .object({
         numero: z.string().trim().min(1).max(64),
         original: z.string().trim().min(1).max(255),
-        pesagemId: optionalPesagemIdSchema,
-        pesagemid: optionalPesagemIdSchema,
-        idPesagem: optionalPesagemIdSchema,
-        idPessagem: optionalPesagemIdSchema,
+        pesagemId: optionalRecordPesagemIdSchema,
+        pesagemid: optionalRecordPesagemIdSchema,
+        idPesagem: optionalRecordPesagemIdSchema,
+        idPessagem: optionalRecordPesagemIdSchema,
         status: z.string().trim().min(1).max(64)
       })
       .strict(),
@@ -140,10 +140,10 @@ export const updateStatusBodySchema = z
   .object({
     status: z.string().trim().min(1).max(64),
     numeroOriginal: z.string().trim().min(1).max(255).optional(),
-    idPesagem: optionalPesagemIdSchema,
-    idPessagem: optionalPesagemIdSchema,
-    pesagemId: optionalPesagemIdSchema,
-    pesagemid: optionalPesagemIdSchema
+    idPesagem: optionalRecordPesagemIdSchema,
+    idPessagem: optionalRecordPesagemIdSchema,
+    pesagemId: optionalRecordPesagemIdSchema,
+    pesagemid: optionalRecordPesagemIdSchema
   })
   .strict()
   .transform((input) => {
