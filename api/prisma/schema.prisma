@@ -19,17 +19,26 @@ model User {
 }
 
 model Record {
-  id               String   @id @default(uuid()) @db.Uuid
-  dataHora         DateTime @map("data_hora") @db.Timestamp(3)
-  numeroNota       String   @map("numero_nota") @db.VarChar(64)
-  notaOriginal     String   @map("nota_original") @db.VarChar(255)
-  notaPesagemId    String   @map("nota_pesagem_id") @db.VarChar(64)
-  status           String   @db.VarChar(64)
-  motoristaNome    String   @map("motorista_nome") @db.VarChar(120)
-  motoristaCelular String   @map("motorista_celular") @db.VarChar(24)
-  placa            String   @db.VarChar(16)
-  terminal         String   @db.VarChar(120)
-  createdAt        DateTime @default(now()) @map("created_at")
+  id                         String   @id @default(uuid()) @db.Uuid
+  dataHora                   DateTime @map("data_hora") @db.Timestamp(3)
+  numeroNota                 String   @map("numero_nota") @db.VarChar(64)
+  notaChave                  String?  @map("nota_chave") @db.VarChar(255)
+  notaOriginal               String   @map("nota_original") @db.VarChar(255)
+  notaPesagemId              String   @map("nota_pesagem_id") @db.VarChar(64)
+  status                     String   @db.VarChar(64)
+  emitenteCnpj               String?  @map("emitente_cnpj") @db.VarChar(32)
+  emitenteFornecedor         String?  @map("emitente_fornecedor") @db.VarChar(120)
+  motoristaNome              String   @map("motorista_nome") @db.VarChar(120)
+  motoristaCelular           String   @map("motorista_celular") @db.VarChar(24)
+  placa                      String   @db.VarChar(16)
+  placaRecebimento           String?  @map("placa_recebimento") @db.VarChar(32)
+  recebimentoColaborador     String?  @map("recebimento_colaborador") @db.VarChar(120)
+  recebimentoPeso            String?  @map("recebimento_peso") @db.VarChar(32)
+  recebimentoPatioDescarga   String?  @map("recebimento_patio_descarga") @db.VarChar(120)
+  recebimentoData            String?  @map("recebimento_data") @db.VarChar(25)
+  recebimentoPlaca           String?  @map("recebimento_placa") @db.VarChar(32)
+  terminal                   String   @db.VarChar(120)
+  createdAt                  DateTime @default(now()) @map("created_at")
 
   @@index([dataHora])
   @@index([status])

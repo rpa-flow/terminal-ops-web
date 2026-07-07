@@ -53,6 +53,7 @@ export const createRecordSchema = z
     nota: z
       .object({
         numero: z.string().trim().min(1).max(64),
+        chave: z.string().trim().min(1).max(255).optional(),
         original: z.string().trim().min(1).max(255),
         pesagemId: optionalRecordPesagemIdSchema,
         pesagemid: optionalRecordPesagemIdSchema,
@@ -61,6 +62,13 @@ export const createRecordSchema = z
         status: z.string().trim().min(1).max(64)
       })
       .strict(),
+    emitente: z
+      .object({
+        cnpj: z.string().trim().min(1).max(32),
+        fornecedor: z.string().trim().min(1).max(120)
+      })
+      .strict()
+      .optional(),
     motorista: z
       .object({
         nome: z.string().trim().min(1).max(120),
@@ -69,9 +77,20 @@ export const createRecordSchema = z
       .strict(),
     veiculo: z
       .object({
-        placa: z.string().trim().min(1).max(32)
+        placa: z.string().trim().min(1).max(32),
+        placaRecebimento: z.string().trim().min(1).max(32).optional()
       })
       .strict(),
+    recebimento: z
+      .object({
+        colaborador: z.string().trim().min(1).max(120),
+        peso: z.union([z.string().trim().min(1).max(32), z.number()]),
+        patioDescarga: z.string().trim().min(1).max(120),
+        data: z.string().trim().min(1).max(25),
+        placa: z.string().trim().min(1).max(32)
+      })
+      .strict()
+      .optional(),
     terminal: z.string().trim().min(1).max(120)
   })
   .strict()
@@ -83,12 +102,21 @@ export const createRecordSchema = z
   .transform((input) => ({
     dataHora: parseDateTime(input.dataHora) as Date,
     numeroNota: input.nota.numero,
+    notaChave: input.nota.chave ?? null,
     notaOriginal: input.nota.original,
     status: input.nota.status,
     notaPesagemId: String(input.nota.pesagemId ?? input.nota.pesagemid ?? input.nota.idPesagem ?? input.nota.idPessagem ?? ""),
+    emitenteCnpj: input.emitente?.cnpj ?? null,
+    emitenteFornecedor: input.emitente?.fornecedor ?? null,
     motoristaNome: input.motorista.nome,
     motoristaCelular: input.motorista.celular,
     placa: input.veiculo.placa.toUpperCase(),
+    placaRecebimento: input.veiculo.placaRecebimento?.toUpperCase() ?? null,
+    recebimentoColaborador: input.recebimento?.colaborador ?? null,
+    recebimentoPeso: input.recebimento ? String(input.recebimento.peso) : null,
+    recebimentoPatioDescarga: input.recebimento?.patioDescarga ?? null,
+    recebimentoData: input.recebimento?.data ?? null,
+    recebimentoPlaca: input.recebimento?.placa.toUpperCase() ?? null,
     terminal: input.terminal
   }));
 
@@ -180,11 +208,20 @@ export const csvRowSchema = z
   .transform((row) => ({
     dataHora: parseDateTime(row.dataHora) as Date,
     numeroNota: row.numeroNota,
+    notaChave: null,
     notaOriginal: row.notaOriginal,
     status: row.status,
     notaPesagemId: row.notaPesagemId,
+    emitenteCnpj: null,
+    emitenteFornecedor: null,
     motoristaNome: row.motoristaNome,
     motoristaCelular: row.motoristaCelular,
     placa: row.placa.toUpperCase(),
+    placaRecebimento: null,
+    recebimentoColaborador: null,
+    recebimentoPeso: null,
+    recebimentoPatioDescarga: null,
+    recebimentoData: null,
+    recebimentoPlaca: null,
     terminal: row.terminal
   }));

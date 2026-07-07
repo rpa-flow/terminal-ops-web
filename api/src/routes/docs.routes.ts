@@ -17,6 +17,7 @@ const recordPayloadSchema = {
       required: ["numero", "original", "status"],
       properties: {
         numero: { type: "string", example: "12345" },
+        chave: { type: "string", example: "00000031732059000106000001234500000000123456" },
         original: { type: "string", example: "VALOR ORIGINAL" },
         pesagemId: {
           type: "string",
@@ -24,6 +25,15 @@ const recordPayloadSchema = {
           description: "Opcional. Quando omitido, o registro é criado sem ID de pesagem"
         },
         status: { type: "string", example: "PROCESSADO" }
+      }
+    },
+    emitente: {
+      type: "object",
+      additionalProperties: false,
+      required: ["cnpj", "fornecedor"],
+      properties: {
+        cnpj: { type: "string", example: "31732059000106" },
+        fornecedor: { type: "string", example: "BASSARI MINERACAO LTDA" }
       }
     },
     motorista: {
@@ -40,7 +50,20 @@ const recordPayloadSchema = {
       additionalProperties: false,
       required: ["placa"],
       properties: {
-        placa: { type: "string", example: "ABC1234" }
+        placa: { type: "string", example: "ABC1234" },
+        placaRecebimento: { type: "string", example: "XYZ9A87" }
+      }
+    },
+    recebimento: {
+      type: "object",
+      additionalProperties: false,
+      required: ["colaborador", "peso", "patioDescarga", "data", "placa"],
+      properties: {
+        colaborador: { type: "string", example: "Colaborador 1" },
+        peso: { oneOf: [{ type: "string" }, { type: "number" }], example: "12500" },
+        patioDescarga: { type: "string", example: "Pátio 1" },
+        data: { type: "string", example: "2026-07-07" },
+        placa: { type: "string", example: "XYZ9A87" }
       }
     },
     terminal: { type: "string", example: "Terminal 1" }
@@ -53,11 +76,20 @@ const recordResponseSchema = {
     id: { type: "string", example: "clx1234567890" },
     dataHora: { type: "string", format: "date-time", example: "2026-04-11T17:32:00.000Z" },
     numeroNota: { type: "string", example: "12345" },
+    notaChave: { type: "string", nullable: true, example: "00000031732059000106000001234500000000123456" },
     notaOriginal: { type: "string", example: "VALOR ORIGINAL" },
     status: { type: "string", example: "PROCESSADO" },
+    emitenteCnpj: { type: "string", nullable: true, example: "31732059000106" },
+    emitenteFornecedor: { type: "string", nullable: true, example: "BASSARI MINERACAO LTDA" },
     motoristaNome: { type: "string", example: "Joao" },
     motoristaCelular: { type: "string", example: "31999999999" },
     placa: { type: "string", example: "ABC1234" },
+    placaRecebimento: { type: "string", nullable: true, example: "XYZ9A87" },
+    recebimentoColaborador: { type: "string", nullable: true, example: "Colaborador 1" },
+    recebimentoPeso: { type: "string", nullable: true, example: "12500" },
+    recebimentoPatioDescarga: { type: "string", nullable: true, example: "Pátio 1" },
+    recebimentoData: { type: "string", nullable: true, example: "2026-07-07" },
+    recebimentoPlaca: { type: "string", nullable: true, example: "XYZ9A87" },
     terminal: { type: "string", example: "Terminal 1" },
     createdAt: { type: "string", format: "date-time", example: "2026-04-11T17:32:00.000Z" }
   }
