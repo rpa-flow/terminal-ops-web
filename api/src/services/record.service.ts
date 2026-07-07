@@ -5,28 +5,47 @@ import type { CreateRecordInput, ListRecordsFilters } from "../validators/record
 import { resolvePurchaseOrder } from "./purchase-order-rule.service";
 
 const sanitizeString = (value: string): string => xss(value, { whiteList: {} });
+const sanitizeOptionalString = (value: string | null): string | null => (value === null ? null : sanitizeString(value));
 
 const sanitizeRecord = (record: {
   id: string;
   dataHora: Date;
   numeroNota: string;
+  notaChave: string | null;
   notaOriginal: string;
   status: string;
   notaPesagemId: string;
+  emitenteCnpj: string | null;
+  emitenteFornecedor: string | null;
   motoristaNome: string;
   motoristaCelular: string;
   placa: string;
+  placaRecebimento: string | null;
+  recebimentoColaborador: string | null;
+  recebimentoPeso: string | null;
+  recebimentoPatioDescarga: string | null;
+  recebimentoData: string | null;
+  recebimentoPlaca: string | null;
   terminal: string;
   createdAt: Date;
 }) => ({
   ...record,
   numeroNota: sanitizeString(record.numeroNota),
+  notaChave: sanitizeOptionalString(record.notaChave),
   notaOriginal: sanitizeString(record.notaOriginal),
   status: sanitizeString(record.status),
   notaPesagemId: sanitizeString(record.notaPesagemId),
+  emitenteCnpj: sanitizeOptionalString(record.emitenteCnpj),
+  emitenteFornecedor: sanitizeOptionalString(record.emitenteFornecedor),
   motoristaNome: sanitizeString(record.motoristaNome),
   motoristaCelular: sanitizeString(record.motoristaCelular),
   placa: sanitizeString(record.placa),
+  placaRecebimento: sanitizeOptionalString(record.placaRecebimento),
+  recebimentoColaborador: sanitizeOptionalString(record.recebimentoColaborador),
+  recebimentoPeso: sanitizeOptionalString(record.recebimentoPeso),
+  recebimentoPatioDescarga: sanitizeOptionalString(record.recebimentoPatioDescarga),
+  recebimentoData: sanitizeOptionalString(record.recebimentoData),
+  recebimentoPlaca: sanitizeOptionalString(record.recebimentoPlaca),
   terminal: sanitizeString(record.terminal)
 });
 
