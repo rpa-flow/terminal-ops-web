@@ -16,7 +16,7 @@ const recordPayloadSchema = {
       additionalProperties: false,
       required: ["numero", "original", "status"],
       properties: {
-        numero: { type: "string", example: "12345" },
+        numero: { oneOf: [{ type: "string" }, { type: "integer" }], example: 12345 },
         chave: { type: "string", example: "00000031732059000106000001234500000000123456" },
         original: { type: "string", example: "VALOR ORIGINAL" },
         pesagemId: {
