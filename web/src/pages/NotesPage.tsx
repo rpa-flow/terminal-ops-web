@@ -39,12 +39,12 @@ export const NotesPage = () => {
 
   return (
     <main className="app-with-sidebar min-h-screen bg-surface">
-      <header className="border-b border-primary-container bg-surface-container-lowest/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4">
+      <header className="border-b border-outline-variant bg-surface-container-lowest">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4">
           <div className="flex flex-wrap items-center gap-4">
             <AppNavigation current="notes" />
             <div>
-              <h1 className="text-[22px] font-medium text-primary">Gestão de Notas (somente visualização)</h1>
+              <h1 className="text-[22px] font-medium text-on-surface">Painel de Notas RPA</h1>
               <p className="text-sm text-on-surface-variant">Operador: {user?.email}</p>
             </div>
           </div>
@@ -54,75 +54,74 @@ export const NotesPage = () => {
         </div>
       </header>
 
-      <section className="mx-auto grid max-w-6xl gap-4 px-4 py-6">
-        <article className="rounded border border-outline-variant bg-surface-container-lowest p-5 shadow-sm">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-on-surface">Notas pendentes</h2>
-            <span className="text-sm text-on-surface-variant">Total pendente: {total}</span>
+      <section className="mx-auto grid max-w-7xl gap-4 px-4 py-6">
+        <div className="rounded border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface-variant shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <span className="font-medium">Total de notas pendentes: {total}</span>
+              <p className="mt-1 text-xs">Consulta dos dados recebidos pela API.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                className="btn-muted"
+                onClick={() => void loadPending(Math.max(1, page - 1))}
+                disabled={page <= 1 || loading}
+              >
+                Anterior
+              </button>
+              <span className="rounded-lg bg-surface-container-low px-2 py-1 text-on-surface-variant">Página {page}</span>
+              <button
+                className="btn-muted"
+                onClick={() => void loadPending(page + 1)}
+                disabled={loading || items.length < perPage}
+              >
+                Próxima
+              </button>
+            </div>
           </div>
+        </div>
 
-          <p className="mb-3 text-sm text-on-surface-variant">
-            Esta tela e apenas de consulta. Insercao e atualizacao de status devem ser feitas via API.
-          </p>
+        {error && <p className="rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">{error}</p>}
 
-          {error && <p className="mb-3 text-sm text-error">{error}</p>}
-
-          <div className="overflow-auto rounded-lg border border-outline-variant">
-            <table className="min-w-full text-sm">
-              <thead className="bg-surface text-left text-on-surface-variant">
-                <tr>
-                  <th className="px-3 py-2">Codigo</th>
-                  <th className="px-3 py-2">Terminal</th>
-                  <th className="px-3 py-2">Placa</th>
-                  <th className="px-3 py-2">Motorista</th>
-                  <th className="px-3 py-2">Telefone</th>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2">Inserido em</th>
-                  <th className="px-3 py-2">Atualizado em</th>
+        <div className="overflow-x-auto rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-surface text-left text-on-surface-variant">
+              <tr>
+                <th className="px-4 py-3">Código</th>
+                <th className="px-4 py-3">Terminal</th>
+                <th className="px-4 py-3">Placa</th>
+                <th className="px-4 py-3">Motorista</th>
+                <th className="px-4 py-3">Telefone</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Inserido em</th>
+                <th className="px-4 py-3">Atualizado em</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.id} className="border-t border-surface-container-high">
+                  <td className="px-4 py-3 font-mono text-xs">{item.codigo}</td>
+                  <td className="px-4 py-3">{item.terminal}</td>
+                  <td className="px-4 py-3">{item.placa ?? "-"}</td>
+                  <td className="px-4 py-3">{item.motoristaNome ?? "-"}</td>
+                  <td className="px-4 py-3">{item.motoristaTelefone ?? "-"}</td>
+                  <td className="px-4 py-3">
+                    <span className="rounded-full bg-secondary-container px-2 py-1 text-xs font-medium text-on-secondary-container">{item.status}</span>
+                  </td>
+                  <td className="px-4 py-3">{new Date(item.createdAt).toLocaleString("pt-BR")}</td>
+                  <td className="px-4 py-3">{new Date(item.updatedAt).toLocaleString("pt-BR")}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <tr key={item.id} className="border-t border-surface-container-high">
-                    <td className="px-3 py-2 font-mono text-xs">{item.codigo}</td>
-                    <td className="px-3 py-2">{item.terminal}</td>
-                    <td className="px-3 py-2">{item.placa ?? "-"}</td>
-                    <td className="px-3 py-2">{item.motoristaNome ?? "-"}</td>
-                    <td className="px-3 py-2">{item.motoristaTelefone ?? "-"}</td>
-                    <td className="px-3 py-2">{item.status}</td>
-                    <td className="px-3 py-2">{new Date(item.createdAt).toLocaleString()}</td>
-                    <td className="px-3 py-2">{new Date(item.updatedAt).toLocaleString()}</td>
-                  </tr>
-                ))}
-                {items.length === 0 && !loading && (
-                  <tr>
-                    <td className="px-3 py-4 text-on-surface-variant" colSpan={8}>
-                      Nenhuma nota pendente encontrada.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-3 flex items-center justify-end gap-2">
-            <button
-              className="btn-muted"
-              onClick={() => void loadPending(Math.max(1, page - 1))}
-              disabled={page <= 1 || loading}
-            >
-              Anterior
-            </button>
-            <span className="text-sm text-on-surface-variant">Pagina {page}</span>
-            <button
-              className="btn-muted"
-              onClick={() => void loadPending(page + 1)}
-              disabled={loading || items.length < perPage}
-            >
-              Proxima
-            </button>
-          </div>
-        </article>
+              ))}
+              {items.length === 0 && !loading && (
+                <tr>
+                  <td className="px-4 py-4 text-on-surface-variant" colSpan={8}>
+                    Nenhuma nota pendente encontrada.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
   );
