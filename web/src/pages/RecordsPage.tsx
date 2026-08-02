@@ -46,14 +46,14 @@ export const RecordsPage = () => {
   }, []);
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
+    <main className="app-with-sidebar min-h-screen bg-surface">
+      <header className="border-b border-outline-variant bg-surface-container-lowest">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4">
           <div className="flex flex-wrap items-center gap-4">
             <AppNavigation current="records" />
             <div>
-              <h1 className="text-xl font-semibold text-slate-900">Painel de Registros RPA</h1>
-              <p className="text-sm text-slate-500">Operador: {user?.email}</p>
+              <h1 className="text-[22px] font-medium text-on-surface">Painel de Registros RPA</h1>
+              <p className="text-sm text-on-surface-variant">Operador: {user?.email}</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -80,7 +80,7 @@ export const RecordsPage = () => {
           }}
         />
 
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+        <div className="rounded border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface-variant shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="font-medium">Total de registros: {total}</span>
             <div className="flex items-center gap-2">
@@ -95,7 +95,7 @@ export const RecordsPage = () => {
               >
                 Anterior
               </button>
-              <span className="rounded-lg bg-slate-100 px-2 py-1 text-slate-700">Página {filters.page}</span>
+              <span className="rounded-lg bg-surface-container-low px-2 py-1 text-on-surface-variant">Página {filters.page}</span>
               <button
                 className="btn-muted"
                 onClick={() => {
@@ -111,7 +111,7 @@ export const RecordsPage = () => {
           </div>
         </div>
 
-        {error && <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>}
+        {error && <p className="rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">{error}</p>}
         <RecordsTable items={items} />
       </section>
 

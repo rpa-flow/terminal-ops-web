@@ -38,15 +38,15 @@ export const CsvUploadModal = ({ onClose, onSuccess }: Props) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-        <h2 className="mb-1 text-lg font-semibold text-slate-900">Importar CSV</h2>
-        <p className="mb-4 text-sm text-slate-500">
+      <div className="w-full max-w-lg rounded border border-outline-variant bg-surface-container-lowest p-6 shadow-xl">
+        <h2 className="mb-1 text-lg font-semibold text-on-surface">Importar CSV</h2>
+        <p className="mb-4 text-sm text-on-surface-variant">
           O arquivo deve ter as colunas na ordem abaixo (com cabeçalho):
         </p>
-        <div className="mb-4 overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700">
+        <div className="mb-4 overflow-x-auto rounded-lg border border-outline-variant bg-surface px-3 py-2 font-mono text-xs text-on-surface-variant">
           dataHora, numeroNota, notaOriginal, status, notaPesagemId, motoristaNome, motoristaCelular, placa, terminal
         </div>
-        <p className="mb-4 text-xs text-slate-400">
+        <p className="mb-4 text-xs text-outline">
           Limite: 500 linhas por envio. dataHora no formato ISO-8601 (ex: 2024-01-15T10:30:00).
         </p>
 
@@ -56,13 +56,13 @@ export const CsvUploadModal = ({ onClose, onSuccess }: Props) => {
             type="file"
             accept=".csv,text/csv"
             required
-            className="block w-full text-sm text-slate-700 file:mr-3 file:rounded file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-slate-200"
+            className="block w-full text-sm text-on-surface-variant file:mr-3 file:rounded file:border-0 file:bg-surface-container-low file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-surface-container-high"
           />
 
           {error && <p className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-600">{error}</p>}
 
           {result && (
-            <div className="rounded border border-slate-200 bg-slate-50 p-3 text-sm">
+            <div className="rounded border border-outline-variant bg-surface p-3 text-sm">
               <p className="font-medium text-green-700">{result.inserted} registro(s) importado(s) com sucesso.</p>
               {result.errors.length > 0 && (
                 <div className="mt-2">
