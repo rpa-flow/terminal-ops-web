@@ -40,13 +40,15 @@ export const NotesPage = () => {
   return (
     <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-sky-50">
       <header className="border-b border-indigo-100 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-semibold text-indigo-900">Gestao de Notas (somente visualizacao)</h1>
-            <p className="text-sm text-slate-600">Operador: {user?.email}</p>
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <AppNavigation current="notes" />
+            <div>
+              <h1 className="text-xl font-semibold text-indigo-900">Gestao de Notas (somente visualizacao)</h1>
+              <p className="text-sm text-slate-600">Operador: {user?.email}</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <AppNavigation current="notes" />
             <button className="btn-muted" onClick={logout}>Sair</button>
           </div>
         </div>
