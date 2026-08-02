@@ -8,7 +8,6 @@ import { RecordsPage } from "./pages/RecordsPage";
 import { NotesPage } from "./pages/NotesPage";
 import { PurchaseOrderRulesPage } from "./pages/PurchaseOrderRulesPage";
 import { ReportsPage } from "./pages/ReportsPage";
-import { TerminalSelectionPage } from "./pages/TerminalSelectionPage";
 
 function App() {
   return (
@@ -17,7 +16,6 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/purchase-order-rules" element={<ProtectedRoute><PurchaseOrderRulesPage /></ProtectedRoute>} />
         <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
-        <Route path="/terminais" element={<ProtectedRoute><TerminalSelectionPage /></ProtectedRoute>} />
         <Route
           path="/"
           element={

@@ -178,12 +178,14 @@ export const ReportsPage = () => {
     <main className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
-          <div>
-            <h1 className="text-xl font-semibold text-slate-900">Relatórios operacionais</h1>
-            <p className="text-sm text-slate-500">Operador: {user?.email}</p>
+          <div className="flex flex-wrap items-center gap-4">
+            <AppNavigation current="reports" />
+            <div>
+              <h1 className="text-xl font-semibold text-slate-900">Relatórios operacionais</h1>
+              <p className="text-sm text-slate-500">Operador: {user?.email}</p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <AppNavigation current="reports" />
             <button className="btn-muted" onClick={logout}>Sair</button>
           </div>
         </div>

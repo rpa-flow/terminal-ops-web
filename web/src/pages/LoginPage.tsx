@@ -12,7 +12,7 @@ export const LoginPage = () => {
   const [loading, setLoading] = useState(false);
 
   if (token) {
-    return <Navigate to="/terminais" replace />;
+    return <Navigate to="/" replace />;
   }
 
   const onSubmit = async (event: React.FormEvent) => {
