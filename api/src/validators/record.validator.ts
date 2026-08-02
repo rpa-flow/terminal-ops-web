@@ -52,7 +52,7 @@ export const createRecordSchema = z
     dataHora: z.string().min(16).max(25),
     nota: z
       .object({
-        numero: z.string().trim().min(1).max(64),
+        numero: z.union([z.string().trim().min(1).max(64), z.number().int().nonnegative()]),
         chave: z.string().trim().min(1).max(255).optional(),
         original: z.string().trim().min(1).max(255),
         pesagemId: optionalRecordPesagemIdSchema,
@@ -101,7 +101,7 @@ export const createRecordSchema = z
   })
   .transform((input) => ({
     dataHora: parseDateTime(input.dataHora) as Date,
-    numeroNota: input.nota.numero,
+    numeroNota: String(input.nota.numero),
     notaChave: input.nota.chave ?? null,
     notaOriginal: input.nota.original,
     status: input.nota.status,

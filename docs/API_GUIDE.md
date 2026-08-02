@@ -241,7 +241,8 @@ Ponto de atencao real:
 
 ## Contratos atuais de registro
 
-Validator de criacao espera payload externo com `nota.pesagemId` opcional:
+Validator de criacao espera payload externo com `nota.pesagemId` opcional. O campo
+`nota.numero` aceita texto ou inteiro e e normalizado para texto antes da gravacao:
 
 ```json
 {
@@ -297,4 +298,3 @@ Ponto de atencao:
 
 - `X-Provision-Key` nao aparece nos `allowedHeaders` do CORS atual.
 - Rotas `/api/records/:numeroNota/status` tambem passam por `csrfProtection` por estarem sob `/api/records`.
-
