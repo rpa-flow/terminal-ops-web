@@ -1,9 +1,38 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Manrope", "Segoe UI", sans-serif;
+  --color-surface: #f8f9ff;
+  --color-surface-dim: #ccdbf3;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #eff4ff;
+  --color-surface-container: #e5edff;
+  --color-surface-container-high: #dae4ff;
+  --color-surface-container-highest: #cfdaff;
+  --color-on-surface: #191c20;
+  --color-on-surface-variant: #43474e;
+  --color-outline: #73777f;
+  --color-outline-variant: #c3c7cf;
+  --color-primary: #2b3a7e;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #d9e2ff;
+  --color-on-primary-container: #001945;
+  --color-secondary: #23a18e;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #9ef2e2;
+  --color-on-secondary-container: #00201a;
+  --color-tertiary: #565e71;
+  --color-error: #ba1a1a;
+  --color-warning: #f9a825;
+}
+
 :root {
-  color: #0f172a;
-  background: #f8fafc;
-  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  color: #191c20;
+  background: #f8f9ff;
+  font-family: "Manrope", "Segoe UI", sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.25px;
 }
 
 body {
@@ -12,13 +41,55 @@ body {
 }
 
 .input {
-  @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100;
+  @apply w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container;
 }
 
 .btn-primary {
-  @apply rounded-xl bg-sky-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:bg-sky-300;
+  @apply rounded-lg bg-primary px-4 py-2 text-sm font-medium text-on-primary transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50;
 }
 
 .btn-muted {
-  @apply rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50;
+  @apply rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-medium text-on-surface-variant transition hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.app-with-sidebar > header,
+.app-with-sidebar > section {
+  margin-left: 240px;
+}
+
+.app-sidebar {
+  @apply fixed inset-y-0 left-0 z-30 flex w-60 flex-col border-r border-outline-variant bg-primary px-4 py-6 text-on-primary;
+}
+
+.app-sidebar option {
+  color: #191c20;
+  background: #ffffff;
+}
+
+.surface-card {
+  @apply rounded border border-outline-variant bg-surface-container-lowest shadow-sm;
+}
+
+@media (max-width: 767px) {
+  .app-with-sidebar {
+    padding-top: 112px;
+  }
+
+  .app-with-sidebar > header,
+  .app-with-sidebar > section {
+    margin-left: 0;
+  }
+
+  .app-sidebar {
+    @apply inset-x-0 top-0 h-28 w-full border-b border-r-0 px-4 py-3;
+  }
+
+  .app-sidebar > div:first-child {
+    margin-bottom: 8px;
+  }
+
+  .app-sidebar nav {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
 }

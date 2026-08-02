@@ -6,7 +6,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { token, loading } = useAuth();
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-600">Carregando...</div>;
+    return <div className="flex min-h-screen items-center justify-center text-on-surface-variant">Carregando...</div>;
   }
 
   if (!token) {

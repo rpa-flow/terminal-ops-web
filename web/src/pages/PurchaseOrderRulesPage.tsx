@@ -86,7 +86,7 @@ export const PurchaseOrderRulesPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-surface">
       <AppHeader
         title="Configuração de Ordem de Compra"
         subtitle={`Operador: ${user?.email ?? ""}`}
@@ -100,18 +100,18 @@ export const PurchaseOrderRulesPage = () => {
       />
 
       <section className="mx-auto grid max-w-7xl gap-4 px-4 py-6">
-        <section className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-2">
+        <section className="grid gap-3 rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm md:grid-cols-2">
           <select className="input" value={form.materialId} onChange={(e) => setForm({ ...form, materialId: e.target.value })}><option value="">Material</option>{materials.map((m)=><option key={m.id} value={m.id}>{m.name}</option>)}</select>
           <select className="input" value={form.supplierId} onChange={(e) => setForm({ ...form, supplierId: e.target.value })}><option value="">Fornecedor</option>{suppliers.map((s)=> <option key={s.id} value={s.id}>{s.name}</option>)}</select>
           <input className="input md:col-span-2" placeholder="Ordem" value={form.purchaseOrderCode} onChange={(e) => setForm({ ...form, purchaseOrderCode: e.target.value })} />
-          <label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />Ativo</label>
+          <label className="flex items-center gap-2 text-sm text-on-surface-variant"><input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />Ativo</label>
           <div className="col-span-full flex gap-2">
             <button className="btn-primary" onClick={() => void save()}>Salvar</button>
             <button className="btn-muted" onClick={() => { setForm(initialForm); setEditId(null); }}>Limpar</button>
           </div>
         </section>
 
-        <section className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-4">
+        <section className="grid gap-3 rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm md:grid-cols-4">
           <input className="input" placeholder="Busca material" value={filters.materialId} onChange={(e) => setFilters({ ...filters, materialId: e.target.value })} />
           <input className="input" placeholder="Busca fornecedor" value={filters.supplierId} onChange={(e) => setFilters({ ...filters, supplierId: e.target.value })} />
           <select className="input" value={filters.isActive} onChange={(e) => setFilters({ ...filters, isActive: e.target.value })}>
@@ -120,9 +120,9 @@ export const PurchaseOrderRulesPage = () => {
           <button className="btn-primary" onClick={() => void load(1)}>Filtrar</button>
         </section>
 
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
           <table className="min-w-full text-left text-sm">
-            <thead className="bg-slate-50"><tr><th className="px-4 py-3">Material</th><th>Fornecedor</th><th>OC</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Ações</th></tr></thead>
+            <thead className="bg-surface"><tr><th className="px-4 py-3">Material</th><th>Fornecedor</th><th>OC</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Ações</th></tr></thead>
             <tbody>
               {items.map((item) => (
                 <tr key={item.id} className="border-t">
@@ -138,7 +138,7 @@ export const PurchaseOrderRulesPage = () => {
         </div>
 
         <div className="flex justify-between"><span>Total: {total}</span><div className="space-x-2"><button className="btn-muted" disabled={page <= 1 || loading} onClick={() => void load(page - 1)}>Anterior</button><button className="btn-muted" disabled={loading || items.length < 20} onClick={() => void load(page + 1)}>Próxima</button></div></div>
-        <p className="text-sm text-slate-500">Todas as alterações ficam registradas com data, hora e usuário.</p>
+        <p className="text-sm text-on-surface-variant">Todas as alterações ficam registradas com data, hora e usuário.</p>
       </section>
     </main>
   );

@@ -38,14 +38,14 @@ export const NotesPage = () => {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-sky-50">
-      <header className="border-b border-indigo-100 bg-white/80 backdrop-blur">
+    <main className="app-with-sidebar min-h-screen bg-surface">
+      <header className="border-b border-primary-container bg-surface-container-lowest/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4">
           <div className="flex flex-wrap items-center gap-4">
             <AppNavigation current="notes" />
             <div>
-              <h1 className="text-xl font-semibold text-indigo-900">Gestao de Notas (somente visualizacao)</h1>
-              <p className="text-sm text-slate-600">Operador: {user?.email}</p>
+              <h1 className="text-[22px] font-medium text-primary">Gestão de Notas (somente visualização)</h1>
+              <p className="text-sm text-on-surface-variant">Operador: {user?.email}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -55,21 +55,21 @@ export const NotesPage = () => {
       </header>
 
       <section className="mx-auto grid max-w-6xl gap-4 px-4 py-6">
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <article className="rounded border border-outline-variant bg-surface-container-lowest p-5 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">Notas pendentes</h2>
-            <span className="text-sm text-slate-600">Total pendente: {total}</span>
+            <h2 className="text-lg font-semibold text-on-surface">Notas pendentes</h2>
+            <span className="text-sm text-on-surface-variant">Total pendente: {total}</span>
           </div>
 
-          <p className="mb-3 text-sm text-slate-500">
+          <p className="mb-3 text-sm text-on-surface-variant">
             Esta tela e apenas de consulta. Insercao e atualizacao de status devem ser feitas via API.
           </p>
 
-          {error && <p className="mb-3 text-sm text-rose-600">{error}</p>}
+          {error && <p className="mb-3 text-sm text-error">{error}</p>}
 
-          <div className="overflow-auto rounded-xl border border-slate-200">
+          <div className="overflow-auto rounded-lg border border-outline-variant">
             <table className="min-w-full text-sm">
-              <thead className="bg-slate-50 text-left text-slate-600">
+              <thead className="bg-surface text-left text-on-surface-variant">
                 <tr>
                   <th className="px-3 py-2">Codigo</th>
                   <th className="px-3 py-2">Terminal</th>
@@ -83,7 +83,7 @@ export const NotesPage = () => {
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <tr key={item.id} className="border-t border-slate-100">
+                  <tr key={item.id} className="border-t border-surface-container-high">
                     <td className="px-3 py-2 font-mono text-xs">{item.codigo}</td>
                     <td className="px-3 py-2">{item.terminal}</td>
                     <td className="px-3 py-2">{item.placa ?? "-"}</td>
@@ -96,7 +96,7 @@ export const NotesPage = () => {
                 ))}
                 {items.length === 0 && !loading && (
                   <tr>
-                    <td className="px-3 py-4 text-slate-500" colSpan={8}>
+                    <td className="px-3 py-4 text-on-surface-variant" colSpan={8}>
                       Nenhuma nota pendente encontrada.
                     </td>
                   </tr>
@@ -113,7 +113,7 @@ export const NotesPage = () => {
             >
               Anterior
             </button>
-            <span className="text-sm text-slate-600">Pagina {page}</span>
+            <span className="text-sm text-on-surface-variant">Pagina {page}</span>
             <button
               className="btn-muted"
               onClick={() => void loadPending(page + 1)}

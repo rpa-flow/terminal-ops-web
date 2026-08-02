@@ -31,12 +31,13 @@ export const LoginPage = () => {
   };
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_20%_20%,#dbeafe,transparent_30%),radial-gradient(circle_at_80%_0%,#fef3c7,transparent_25%),#f8fafc] px-4">
-      <form onSubmit={onSubmit} className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Acesso do Operador</h1>
-        <p className="mt-1 text-sm text-slate-500">Entre para visualizar dados de automação RPA.</p>
+    <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_20%_20%,#d9e2ff,transparent_30%),radial-gradient(circle_at_80%_0%,#9ef2e2,transparent_25%),#f8f9ff] px-4">
+      <form onSubmit={onSubmit} className="w-full max-w-md rounded border border-outline-variant bg-surface-container-lowest p-8 shadow-sm">
+        <p className="mb-2 text-xs font-medium uppercase tracking-wider text-primary">Minas Mineração</p>
+        <h1 className="text-[22px] font-medium text-on-surface">Acesso do Operador</h1>
+        <p className="mt-1 text-sm text-on-surface-variant">Entre para visualizar dados de automação RPA.</p>
 
-        <label className="mt-6 block text-sm text-slate-700" htmlFor="email">
+        <label className="mt-6 block text-sm text-on-surface-variant" htmlFor="email">
           Email
         </label>
         <input
@@ -50,7 +51,7 @@ export const LoginPage = () => {
           required
         />
 
-        <label className="mt-4 block text-sm text-slate-700" htmlFor="password">
+        <label className="mt-4 block text-sm text-on-surface-variant" htmlFor="password">
           Senha
         </label>
         <input
@@ -64,7 +65,7 @@ export const LoginPage = () => {
           required
         />
 
-        {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
+        {error && <p className="mt-3 text-sm text-error">{error}</p>}
 
         <button className="btn-primary mt-6 w-full" type="submit" disabled={loading}>
           {loading ? "Entrando..." : "Entrar"}

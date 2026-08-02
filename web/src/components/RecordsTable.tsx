@@ -7,9 +7,9 @@ export const RecordsTable = ({ items }: { items: RecordItem[] }) => {
   };
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-x-auto rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
       <table className="min-w-full text-left text-sm">
-        <thead className="bg-slate-50 text-slate-600">
+        <thead className="bg-surface text-on-surface-variant">
           <tr>
             <th className="px-4 py-3">Data/Hora</th>
             <th className="px-4 py-3">NF Recebida</th>
@@ -24,12 +24,12 @@ export const RecordsTable = ({ items }: { items: RecordItem[] }) => {
         </thead>
         <tbody>
           {items.map((record) => (
-            <tr key={record.id} className="border-t border-slate-100">
+            <tr key={record.id} className="border-t border-surface-container-high">
               <td className="px-4 py-3">{formatWithThreeHourOffset(record.dataHora)}</td>
               <td className="px-4 py-3">{record.numeroNota}</td>
               <td className="px-4 py-3">{record.notaOriginal}</td>
               <td className="px-4 py-3">
-                <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{record.status}</span>
+                <span className="rounded-full bg-secondary-container px-2 py-1 text-xs font-medium text-on-secondary-container">{record.status}</span>
               </td>
               <td className="px-4 py-3">{record.notaPesagemId}</td>
               <td className="px-4 py-3">{record.motoristaNome}</td>
@@ -40,7 +40,7 @@ export const RecordsTable = ({ items }: { items: RecordItem[] }) => {
           ))}
         </tbody>
       </table>
-      {items.length === 0 && <p className="p-4 text-sm text-slate-500">Sem registros para os filtros aplicados.</p>}
+      {items.length === 0 && <p className="p-4 text-sm text-on-surface-variant">Sem registros para os filtros aplicados.</p>}
     </div>
   );
 };

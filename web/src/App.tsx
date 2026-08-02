@@ -34,13 +34,14 @@ function App() {
           }
         />
         <Route
-          path="/relatorios"
+          path="/relatorios/:area"
           element={
             <ProtectedRoute>
               <ReportsPage />
             </ProtectedRoute>
           }
         />
+        <Route path="/relatorios" element={<Navigate to="/relatorios/tbjc" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
