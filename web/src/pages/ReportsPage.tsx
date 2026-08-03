@@ -4,7 +4,7 @@ import { Navigate, useParams } from "react-router-dom";
 import { AppNavigation } from "../components/AppNavigation";
 import { useAuth } from "../hooks/useAuth";
 import { getReportOverviewRequest } from "../services/reports.service";
-import type { DailyVolumeItem, ReportBreakdownItem, ReportOverviewResponse } from "../types/api";
+import type { DailyVolumeItem, PileBalanceItem, ReportBreakdownItem, ReportOverviewResponse } from "../types/api";
 
 const formatInputDate = (date: Date): string => date.toISOString().slice(0, 10);
 
@@ -109,6 +109,46 @@ const DailyVolumeChart = ({ items, area }: { items: DailyVolumeItem[]; area: "tb
           })}
         </svg>
       </div>
+    </section>
+  );
+};
+
+const PileBalanceChart = ({ items }: { items: PileBalanceItem[] }) => {
+  const max = Math.max(...items.map((item) => item.balance), 1);
+
+  return (
+    <section className="rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
+      <div className="border-b border-surface-container-high bg-primary px-4 py-3 text-on-primary">
+        <h2 className="text-center text-lg font-semibold uppercase tracking-wide">Saldo atualizado por pilha</h2>
+        <p className="mt-1 text-center text-xs text-on-primary/75">Volume recebido no período selecionado</p>
+      </div>
+      {items.length === 0 ? (
+        <p className="p-6 text-center text-sm text-on-surface-variant">Nenhum recebimento com peso e pilha no período.</p>
+      ) : (
+        <div className="overflow-x-auto p-4">
+          <div className="flex min-w-[640px] items-end gap-3 border-b border-outline-variant px-2 pt-10" style={{ height: 290 }}>
+            {items.map((item) => {
+              const height = Math.max(5, (item.balance / max) * 190);
+              return (
+                <div key={item.pile} className="flex min-w-20 flex-1 flex-col items-center justify-end self-stretch">
+                  <div className="flex flex-1 items-end">
+                    <div
+                      className="relative w-12 rounded-t bg-gradient-to-t from-primary to-[#8ba9dc] shadow-sm sm:w-14"
+                      style={{ height }}
+                      title={`${item.pile}: ${formatNumber(item.balance)}`}
+                    >
+                      <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-on-surface-variant">
+                        {formatNumber(item.balance)}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="mt-3 min-h-10 max-w-24 text-center text-xs font-semibold uppercase text-on-surface-variant">{item.pile}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </section>
   );
 };
@@ -224,6 +264,8 @@ export const ReportsPage = () => {
             </section>
 
             <DailyVolumeChart items={report.dailyVolumes} area={area} />
+
+            <PileBalanceChart items={report.pileBalances} />
 
             <div className="grid gap-4 lg:grid-cols-2">
               {isTbjc ? (
