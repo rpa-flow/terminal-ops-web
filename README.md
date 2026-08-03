@@ -245,6 +245,10 @@ Invoke-RestMethod -Method Post -Uri "http://localhost:4000/api/provision/users" 
    - `npx prisma migrate deploy`
    - `npm run prisma:seed`
 
+Nos deploys seguintes, a API executa as migrations automaticamente pelo script
+`vercel-build`, antes de compilar o TypeScript. Isso evita publicar uma versao da
+API antes das alteracoes de banco das quais ela depende.
+
 ### Frontend (`/web`)
 
 1. Importe a pasta `web` como projeto no Vercel.
