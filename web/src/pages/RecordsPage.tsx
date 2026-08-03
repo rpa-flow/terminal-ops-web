@@ -80,6 +80,9 @@ export const RecordsPage = () => {
           }}
         />
 
+        {error && <p className="rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">{error}</p>}
+        <RecordsTable items={items} />
+
         <div className="rounded border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface-variant shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="font-medium">Total de registros: {total}</span>
@@ -110,9 +113,6 @@ export const RecordsPage = () => {
             </div>
           </div>
         </div>
-
-        {error && <p className="rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">{error}</p>}
-        <RecordsTable items={items} />
       </section>
 
       {showCsvModal && (
