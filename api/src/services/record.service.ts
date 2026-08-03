@@ -17,8 +17,8 @@ const sanitizeRecord = (record: {
   notaPesagemId: string;
   emitenteCnpj: string | null;
   emitenteFornecedor: string | null;
-  motoristaNome: string;
-  motoristaCelular: string;
+  motoristaNome: string | null;
+  motoristaCelular: string | null;
   placa: string;
   placaRecebimento: string | null;
   recebimentoColaborador: string | null;
@@ -37,8 +37,8 @@ const sanitizeRecord = (record: {
   notaPesagemId: sanitizeString(record.notaPesagemId),
   emitenteCnpj: sanitizeOptionalString(record.emitenteCnpj),
   emitenteFornecedor: sanitizeOptionalString(record.emitenteFornecedor),
-  motoristaNome: sanitizeString(record.motoristaNome),
-  motoristaCelular: sanitizeString(record.motoristaCelular),
+  motoristaNome: sanitizeOptionalString(record.motoristaNome),
+  motoristaCelular: sanitizeOptionalString(record.motoristaCelular),
   placa: sanitizeString(record.placa),
   placaRecebimento: sanitizeOptionalString(record.placaRecebimento),
   recebimentoColaborador: sanitizeOptionalString(record.recebimentoColaborador),

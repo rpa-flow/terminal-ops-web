@@ -5,7 +5,7 @@ const docsRoutes = Router();
 const recordPayloadSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["dataHora", "nota", "motorista", "veiculo", "terminal"],
+  required: ["dataHora", "nota", "veiculo", "terminal"],
   properties: {
     dataHora: {
       type: "string",
@@ -57,7 +57,7 @@ const recordPayloadSchema = {
     recebimento: {
       type: "object",
       additionalProperties: false,
-      required: ["colaborador", "peso", "patioDescarga", "data", "placa"],
+      required: ["colaborador", "peso", "patioDescarga", "data"],
       properties: {
         colaborador: { type: "string", example: "Colaborador 1" },
         peso: { oneOf: [{ type: "string" }, { type: "number" }], example: "12500" },
@@ -81,8 +81,8 @@ const recordResponseSchema = {
     status: { type: "string", example: "PROCESSADO" },
     emitenteCnpj: { type: "string", nullable: true, example: "31732059000106" },
     emitenteFornecedor: { type: "string", nullable: true, example: "BASSARI MINERACAO LTDA" },
-    motoristaNome: { type: "string", example: "Joao" },
-    motoristaCelular: { type: "string", example: "31999999999" },
+    motoristaNome: { type: "string", nullable: true, example: "Joao" },
+    motoristaCelular: { type: "string", nullable: true, example: "31999999999" },
     placa: { type: "string", example: "ABC1234" },
     placaRecebimento: { type: "string", nullable: true, example: "XYZ9A87" },
     recebimentoColaborador: { type: "string", nullable: true, example: "Colaborador 1" },
