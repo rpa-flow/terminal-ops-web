@@ -11,7 +11,7 @@ type BreakdownItem = {
 type DailyVolumeItem = {
   date: string;
   emittedNotes: number;
-  weighedRecords: number;
+  receivedRecords: number;
 };
 
 type PendingNoteItem = {
@@ -104,7 +104,7 @@ const buildDailyVolumes = (
 
   while (cursor <= last && buckets.size < 366) {
     const key = dateKey(cursor);
-    buckets.set(key, { date: key, emittedNotes: 0, weighedRecords: 0 });
+    buckets.set(key, { date: key, emittedNotes: 0, receivedRecords: 0 });
     cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
 
@@ -120,7 +120,7 @@ const buildDailyVolumes = (
     const key = dateKey(record.dataHora);
     const bucket = buckets.get(key);
     if (bucket) {
-      bucket.weighedRecords += 1;
+      bucket.receivedRecords += 1;
     }
   });
 
@@ -269,7 +269,7 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
     },
     summary: {
       emittedNotes,
-      weighedRecords,
+      receivedRecords: weighedRecords,
       matchedNotes,
       pendingNotes,
       pendingOver24h,

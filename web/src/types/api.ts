@@ -25,6 +25,22 @@ export type RecordItem = {
   createdAt: string;
 };
 
+export type ShipmentItem = {
+  id: string;
+  terminal: "TBJC" | "TCS";
+  shippedAt: string;
+  volume: number;
+  destination: string | null;
+  document: string | null;
+  notes: string | null;
+  createdAt: string;
+};
+
+export type ShipmentsResponse = {
+  summary: { receivedVolume: number; shippedVolume: number; availableVolume: number };
+  items: ShipmentItem[];
+};
+
 export type RecordFilters = {
   startDate?: string;
   endDate?: string;
@@ -76,7 +92,7 @@ export type ReportBreakdownItem = {
 export type DailyVolumeItem = {
   date: string;
   emittedNotes: number;
-  weighedRecords: number;
+  receivedRecords: number;
 };
 
 export type PendingReportNoteItem = {
@@ -97,7 +113,7 @@ export type ReportOverviewResponse = {
   };
   summary: {
     emittedNotes: number;
-    weighedRecords: number;
+    receivedRecords: number;
     matchedNotes: number;
     pendingNotes: number;
     pendingOver24h: number;
