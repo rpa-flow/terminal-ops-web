@@ -68,10 +68,19 @@ export type CsvUploadResponse = {
 export type NoteItem = {
   id: string;
   codigo: string;
+  dataHora: string | null;
+  numero: string | null;
+  original: string | null;
   terminal: string;
+  emitenteCnpj: string | null;
+  emitenteFornecedor: string | null;
   placa: string | null;
   motoristaNome: string | null;
   motoristaTelefone: string | null;
+  recebimentoColaborador: string | null;
+  recebimentoPeso: string | null;
+  recebimentoPatioDescarga: string | null;
+  recebimentoData: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -119,6 +128,7 @@ export type ReportOverviewResponse = {
   summary: {
     emittedNotes: number;
     receivedRecords: number;
+    receivedMaterialWeight: number;
     matchedNotes: number;
     pendingNotes: number;
     pendingOver24h: number;

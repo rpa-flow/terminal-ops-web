@@ -121,6 +121,11 @@ export const createRecordSchema = z
     terminal: input.terminal
   }));
 
+export const ingestNoteSchema = createRecordSchema.refine(
+  (input): input is typeof input & { notaChave: string } => /^\d{44}$/.test(input.notaChave ?? ""),
+  { message: "nota.chave deve conter exatamente 44 digitos", path: ["nota", "chave"] }
+);
+
 export const listRecordsQuerySchema = z
   .object({
     page: z.coerce.number().int().min(1).default(1),
@@ -154,6 +159,7 @@ export const listRecordsQuerySchema = z
   }));
 
 export type CreateRecordInput = z.infer<typeof createRecordSchema>;
+export type IngestNoteInput = z.infer<typeof ingestNoteSchema>;
 export type ListRecordsFilters = z.infer<typeof listRecordsQuerySchema>;
 
 export const updateStatusParamsSchema = z
