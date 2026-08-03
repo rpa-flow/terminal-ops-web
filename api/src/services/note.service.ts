@@ -3,10 +3,10 @@ import xss from "xss";
 import {
   createNote,
   findNoteByCodigo,
-  listPendingNotes,
+  listNotes,
   updateNoteStatusByCodigo
 } from "../repositories/note.repository";
-import type { CreateNoteInput, ListPendingNotesQueryInput } from "../validators/note.validator";
+import type { CreateNoteInput, ListNotesQueryInput } from "../validators/note.validator";
 
 const sanitizeString = (value: string): string => xss(value, { whiteList: {} });
 
@@ -43,8 +43,8 @@ export const createNoteService = async (input: CreateNoteInput) => {
   return sanitizeNote(saved);
 };
 
-export const listPendingNotesService = async (filters: ListPendingNotesQueryInput) => {
-  const result = await listPendingNotes(filters);
+export const listNotesService = async (filters: ListNotesQueryInput) => {
+  const result = await listNotes(filters);
 
   return {
     ...result,

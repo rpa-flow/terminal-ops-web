@@ -35,7 +35,7 @@ export const updateNoteStatusBodySchema = z
   })
   .strict();
 
-export const listPendingNotesQuerySchema = z
+export const listNotesQuerySchema = z
   .object({
     page: z.coerce.number().int().min(1).default(1),
     perPage: z.coerce.number().int().min(1).max(100).default(20)
@@ -45,4 +45,4 @@ export const listPendingNotesQuerySchema = z
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;
 export type UpdateNoteStatusParamsInput = z.infer<typeof updateNoteStatusParamsSchema>;
 export type UpdateNoteStatusBodyInput = z.infer<typeof updateNoteStatusBodySchema>;
-export type ListPendingNotesQueryInput = z.infer<typeof listPendingNotesQuerySchema>;
+export type ListNotesQueryInput = z.infer<typeof listNotesQuerySchema>;

@@ -2,10 +2,10 @@ import { Router } from "express";
 
 import { requireAuth } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
-import { createNoteService, listPendingNotesService, updateNoteStatusService } from "../services/note.service";
+import { createNoteService, listNotesService, updateNoteStatusService } from "../services/note.service";
 import {
   createNoteSchema,
-  listPendingNotesQuerySchema,
+  listNotesQuerySchema,
   updateNoteStatusBodySchema,
   updateNoteStatusParamsSchema
 } from "../validators/note.validator";
@@ -19,9 +19,9 @@ noteRoutes.post("/", validate(createNoteSchema), async (req, res) => {
   res.status(201).json(saved);
 });
 
-noteRoutes.get("/pending", validate(listPendingNotesQuerySchema, "query"), async (req, res) => {
+noteRoutes.get("/", validate(listNotesQuerySchema, "query"), async (req, res) => {
   const query = (res.locals.validatedQuery ?? req.query) as { page: number; perPage: number };
-  const result = await listPendingNotesService(query);
+  const result = await listNotesService(query);
 
   res.status(200).json({
     page: query.page,

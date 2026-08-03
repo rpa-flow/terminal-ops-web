@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { AppNavigation } from "../components/AppNavigation";
 import { useAuth } from "../hooks/useAuth";
-import { listPendingNotesRequest } from "../services/notes.service";
+import { listNotesRequest } from "../services/notes.service";
 import type { NoteItem } from "../types/api";
 
 export const NotesPage = () => {
@@ -22,12 +22,12 @@ export const NotesPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await listPendingNotesRequest(token, nextPage, perPage);
+      const response = await listNotesRequest(token, nextPage, perPage);
       setItems(response.items);
       setPage(response.page);
       setTotal(response.total);
     } catch {
-      setError("Nao foi possivel carregar as notas pendentes.");
+      setError("Não foi possível carregar as notas.");
     } finally {
       setLoading(false);
     }
@@ -58,8 +58,8 @@ export const NotesPage = () => {
         <div className="rounded border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface-variant shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <span className="font-medium">Total de notas pendentes: {total}</span>
-              <p className="mt-1 text-xs">Consulta dos dados recebidos pela API.</p>
+              <span className="font-medium">Total de notas: {total}</span>
+              <p className="mt-1 text-xs">Todas as notas recebidas pelo aplicativo.</p>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -115,7 +115,7 @@ export const NotesPage = () => {
               {items.length === 0 && !loading && (
                 <tr>
                   <td className="px-4 py-4 text-on-surface-variant" colSpan={8}>
-                    Nenhuma nota pendente encontrada.
+                    Nenhuma nota encontrada.
                   </td>
                 </tr>
               )}
