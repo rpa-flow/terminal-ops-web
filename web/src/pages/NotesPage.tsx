@@ -90,7 +90,6 @@ export const NotesPage = () => {
                 <th className="px-4 py-3">Data/Hora</th>
                 <th className="px-4 py-3">Número</th>
                 <th className="px-4 py-3">Código</th>
-                <th className="px-4 py-3">Original</th>
                 <th className="px-4 py-3">Terminal</th>
                 <th className="px-4 py-3">CNPJ</th>
                 <th className="px-4 py-3">Fornecedor</th>
@@ -99,8 +98,6 @@ export const NotesPage = () => {
                 <th className="px-4 py-3">Peso</th>
                 <th className="px-4 py-3">Pátio</th>
                 <th className="px-4 py-3">Recebimento</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Atualizado em</th>
               </tr>
             </thead>
             <tbody>
@@ -109,7 +106,6 @@ export const NotesPage = () => {
                   <td className="whitespace-nowrap px-4 py-3">{item.dataHora ? new Date(item.dataHora).toLocaleString("pt-BR") : "-"}</td>
                   <td className="px-4 py-3">{item.numero ?? "-"}</td>
                   <td className="px-4 py-3 font-mono text-xs">{item.codigo}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{item.original ?? "-"}</td>
                   <td className="px-4 py-3">{item.terminal}</td>
                   <td className="px-4 py-3">{item.emitenteCnpj ?? "-"}</td>
                   <td className="px-4 py-3">{item.emitenteFornecedor ?? "-"}</td>
@@ -118,15 +114,11 @@ export const NotesPage = () => {
                   <td className="px-4 py-3">{item.recebimentoPeso ?? "-"}</td>
                   <td className="px-4 py-3">{item.recebimentoPatioDescarga ?? "-"}</td>
                   <td className="px-4 py-3">{item.recebimentoData ?? "-"}</td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-full bg-secondary-container px-2 py-1 text-xs font-medium text-on-secondary-container">{item.status}</span>
-                  </td>
-                  <td className="px-4 py-3">{new Date(item.updatedAt).toLocaleString("pt-BR")}</td>
                 </tr>
               ))}
               {items.length === 0 && !loading && (
                 <tr>
-                  <td className="px-4 py-4 text-on-surface-variant" colSpan={14}>
+                  <td className="px-4 py-4 text-on-surface-variant" colSpan={11}>
                     Nenhuma nota encontrada.
                   </td>
                 </tr>
