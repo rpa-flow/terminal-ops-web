@@ -77,7 +77,7 @@ export type NoteItem = {
   updatedAt: string;
 };
 
-export type PendingNotesResponse = {
+export type NotesResponse = {
   page: number;
   perPage: number;
   total: number;

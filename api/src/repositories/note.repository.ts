@@ -1,9 +1,9 @@
 import type { Note, Prisma } from "@prisma/client";
 
 import { prisma } from "../lib/prisma";
-import type { ListPendingNotesQueryInput } from "../validators/note.validator";
+import type { ListNotesQueryInput } from "../validators/note.validator";
 
-type ListPendingNotesResult = {
+type ListNotesResult = {
   total: number;
   items: Note[];
 };
@@ -29,22 +29,12 @@ export const createNote = async (input: CreateNoteRepositoryInput): Promise<Note
   return prisma.note.create({ data });
 };
 
-export const listPendingNotes = async (
-  filters: ListPendingNotesQueryInput
-): Promise<ListPendingNotesResult> => {
+export const listNotes = async (filters: ListNotesQueryInput): Promise<ListNotesResult> => {
   const skip = (filters.page - 1) * filters.perPage;
 
-  const where = {
-    status: {
-      equals: "PENDENTE",
-      mode: "insensitive" as const
-    }
-  };
-
   const [total, items] = await prisma.$transaction([
-    prisma.note.count({ where }),
+    prisma.note.count(),
     prisma.note.findMany({
-      where,
       orderBy: { createdAt: "desc" },
       skip,
       take: filters.perPage

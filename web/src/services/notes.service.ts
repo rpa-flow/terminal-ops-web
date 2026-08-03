@@ -1,12 +1,12 @@
-import type { PendingNotesResponse } from "../types/api";
+import type { NotesResponse } from "../types/api";
 import { http } from "./http";
 
-export const listPendingNotesRequest = (
+export const listNotesRequest = (
   token: string,
   page: number,
   perPage: number
-): Promise<PendingNotesResponse> => {
-  return http<PendingNotesResponse>("/notes/pending", {
+): Promise<NotesResponse> => {
+  return http<NotesResponse>("/notes", {
     token,
     query: { page, perPage }
   });
