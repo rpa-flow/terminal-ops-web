@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 
 type AppNavigationProps = {
-  current: "records" | "notes" | "reports";
+  current: "records" | "notes" | "reports" | "shipments";
   reportArea?: "tbjc" | "tcs";
 };
 
@@ -40,6 +40,13 @@ export const AppNavigation = ({ current, reportArea }: AppNavigationProps) => {
         >
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2" strokeWidth="1.8" strokeLinecap="round" /></svg>
           Relatórios
+        </Link>
+        <Link
+          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${current === "shipments" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`}
+          to={`/embarques/${selectedArea}`}
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5"><path d="M3 7h11v10H3zM14 11h4l3 3v3h-7M7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          Embarques
         </Link>
       </nav>
     </aside>

@@ -61,7 +61,7 @@ const DailyVolumeChart = ({ items, area }: { items: DailyVolumeItem[]; area: "tb
   const padding = 34;
   const chartHeight = height - padding * 2;
   const chartWidth = width - padding * 2;
-  const max = Math.max(...items.map((item) => area === "tbjc" ? item.weighedRecords : item.emittedNotes), 1);
+  const max = Math.max(...items.map((item) => area === "tbjc" ? item.receivedRecords : item.emittedNotes), 1);
   const step = items.length > 1 ? chartWidth / items.length : chartWidth;
   const barWidth = Math.max(4, Math.min(14, step / 3));
   const labelEvery = Math.max(1, Math.ceil(items.length / 6));
@@ -72,11 +72,11 @@ const DailyVolumeChart = ({ items, area }: { items: DailyVolumeItem[]; area: "tb
         <h2 className="text-base font-semibold text-on-surface">Evolução diária</h2>
         <div className="flex items-center gap-4 text-xs text-on-surface-variant">
           {area === "tcs" && <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" />Notas emitidas</span>}
-          {area === "tbjc" && <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-secondary" />Pesagens</span>}
+          {area === "tbjc" && <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-secondary" />Recebimentos</span>}
         </div>
       </div>
       <div className="mt-4 overflow-x-auto">
-        <svg className="min-w-[680px]" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolucao diaria de notas e pesagens">
+        <svg className="min-w-[680px]" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolução diária de registros">
           <line x1={padding} x2={width - padding} y1={height - padding} y2={height - padding} stroke="#c3c7cf" />
           <line x1={padding} x2={padding} y1={padding} y2={height - padding} stroke="#c3c7cf" />
           {[0, 0.5, 1].map((tick) => {
@@ -92,7 +92,7 @@ const DailyVolumeChart = ({ items, area }: { items: DailyVolumeItem[]; area: "tb
           })}
           {items.map((item, index) => {
             const x = padding + index * step + step / 2;
-            const value = area === "tbjc" ? item.weighedRecords : item.emittedNotes;
+            const value = area === "tbjc" ? item.receivedRecords : item.emittedNotes;
             const barHeight = (value / max) * chartHeight;
             const baseline = height - padding;
 
@@ -212,9 +212,7 @@ export const ReportsPage = () => {
             <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {isTbjc ? (
                 <>
-                  <MetricCard label="Pesagens lançadas" value={formatNumber(report.summary.weighedRecords)} accent="text-on-secondary-container" />
-                  <MetricCard label="Sem ID pesagem" value={formatNumber(report.summary.recordsWithoutPesagemId)} accent="text-warning" />
-                  <MetricCard label="Duplicidades de pesagem" value={formatNumber(report.summary.duplicatePesagemGroups)} accent="text-error" />
+                  <MetricCard label="Recebimentos registrados" value={formatNumber(report.summary.receivedRecords)} accent="text-on-secondary-container" />
                 </>
               ) : (
                 <>
@@ -230,8 +228,8 @@ export const ReportsPage = () => {
             <div className="grid gap-4 lg:grid-cols-2">
               {isTbjc ? (
                 <>
-                  <BreakdownBars title="Pesagens por status" items={report.breakdowns.recordsByStatus} tone="secondary" />
-                  <BreakdownBars title="Pesagens por terminal" items={report.breakdowns.recordsByTerminal} tone="secondary" />
+                  <BreakdownBars title="Recebimentos por status" items={report.breakdowns.recordsByStatus} tone="secondary" />
+                  <BreakdownBars title="Recebimentos por terminal" items={report.breakdowns.recordsByTerminal} tone="secondary" />
                 </>
               ) : (
                 <>

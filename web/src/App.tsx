@@ -8,6 +8,7 @@ import { RecordsPage } from "./pages/RecordsPage";
 import { NotesPage } from "./pages/NotesPage";
 import { PurchaseOrderRulesPage } from "./pages/PurchaseOrderRulesPage";
 import { ReportsPage } from "./pages/ReportsPage";
+import { ShipmentsPage } from "./pages/ShipmentsPage";
 
 function App() {
   return (
@@ -42,6 +43,8 @@ function App() {
           }
         />
         <Route path="/relatorios" element={<Navigate to="/relatorios/tbjc" replace />} />
+        <Route path="/embarques/:area" element={<ProtectedRoute><ShipmentsPage /></ProtectedRoute>} />
+        <Route path="/embarques" element={<Navigate to="/embarques/tbjc" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
