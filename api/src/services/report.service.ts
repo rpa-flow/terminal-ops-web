@@ -14,6 +14,11 @@ type DailyVolumeItem = {
   receivedRecords: number;
 };
 
+type PileBalanceItem = {
+  pile: string;
+  balance: number;
+};
+
 type PendingNoteItem = {
   codigo: string;
   terminal: string;
@@ -91,6 +96,29 @@ const normalizeBreakdown = <T extends { _count: { _all: number } }>(
     .sort((a, b) => b.total - a.total);
 
 const dateKey = (value: Date): string => value.toISOString().slice(0, 10);
+
+const parseWeight = (value: string | null): number => {
+  if (!value) return 0;
+
+  const normalized = value.replace(/\./g, "").replace(",", ".").replace(/[^0-9.-]/g, "");
+  const weight = Number(normalized);
+  return Number.isFinite(weight) ? weight : 0;
+};
+
+const buildPileBalances = (
+  records: { recebimentoPatioDescarga: string | null; recebimentoPeso: string | null }[]
+): PileBalanceItem[] => {
+  const balances = new Map<string, number>();
+
+  records.forEach((record) => {
+    const pile = record.recebimentoPatioDescarga?.trim() || "Não informada";
+    balances.set(pile, (balances.get(pile) ?? 0) + parseWeight(record.recebimentoPeso));
+  });
+
+  return Array.from(balances, ([pile, balance]) => ({ pile, balance }))
+    .filter((item) => item.balance !== 0)
+    .sort((a, b) => b.balance - a.balance);
+};
 
 const buildDailyVolumes = (
   startDate: Date,
@@ -171,7 +199,8 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
     recordTerminalRows,
     oldestPendingNotes,
     noteDates,
-    recordDates
+    recordDates,
+    pileRecords
   ] = await prisma.$transaction([
     prisma.note.count({ where: noteWhere }),
     prisma.record.count({ where: recordWhere }),
@@ -201,7 +230,11 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       }
     }),
     prisma.note.findMany({ where: noteWhere, select: { createdAt: true } }),
-    prisma.record.findMany({ where: recordWhere, select: { dataHora: true } })
+    prisma.record.findMany({ where: recordWhere, select: { dataHora: true } }),
+    prisma.record.findMany({
+      where: { ...recordWhere, recebimentoPeso: { not: null } },
+      select: { recebimentoPatioDescarga: true, recebimentoPeso: true }
+    })
   ]);
 
   const { noteConditions, recordConditions } = buildRawConditions(filters);
@@ -287,6 +320,7 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       recordsByTerminal: normalizeBreakdown(recordTerminalRows, (row) => row.terminal).slice(0, 8)
     },
     dailyVolumes: buildDailyVolumes(filters.startDate, filters.endDate, noteDates, recordDates),
+    pileBalances: buildPileBalances(pileRecords),
     pendingOldest
   };
 };

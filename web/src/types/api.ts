@@ -95,6 +95,11 @@ export type DailyVolumeItem = {
   receivedRecords: number;
 };
 
+export type PileBalanceItem = {
+  pile: string;
+  balance: number;
+};
+
 export type PendingReportNoteItem = {
   codigo: string;
   terminal: string;
@@ -131,6 +136,7 @@ export type ReportOverviewResponse = {
     recordsByTerminal: ReportBreakdownItem[];
   };
   dailyVolumes: DailyVolumeItem[];
+  pileBalances: PileBalanceItem[];
   pendingOldest: PendingReportNoteItem[];
 };
 
