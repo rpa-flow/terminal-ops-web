@@ -74,7 +74,8 @@ export const createRecordSchema = z
         nome: z.string().trim().min(1).max(120),
         celular: z.string().trim().min(1).max(120)
       })
-      .strict(),
+      .strict()
+      .optional(),
     veiculo: z
       .object({
         placa: z.string().trim().min(1).max(32),
@@ -87,7 +88,7 @@ export const createRecordSchema = z
         peso: z.union([z.string().trim().min(1).max(32), z.number()]),
         patioDescarga: z.string().trim().min(1).max(120),
         data: z.string().trim().min(1).max(25),
-        placa: z.string().trim().min(1).max(32)
+        placa: z.string().trim().min(1).max(32).optional()
       })
       .strict()
       .optional(),
@@ -108,15 +109,15 @@ export const createRecordSchema = z
     notaPesagemId: String(input.nota.pesagemId ?? input.nota.pesagemid ?? input.nota.idPesagem ?? input.nota.idPessagem ?? ""),
     emitenteCnpj: input.emitente?.cnpj ?? null,
     emitenteFornecedor: input.emitente?.fornecedor ?? null,
-    motoristaNome: input.motorista.nome,
-    motoristaCelular: input.motorista.celular,
+    motoristaNome: input.motorista?.nome ?? null,
+    motoristaCelular: input.motorista?.celular ?? null,
     placa: input.veiculo.placa.toUpperCase(),
     placaRecebimento: input.veiculo.placaRecebimento?.toUpperCase() ?? null,
     recebimentoColaborador: input.recebimento?.colaborador ?? null,
     recebimentoPeso: input.recebimento ? String(input.recebimento.peso) : null,
     recebimentoPatioDescarga: input.recebimento?.patioDescarga ?? null,
     recebimentoData: input.recebimento?.data ?? null,
-    recebimentoPlaca: input.recebimento?.placa.toUpperCase() ?? null,
+    recebimentoPlaca: input.recebimento?.placa?.toUpperCase() ?? null,
     terminal: input.terminal
   }));
 
