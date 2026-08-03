@@ -8,7 +8,7 @@ import type { DailyVolumeItem, PileBalanceItem, ReportBreakdownItem, ReportOverv
 
 const formatInputDate = (date: Date): string => date.toISOString().slice(0, 10);
 
-const getDefaultFilters = () => {
+const getDefaultFilters = (terminal: "TBJC" | "TCS") => {
   const endDate = new Date();
   const startDate = new Date(endDate);
   startDate.setDate(startDate.getDate() - 29);
@@ -16,7 +16,7 @@ const getDefaultFilters = () => {
   return {
     startDate: formatInputDate(startDate),
     endDate: formatInputDate(endDate),
-    terminal: ""
+    terminal
   };
 };
 
@@ -113,13 +113,15 @@ const DailyVolumeChart = ({ items, area }: { items: DailyVolumeItem[]; area: "tb
   );
 };
 
-const PileBalanceChart = ({ items }: { items: PileBalanceItem[] }) => {
+const PileBalanceChart = ({ items, area }: { items: PileBalanceItem[]; area: "tbjc" | "tcs" }) => {
   const max = Math.max(...items.map((item) => item.balance), 1);
 
   return (
     <section className="rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
       <div className="border-b border-surface-container-high bg-primary px-4 py-3 text-on-primary">
-        <h2 className="text-center text-lg font-semibold uppercase tracking-wide">Saldo atualizado por pilha</h2>
+        <h2 className="text-center text-lg font-semibold uppercase tracking-wide">
+          {area === "tcs" ? "Material recebido por pátio" : "Saldo atualizado por pilha"}
+        </h2>
         <p className="mt-1 text-center text-xs text-on-primary/75">Volume recebido no período selecionado</p>
       </div>
       {items.length === 0 ? (
@@ -156,7 +158,8 @@ const PileBalanceChart = ({ items }: { items: PileBalanceItem[] }) => {
 export const ReportsPage = () => {
   const { area } = useParams();
   const { token, user, logout } = useAuth();
-  const defaults = useMemo(() => getDefaultFilters(), []);
+  const reportArea = area === "tcs" ? "tcs" : "tbjc";
+  const defaults = useMemo(() => getDefaultFilters(reportArea.toUpperCase() as "TBJC" | "TCS"), [reportArea]);
   const [filters, setFilters] = useState(defaults);
   const [report, setReport] = useState<ReportOverviewResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -228,7 +231,7 @@ export const ReportsPage = () => {
             className="input"
             placeholder="Terminal"
             value={filters.terminal}
-            onChange={(event) => setFilters((current) => ({ ...current, terminal: event.target.value }))}
+            readOnly
           />
           <button className="btn-primary" onClick={() => void loadReport(filters)} disabled={loading}>
             {loading ? "Carregando..." : "Atualizar"}
@@ -257,6 +260,7 @@ export const ReportsPage = () => {
               ) : (
                 <>
                   <MetricCard label="Notas emitidas Bemisa" value={formatNumber(report.summary.emittedNotes)} accent="text-primary" />
+                  <MetricCard label="Material recebido" value={formatNumber(report.summary.receivedMaterialWeight)} accent="text-on-secondary-container" />
                   <MetricCard label="Notas pendentes" value={formatNumber(report.summary.pendingNotes)} accent="text-warning" />
                   <MetricCard label="Pendentes +24h" value={formatNumber(report.summary.pendingOver24h)} accent="text-error" />
                 </>
@@ -265,7 +269,7 @@ export const ReportsPage = () => {
 
             <DailyVolumeChart items={report.dailyVolumes} area={area} />
 
-            <PileBalanceChart items={report.pileBalances} />
+            <PileBalanceChart items={report.pileBalances} area={area} />
 
             <div className="grid gap-4 lg:grid-cols-2">
               {isTbjc ? (

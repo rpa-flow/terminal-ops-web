@@ -4,8 +4,10 @@ import {
   createNote,
   findNoteByCodigo,
   listNotes,
+  upsertIngestedNote,
   updateNoteStatusByCodigo
 } from "../repositories/note.repository";
+import type { IngestNoteInput } from "../validators/record.validator";
 import type { CreateNoteInput, ListNotesQueryInput } from "../validators/note.validator";
 
 const sanitizeString = (value: string): string => xss(value, { whiteList: {} });
@@ -21,25 +23,64 @@ const sanitizeOptionalString = (value?: string | null): string | null => {
 const sanitizeNote = (note: {
   id: string;
   codigo: string;
+  dataHora: Date | null;
+  numero: string | null;
+  original: string | null;
   status: string;
   terminal: string;
+  emitenteCnpj: string | null;
+  emitenteFornecedor: string | null;
   placa: string | null;
   motoristaNome: string | null;
   motoristaTelefone: string | null;
+  recebimentoColaborador: string | null;
+  recebimentoPeso: string | null;
+  recebimentoPatioDescarga: string | null;
+  recebimentoData: string | null;
   createdAt: Date;
   updatedAt: Date;
 }) => ({
   ...note,
   codigo: sanitizeString(note.codigo),
+  numero: sanitizeOptionalString(note.numero),
+  original: sanitizeOptionalString(note.original),
   status: sanitizeString(note.status),
   terminal: sanitizeString(note.terminal),
+  emitenteCnpj: sanitizeOptionalString(note.emitenteCnpj),
+  emitenteFornecedor: sanitizeOptionalString(note.emitenteFornecedor),
   placa: sanitizeOptionalString(note.placa),
   motoristaNome: sanitizeOptionalString(note.motoristaNome),
-  motoristaTelefone: sanitizeOptionalString(note.motoristaTelefone)
+  motoristaTelefone: sanitizeOptionalString(note.motoristaTelefone),
+  recebimentoColaborador: sanitizeOptionalString(note.recebimentoColaborador),
+  recebimentoPeso: sanitizeOptionalString(note.recebimentoPeso),
+  recebimentoPatioDescarga: sanitizeOptionalString(note.recebimentoPatioDescarga),
+  recebimentoData: sanitizeOptionalString(note.recebimentoData)
 });
 
 export const createNoteService = async (input: CreateNoteInput) => {
   const saved = await createNote(input);
+  return sanitizeNote(saved);
+};
+
+export const upsertIngestedNoteService = async (input: IngestNoteInput) => {
+  const saved = await upsertIngestedNote({
+    codigo: input.notaChave,
+    dataHora: input.dataHora,
+    numero: input.numeroNota,
+    original: input.notaOriginal,
+    terminal: input.terminal,
+    status: input.status,
+    emitenteCnpj: input.emitenteCnpj,
+    emitenteFornecedor: input.emitenteFornecedor,
+    placa: input.placa,
+    motoristaNome: input.motoristaNome,
+    motoristaTelefone: input.motoristaCelular,
+    recebimentoColaborador: input.recebimentoColaborador,
+    recebimentoPeso: input.recebimentoPeso,
+    recebimentoPatioDescarga: input.recebimentoPatioDescarga,
+    recebimentoData: input.recebimentoData
+  });
+
   return sanitizeNote(saved);
 };
 

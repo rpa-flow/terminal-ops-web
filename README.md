@@ -133,9 +133,16 @@ Payload:
 }
 ```
 
-### Ingestao direta (sem login de usuario)
+### Ingestao direta por terminal (sem login de usuario)
 
 `POST /api/ingest/records`
+
+Essa rota é exclusiva para o terminal que alimenta `records` e cria somente uma linha nessa tabela.
+
+`POST /api/ingest/notes`
+
+Essa rota é exclusiva para o terminal que alimenta `notes`. Ela cria ou atualiza somente uma nota, identificada por `nota.chave`.
+Todos os dados de nota, emitente, veículo e recebimento são armazenados e apresentados no painel de notas. O relatório TCS soma o peso recebido por pátio de descarga.
 
 Headers:
 - `x-api-key: <INGEST_API_KEY>`
@@ -148,6 +155,7 @@ Payload:
   "dataHora": "2026-04-11 14:32:00",
   "nota": {
     "numero": "12345",
+    "chave": "31260831732059000106550010012345678912345678",
     "original": "VALOR ORIGINAL",
     "status": "PROCESSADO"
   },
@@ -165,12 +173,12 @@ Payload:
 Exemplo curl:
 
 ```bash
-curl -X POST http://localhost:4000/api/ingest/records \
+curl -X POST http://localhost:4000/api/ingest/notes \
   -H "Content-Type: application/json" \
   -H "x-api-key: dev-ingest-key-change-in-production" \
   -d '{
     "dataHora": "2026-04-11 14:32:00",
-    "nota": {"numero":"12345","original":"VALOR ORIGINAL","status":"PROCESSADO"},
+    "nota": {"numero":"12345","chave":"31260831732059000106550010012345678912345678","original":"VALOR ORIGINAL","status":"PROCESSADO"},
     "motorista": {"nome":"Joao","celular":"31999999999"},
     "veiculo": {"placa":"ABC1234"},
     "terminal":"Terminal 1"
@@ -182,13 +190,13 @@ Exemplo PowerShell:
 ```powershell
 $body = @{
   dataHora = "2026-04-11 14:32:00"
-  nota = @{ numero = "12345"; original = "VALOR ORIGINAL"; status = "PROCESSADO" }
+  nota = @{ numero = "12345"; chave = "31260831732059000106550010012345678912345678"; original = "VALOR ORIGINAL"; status = "PROCESSADO" }
   motorista = @{ nome = "Joao"; celular = "31999999999" }
   veiculo = @{ placa = "ABC1234" }
   terminal = "Terminal 1"
 } | ConvertTo-Json -Depth 5
 
-Invoke-RestMethod -Method Post -Uri "http://localhost:4000/api/ingest/records" `
+Invoke-RestMethod -Method Post -Uri "http://localhost:4000/api/ingest/notes" `
   -Headers @{ "x-api-key" = "dev-ingest-key-change-in-production" } `
   -ContentType "application/json" -Body $body
 ```

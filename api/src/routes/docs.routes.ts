@@ -348,7 +348,7 @@ const buildOpenApiDocument = (baseUrl: string) => ({
     "/api/ingest/records": {
       post: {
         tags: ["Ingest"],
-        summary: "Ingestao direta de registro com API key",
+        summary: "Cria um registro com API key",
         security: [{ ingestApiKey: [] }],
         requestBody: {
           required: true,
@@ -364,6 +364,61 @@ const buildOpenApiDocument = (baseUrl: string) => ({
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/RecordResponse" }
+              }
+            }
+          },
+          "401": {
+            description: "API key invalida",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ingest/notes": {
+      post: {
+        tags: ["Ingest"],
+        summary: "Cria ou atualiza uma nota com API key",
+        security: [{ ingestApiKey: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/RecordPayload" }
+            }
+          }
+        },
+        responses: {
+          "200": {
+            description: "Nota criada ou atualizada",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: { type: "string", format: "uuid" },
+                    codigo: { type: "string", example: "31260831732059000106550010012345678912345678" },
+                    dataHora: { type: "string", format: "date-time", nullable: true },
+                    numero: { type: "string", nullable: true, example: "123456789" },
+                    original: { type: "string", nullable: true },
+                    terminal: { type: "string", example: "TCS" },
+                    emitenteCnpj: { type: "string", nullable: true, example: "31732059000106" },
+                    emitenteFornecedor: { type: "string", nullable: true, example: "BASSARI MINERACAO LTDA" },
+                    placa: { type: "string", nullable: true, example: "ABC1D23" },
+                    motoristaNome: { type: "string", nullable: true },
+                    motoristaTelefone: { type: "string", nullable: true },
+                    recebimentoColaborador: { type: "string", nullable: true, example: "Eloizio Willian" },
+                    recebimentoPeso: { type: "string", nullable: true, example: "12500" },
+                    recebimentoPatioDescarga: { type: "string", nullable: true, example: "Pátio Balança" },
+                    recebimentoData: { type: "string", nullable: true, example: "2026-08-03" },
+                    status: { type: "string", example: "Pendente" },
+                    createdAt: { type: "string", format: "date-time" },
+                    updatedAt: { type: "string", format: "date-time" }
+                  }
+                }
               }
             }
           },

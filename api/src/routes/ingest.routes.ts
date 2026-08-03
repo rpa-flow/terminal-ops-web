@@ -4,8 +4,9 @@ import rateLimit from "express-rate-limit";
 import { rateLimitKeyGenerator, rateLimitValidationConfig } from "../lib/rate-limit";
 import { requireApiKey } from "../middlewares/api-key";
 import { validate } from "../middlewares/validate";
+import { upsertIngestedNoteService } from "../services/note.service";
 import { createRecordService, updateRecordStatusByNumeroNotaService } from "../services/record.service";
-import { createRecordSchema, updateStatusBodySchema, updateStatusParamsSchema, type UpdateStatusBodyInput } from "../validators/record.validator";
+import { createRecordSchema, ingestNoteSchema, updateStatusBodySchema, updateStatusParamsSchema, type UpdateStatusBodyInput } from "../validators/record.validator";
 
 const ingestRoutes = Router();
 
@@ -24,6 +25,11 @@ ingestRoutes.use(
 ingestRoutes.post("/records", requireApiKey, validate(createRecordSchema), async (req, res) => {
   const saved = await createRecordService(req.body);
   res.status(201).json(saved);
+});
+
+ingestRoutes.post("/notes", requireApiKey, validate(ingestNoteSchema), async (req, res) => {
+  const saved = await upsertIngestedNoteService(req.body);
+  res.status(200).json(saved);
 });
 
 ingestRoutes.post(

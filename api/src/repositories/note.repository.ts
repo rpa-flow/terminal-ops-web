@@ -16,6 +16,24 @@ type CreateNoteRepositoryInput = {
   motoristaTelefone?: string | undefined;
 };
 
+type UpsertIngestedNoteRepositoryInput = {
+  codigo: string;
+  dataHora: Date;
+  numero: string;
+  original: string;
+  terminal: string;
+  status: string;
+  emitenteCnpj: string | null;
+  emitenteFornecedor: string | null;
+  placa: string;
+  motoristaNome: string | null;
+  motoristaTelefone: string | null;
+  recebimentoColaborador: string | null;
+  recebimentoPeso: string | null;
+  recebimentoPatioDescarga: string | null;
+  recebimentoData: string | null;
+};
+
 export const createNote = async (input: CreateNoteRepositoryInput): Promise<Note> => {
   const data: Prisma.NoteCreateInput = {
     codigo: input.codigo,
@@ -27,6 +45,31 @@ export const createNote = async (input: CreateNoteRepositoryInput): Promise<Note
   };
 
   return prisma.note.create({ data });
+};
+
+export const upsertIngestedNote = async (input: UpsertIngestedNoteRepositoryInput): Promise<Note> => {
+  const data = {
+    dataHora: input.dataHora,
+    numero: input.numero,
+    original: input.original,
+    terminal: input.terminal,
+    status: input.status,
+    emitenteCnpj: input.emitenteCnpj,
+    emitenteFornecedor: input.emitenteFornecedor,
+    placa: input.placa,
+    motoristaNome: input.motoristaNome,
+    motoristaTelefone: input.motoristaTelefone,
+    recebimentoColaborador: input.recebimentoColaborador,
+    recebimentoPeso: input.recebimentoPeso,
+    recebimentoPatioDescarga: input.recebimentoPatioDescarga,
+    recebimentoData: input.recebimentoData
+  };
+
+  return prisma.note.upsert({
+    where: { codigo: input.codigo },
+    create: { codigo: input.codigo, ...data },
+    update: data
+  });
 };
 
 export const listNotes = async (filters: ListNotesQueryInput): Promise<ListNotesResult> => {
