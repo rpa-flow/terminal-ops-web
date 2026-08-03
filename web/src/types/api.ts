@@ -22,9 +22,6 @@ export type RecordItem = {
   motoristaCelular: string;
   placa: string;
   terminal: string;
-  emitenteFornecedor: string | null;
-  recebimentoPeso: string | null;
-  recebimentoPatioDescarga: string | null;
   createdAt: string;
 };
 
