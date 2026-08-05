@@ -57,6 +57,9 @@ export const RecordsPage = () => {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <button className="btn-muted" onClick={() => void loadRecords(filters)} disabled={loading}>
+              Atualizar
+            </button>
             <button className="btn-muted" onClick={() => setShowCsvModal(true)}>
               Importar CSV
             </button>

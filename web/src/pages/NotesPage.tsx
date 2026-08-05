@@ -4,6 +4,7 @@ import { AppNavigation } from "../components/AppNavigation";
 import { useAuth } from "../hooks/useAuth";
 import { listNotesRequest } from "../services/notes.service";
 import type { NoteItem } from "../types/api";
+import { formatIncomingDateTime } from "../utils/dateTime";
 
 export const NotesPage = () => {
   const { token, user, logout } = useAuth();
@@ -49,6 +50,7 @@ export const NotesPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button className="btn-muted" onClick={() => void loadPending(page)} disabled={loading}>Atualizar</button>
             <button className="btn-muted" onClick={logout}>Sair</button>
           </div>
         </div>
@@ -56,29 +58,8 @@ export const NotesPage = () => {
 
       <section className="mx-auto grid max-w-7xl gap-4 px-4 py-6">
         <div className="rounded border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface-variant shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <span className="font-medium">Total de notas: {total}</span>
-              <p className="mt-1 text-xs">Todas as notas recebidas pelo aplicativo.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                className="btn-muted"
-                onClick={() => void loadPending(Math.max(1, page - 1))}
-                disabled={page <= 1 || loading}
-              >
-                Anterior
-              </button>
-              <span className="rounded-lg bg-surface-container-low px-2 py-1 text-on-surface-variant">Página {page}</span>
-              <button
-                className="btn-muted"
-                onClick={() => void loadPending(page + 1)}
-                disabled={loading || items.length < perPage}
-              >
-                Próxima
-              </button>
-            </div>
-          </div>
+          <span className="font-medium">Total de notas: {total}</span>
+          <p className="mt-1 text-xs">Todas as notas recebidas pelo aplicativo.</p>
         </div>
 
         {error && <p className="rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">{error}</p>}
@@ -103,7 +84,7 @@ export const NotesPage = () => {
             <tbody>
               {items.map((item) => (
                 <tr key={item.id} className="border-t border-surface-container-high">
-                  <td className="whitespace-nowrap px-4 py-3">{item.dataHora ? new Date(item.dataHora).toLocaleString("pt-BR") : "-"}</td>
+                  <td className="whitespace-nowrap px-4 py-3">{formatIncomingDateTime(item.dataHora)}</td>
                   <td className="px-4 py-3">{item.numero ?? "-"}</td>
                   <td className="px-4 py-3 font-mono text-xs">{item.codigo}</td>
                   <td className="px-4 py-3">{item.terminal}</td>
@@ -125,6 +106,29 @@ export const NotesPage = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="rounded border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface-variant shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="font-medium">Total de notas: {total}</span>
+            <div className="flex items-center gap-2">
+              <button
+                className="btn-muted"
+                onClick={() => void loadPending(Math.max(1, page - 1))}
+                disabled={page <= 1 || loading}
+              >
+                Anterior
+              </button>
+              <span className="rounded-lg bg-surface-container-low px-2 py-1 text-on-surface-variant">Página {page}</span>
+              <button
+                className="btn-muted"
+                onClick={() => void loadPending(page + 1)}
+                disabled={loading || items.length < perPage}
+              >
+                Próxima
+              </button>
+            </div>
+          </div>
         </div>
       </section>
     </main>
