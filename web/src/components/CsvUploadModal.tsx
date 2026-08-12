@@ -44,10 +44,10 @@ export const CsvUploadModal = ({ onClose, onSuccess }: Props) => {
           O arquivo deve ter as colunas na ordem abaixo (com cabeçalho):
         </p>
         <div className="mb-4 overflow-x-auto rounded-lg border border-outline-variant bg-surface px-3 py-2 font-mono text-xs text-on-surface-variant">
-          dataHora, numeroNota, notaOriginal, status, notaPesagemId, motoristaNome, motoristaCelular, placa, terminal
+          dataHora; numeroNota; notaOriginal (Minerion); status; notaPesagemId; motoristaNome; motoristaCelular; placa; terminal; Peso
         </div>
         <p className="mb-4 text-xs text-outline">
-          Limite: 500 linhas por envio. dataHora no formato ISO-8601 (ex: 2024-01-15T10:30:00).
+          Limite: 500 linhas por envio. Datas ISO-8601 ou DD/MM/AAAA são aceitas. Linhas do terminal TCS são importadas como notas; as demais, como registros.
         </p>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">

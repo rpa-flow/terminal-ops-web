@@ -6,6 +6,7 @@ import { requireApiKey } from "../middlewares/api-key";
 import { requireAuth } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
 import { createRecordService, listRecordsService, updateRecordStatusByNumeroNotaService } from "../services/record.service";
+import { importCsvNoteService } from "../services/note.service";
 import {
   createRecordSchema,
   csvRowSchema,
@@ -91,6 +92,8 @@ recordRoutes.post("/csv", upload.single("file"), async (req, res) => {
         fileBuffer,
         {
           columns: true,
+          bom: true,
+          delimiter: fileBuffer.toString("utf8").split(/\r?\n/, 1)[0]?.includes(";") ? ";" : ",",
           skip_empty_lines: true,
           trim: true
         },
@@ -123,17 +126,42 @@ recordRoutes.post("/csv", upload.single("file"), async (req, res) => {
   const errors: { row: number; message: string }[] = [];
 
   for (let i = 0; i < rows.length; i++) {
-    const parsed = csvRowSchema.safeParse(rows[i]);
+    const rawRow = rows[i]!;
+    const normalizedRow = Object.fromEntries(
+      Object.entries(rawRow).map(([header, value]) => {
+        const normalizedHeader = header.trim().toLowerCase();
+        const headerMap: Record<string, string> = {
+          datahora: "dataHora",
+          numeronota: "numeroNota",
+          "notaoriginal (minerion)": "notaOriginal",
+          notaoriginal: "notaOriginal",
+          status: "status",
+          notapesagemid: "notaPesagemId",
+          motoristanome: "motoristaNome",
+          motoristacelular: "motoristaCelular",
+          placa: "placa",
+          terminal: "terminal",
+          peso: "peso"
+        };
+
+        return [headerMap[normalizedHeader] ?? header.trim(), value];
+      })
+    );
+    const parsed = csvRowSchema.safeParse(normalizedRow);
     if (!parsed.success) {
       const message = parsed.error.issues[0]?.message ?? "Invalid data";
       errors.push({ row: i + 2, message });
       continue;
     }
     try {
-      await createRecordService(parsed.data);
+      if (parsed.data.terminal.toUpperCase() === "TCS") {
+        await importCsvNoteService(parsed.data);
+      } else {
+        await createRecordService(parsed.data);
+      }
       inserted += 1;
     } catch {
-      errors.push({ row: i + 2, message: "Failed to save record" });
+      errors.push({ row: i + 2, message: "Failed to save CSV row" });
     }
   }
 
