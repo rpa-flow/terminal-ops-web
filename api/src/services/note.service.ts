@@ -62,6 +62,38 @@ export const createNoteService = async (input: CreateNoteInput) => {
   return sanitizeNote(saved);
 };
 
+export const importCsvNoteService = async (input: {
+  dataHora: Date;
+  numeroNota: string;
+  notaOriginal: string;
+  status: string;
+  terminal: string;
+  placa: string;
+  motoristaNome: string | null;
+  motoristaCelular: string | null;
+  recebimentoPeso: string | null;
+}) => {
+  const saved = await upsertIngestedNote({
+    codigo: input.numeroNota,
+    dataHora: input.dataHora,
+    numero: input.numeroNota,
+    original: input.notaOriginal,
+    terminal: input.terminal,
+    status: input.status,
+    emitenteCnpj: null,
+    emitenteFornecedor: null,
+    placa: input.placa,
+    motoristaNome: input.motoristaNome,
+    motoristaTelefone: input.motoristaCelular,
+    recebimentoColaborador: null,
+    recebimentoPeso: input.recebimentoPeso,
+    recebimentoPatioDescarga: null,
+    recebimentoData: null
+  });
+
+  return sanitizeNote(saved);
+};
+
 export const upsertIngestedNoteService = async (input: IngestNoteInput) => {
   const saved = await upsertIngestedNote({
     codigo: input.notaChave,

@@ -196,15 +196,16 @@ export type UpdateStatusBodyInput = z.infer<typeof updateStatusBodySchema>;
 
 export const csvRowSchema = z
   .object({
-    dataHora: z.string().min(16).max(25),
+    dataHora: z.string().trim().min(10).max(25),
     numeroNota: z.string().trim().min(1).max(64),
-    notaOriginal: z.string().trim().min(1).max(255),
-    status: z.string().trim().min(1).max(64),
-    notaPesagemId: z.string().trim().min(1).max(64),
-    motoristaNome: z.string().trim().min(1).max(120),
-    motoristaCelular: z.string().trim().min(1).max(120),
+    notaOriginal: z.string().trim().max(255).default(""),
+    status: z.string().trim().max(64).default(""),
+    notaPesagemId: z.string().trim().max(64).default(""),
+    motoristaNome: z.string().trim().max(120).default(""),
+    motoristaCelular: z.string().trim().max(120).default(""),
     placa: z.string().trim().min(1).max(32),
-    terminal: z.string().trim().min(1).max(120)
+    terminal: z.string().trim().min(1).max(120),
+    peso: z.string().trim().max(32).default("")
   })
   .strict()
   .superRefine((row, ctx) => {
@@ -216,17 +217,17 @@ export const csvRowSchema = z
     dataHora: parseDateTime(row.dataHora) as Date,
     numeroNota: row.numeroNota,
     notaChave: null,
-    notaOriginal: row.notaOriginal,
-    status: row.status,
+    notaOriginal: row.notaOriginal || row.numeroNota,
+    status: row.status || "PENDENTE",
     notaPesagemId: row.notaPesagemId,
     emitenteCnpj: null,
     emitenteFornecedor: null,
-    motoristaNome: row.motoristaNome,
-    motoristaCelular: row.motoristaCelular,
+    motoristaNome: row.motoristaNome || null,
+    motoristaCelular: row.motoristaCelular || null,
     placa: row.placa.toUpperCase(),
     placaRecebimento: null,
     recebimentoColaborador: null,
-    recebimentoPeso: null,
+    recebimentoPeso: row.peso || null,
     recebimentoPatioDescarga: null,
     recebimentoData: null,
     recebimentoPlaca: null,
