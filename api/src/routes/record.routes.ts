@@ -5,8 +5,8 @@ import { parse } from "csv-parse";
 import { requireApiKey } from "../middlewares/api-key";
 import { requireAuth } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
-import { createRecordService, listRecordsService, updateRecordStatusByNumeroNotaService } from "../services/record.service";
-import { importCsvNoteService } from "../services/note.service";
+import { createRecordService, importCsvRecordsService, listRecordsService, updateRecordStatusByNumeroNotaService } from "../services/record.service";
+import { importCsvNoteService, importCsvNotesService } from "../services/note.service";
 import {
   createRecordSchema,
   csvRowSchema,
@@ -18,6 +18,7 @@ import {
 
 const recordRoutes = Router();
 const CSV_ROW_LIMIT = 50_000;
+const CSV_BATCH_SIZE = 500;
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -79,6 +80,12 @@ recordRoutes.post("/", validate(createRecordSchema), async (req, res) => {
 });
 
 recordRoutes.post("/csv", upload.single("file"), async (req, res) => {
+  const destination = typeof req.query.destination === "string" ? req.query.destination.trim().toUpperCase() : "";
+  if (destination !== "TBJC" && destination !== "TCS") {
+    res.status(400).json({ message: "CSV destination must be TBJC or TCS" });
+    return;
+  }
+
   if (!req.file) {
     res.status(400).json({ message: "No CSV file provided" });
     return;
@@ -123,8 +130,9 @@ recordRoutes.post("/csv", upload.single("file"), async (req, res) => {
     return;
   }
 
-  let inserted = 0;
   const errors: { row: number; message: string }[] = [];
+  const noteRows: { row: number; data: Parameters<typeof importCsvNoteService>[0] }[] = [];
+  const recordRows: { row: number; data: Parameters<typeof createRecordService>[0] }[] = [];
 
   for (let i = 0; i < rows.length; i++) {
     const rawRow = rows[i]!;
@@ -154,19 +162,49 @@ recordRoutes.post("/csv", upload.single("file"), async (req, res) => {
       errors.push({ row: i + 2, message });
       continue;
     }
-    try {
-      if (parsed.data.terminal.toUpperCase() === "TCS") {
-        await importCsvNoteService(parsed.data);
-      } else {
-        await createRecordService(parsed.data);
-      }
-      inserted += 1;
-    } catch {
-      errors.push({ row: i + 2, message: "Failed to save CSV row" });
+    if (destination === "TCS") {
+      noteRows.push({ row: i + 2, data: parsed.data });
+    } else {
+      recordRows.push({ row: i + 2, data: parsed.data });
     }
   }
 
-  res.status(207).json({ inserted, errors });
+  let notes = 0;
+  let records = 0;
+
+  for (let offset = 0; offset < noteRows.length; offset += CSV_BATCH_SIZE) {
+    const batch = noteRows.slice(offset, offset + CSV_BATCH_SIZE);
+    try {
+      notes += await importCsvNotesService(batch.map(({ data }) => data));
+    } catch {
+      for (const item of batch) {
+        try {
+          await importCsvNoteService(item.data);
+          notes += 1;
+        } catch {
+          errors.push({ row: item.row, message: "Failed to save CSV row" });
+        }
+      }
+    }
+  }
+
+  for (let offset = 0; offset < recordRows.length; offset += CSV_BATCH_SIZE) {
+    const batch = recordRows.slice(offset, offset + CSV_BATCH_SIZE);
+    try {
+      records += await importCsvRecordsService(batch.map(({ data }) => data));
+    } catch {
+      for (const item of batch) {
+        try {
+          await createRecordService(item.data);
+          records += 1;
+        } catch {
+          errors.push({ row: item.row, message: "Failed to save CSV row" });
+        }
+      }
+    }
+  }
+
+  res.status(207).json({ inserted: notes + records, destinations: { notes, records }, errors });
 });
 
 recordRoutes.get("/", validate(listRecordsQuerySchema, "query"), async (req, res) => {

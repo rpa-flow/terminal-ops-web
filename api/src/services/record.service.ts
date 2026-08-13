@@ -1,6 +1,6 @@
 import xss from "xss";
 
-import { createRecord, findLatestRecordByNumeroNota, listRecords, updateRecordStatusById } from "../repositories/record.repository";
+import { createRecord, createRecords, findLatestRecordByNumeroNota, listRecords, updateRecordStatusById } from "../repositories/record.repository";
 import type { CreateRecordInput, ListRecordsFilters } from "../validators/record.validator";
 import { resolvePurchaseOrder } from "./purchase-order-rule.service";
 
@@ -56,6 +56,8 @@ export const createRecordService = async (input: CreateRecordInput & { materialI
   const saved = await createRecord(input);
   return sanitizeRecord(saved);
 };
+
+export const importCsvRecordsService = (inputs: CreateRecordInput[]) => createRecords(inputs);
 
 export const listRecordsService = async (filters: ListRecordsFilters) => {
   const result = await listRecords(filters);
