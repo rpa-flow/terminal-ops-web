@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { AppNavigation } from "../components/AppNavigation";
+import { CsvUploadModal } from "../components/CsvUploadModal";
 import { useAuth } from "../hooks/useAuth";
 import { listNotesRequest } from "../services/notes.service";
 import type { NoteItem } from "../types/api";
@@ -14,6 +15,7 @@ export const NotesPage = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCsvModal, setShowCsvModal] = useState(false);
 
   const loadPending = async (nextPage = page) => {
     if (!token) {
@@ -51,6 +53,7 @@ export const NotesPage = () => {
           </div>
           <div className="flex items-center gap-2">
             <button className="btn-muted" onClick={() => void loadPending(page)} disabled={loading}>Atualizar</button>
+            <button className="btn-muted" onClick={() => setShowCsvModal(true)}>Importar CSV</button>
             <button className="btn-muted" onClick={logout}>Sair</button>
           </div>
         </div>
@@ -131,6 +134,13 @@ export const NotesPage = () => {
           </div>
         </div>
       </section>
+      {showCsvModal && (
+        <CsvUploadModal
+          destination="TCS"
+          onClose={() => setShowCsvModal(false)}
+          onSuccess={() => void loadPending(1)}
+        />
+      )}
     </main>
   );
 };

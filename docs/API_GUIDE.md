@@ -47,8 +47,10 @@ Nao identificado no projeto atual:
 Formato de request:
 
 - JSON para a maioria dos endpoints.
-- `multipart/form-data` para `/api/records/csv`, com arquivo de ate 5.000 linhas e 10 MB.
+- `multipart/form-data` para `/api/records/csv`, com arquivo de ate 50.000 linhas e 10 MB. As linhas sao gravadas em lotes de 500 para reduzir viagens ao banco.
 - Query string para filtros de listagem.
+
+Na importacao CSV, o parametro obrigatorio `destination` define o destino conforme a tela de origem: `destination=TBJC` insere todas as linhas em `records`, enquanto `destination=TCS` faz *upsert* de todas as linhas em `notes`. A coluna `terminal` continua sendo armazenada, mas nao escolhe a tabela. A resposta informa os totais em `destinations.notes` e `destinations.records`.
 
 Formato de response:
 

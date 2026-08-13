@@ -17,13 +17,12 @@ export const listRecordsRequest = (token: string, filters: RecordFilters): Promi
   });
 };
 
-export const uploadCsvRequest = (token: string, file: File): Promise<CsvUploadResponse> => {
+export const uploadCsvRequest = (token: string, file: File, destination: "TBJC" | "TCS"): Promise<CsvUploadResponse> => {
   const formData = new FormData();
   formData.append("file", file);
-  return http<CsvUploadResponse>("/records/csv", {
+  return http<CsvUploadResponse>(`/records/csv?destination=${destination}`, {
     method: "POST",
     formData,
     token,
   });
 };
-

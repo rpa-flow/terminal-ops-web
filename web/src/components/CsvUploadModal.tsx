@@ -5,11 +5,12 @@ import { uploadCsvRequest } from "../services/records.service";
 import type { CsvUploadResponse } from "../types/api";
 
 type Props = {
+  destination: "TBJC" | "TCS";
   onClose: () => void;
   onSuccess: () => void;
 };
 
-export const CsvUploadModal = ({ onClose, onSuccess }: Props) => {
+export const CsvUploadModal = ({ destination, onClose, onSuccess }: Props) => {
   const { token } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ export const CsvUploadModal = ({ onClose, onSuccess }: Props) => {
     setResult(null);
 
     try {
-      const response = await uploadCsvRequest(token, file);
+      const response = await uploadCsvRequest(token, file, destination);
       setResult(response);
       if (response.inserted > 0) onSuccess();
     } catch {
@@ -39,7 +40,7 @@ export const CsvUploadModal = ({ onClose, onSuccess }: Props) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-lg rounded border border-outline-variant bg-surface-container-lowest p-6 shadow-xl">
-        <h2 className="mb-1 text-lg font-semibold text-on-surface">Importar CSV</h2>
+        <h2 className="mb-1 text-lg font-semibold text-on-surface">Importar CSV — {destination}</h2>
         <p className="mb-4 text-sm text-on-surface-variant">
           O arquivo deve ter as colunas na ordem abaixo (com cabeçalho):
         </p>
@@ -47,7 +48,10 @@ export const CsvUploadModal = ({ onClose, onSuccess }: Props) => {
           dataHora; numeroNota; notaOriginal (Minerion); status; notaPesagemId; motoristaNome; motoristaCelular; placa; terminal; Peso
         </div>
         <p className="mb-4 text-xs text-outline">
-          Limite: 5.000 linhas por envio. Datas ISO-8601 ou DD/MM/AAAA são aceitas. Linhas do terminal TCS são importadas como notas; as demais, como registros.
+          Limite: 50.000 linhas por envio. Datas ISO-8601 ou DD/MM/AAAA são aceitas.
+        </p>
+        <p className="mb-4 rounded border border-outline-variant bg-surface p-3 text-xs text-on-surface-variant">
+          <strong>Destino selecionado pela tela:</strong> {destination === "TBJC" ? "todas as linhas serão gravadas em registros." : "todas as linhas serão gravadas em notas."} A coluna <code>terminal</code> será armazenada, mas não muda a tabela de destino.
         </p>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
@@ -64,6 +68,9 @@ export const CsvUploadModal = ({ onClose, onSuccess }: Props) => {
           {result && (
             <div className="rounded border border-outline-variant bg-surface p-3 text-sm">
               <p className="font-medium text-green-700">{result.inserted} registro(s) importado(s) com sucesso.</p>
+              <p className="mt-1 text-on-surface-variant">
+                Destino: {result.destinations.notes} nota(s) e {result.destinations.records} registro(s).
+              </p>
               {result.errors.length > 0 && (
                 <div className="mt-2">
                   <p className="mb-1 font-medium text-red-600">{result.errors.length} linha(s) com erro:</p>

@@ -120,6 +120,7 @@ export const RecordsPage = () => {
 
       {showCsvModal && (
         <CsvUploadModal
+          destination="TBJC"
           onClose={() => setShowCsvModal(false)}
           onSuccess={() => void loadRecords(initialFilters)}
         />

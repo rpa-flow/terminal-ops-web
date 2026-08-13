@@ -257,6 +257,13 @@ const buildOpenApiDocument = (baseUrl: string) => ({
         type: "object",
         properties: {
           inserted: { type: "integer", example: 10 },
+          destinations: {
+            type: "object",
+            properties: {
+              notes: { type: "integer", example: 3 },
+              records: { type: "integer", example: 7 }
+            }
+          },
           errors: {
             type: "array",
             items: {
@@ -545,6 +552,15 @@ const buildOpenApiDocument = (baseUrl: string) => ({
         tags: ["Records"],
         summary: "Importa registros por CSV",
         security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "destination",
+            in: "query",
+            required: true,
+            schema: { type: "string", enum: ["TBJC", "TCS"] },
+            description: "Tela operacional que determina a tabela: TBJC grava em records e TCS grava em notes"
+          }
+        ],
         requestBody: {
           required: true,
           content: {

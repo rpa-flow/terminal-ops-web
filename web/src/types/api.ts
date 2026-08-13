@@ -61,6 +61,7 @@ export type RecordsResponse = {
 
 export type CsvUploadResponse = {
   inserted: number;
+  destinations: { notes: number; records: number };
   errors: { row: number; message: string }[];
 };
 

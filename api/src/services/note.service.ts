@@ -5,6 +5,7 @@ import {
   findNoteByCodigo,
   listNotes,
   upsertIngestedNote,
+  upsertIngestedNotes,
   updateNoteStatusByCodigo
 } from "../repositories/note.repository";
 import type { IngestNoteInput } from "../validators/record.validator";
@@ -93,6 +94,28 @@ export const importCsvNoteService = async (input: {
 
   return sanitizeNote(saved);
 };
+
+type CsvNoteInput = Parameters<typeof importCsvNoteService>[0];
+
+const toIngestedNote = (input: CsvNoteInput) => ({
+  codigo: input.numeroNota,
+  dataHora: input.dataHora,
+  numero: input.numeroNota,
+  original: input.notaOriginal,
+  terminal: input.terminal,
+  status: input.status,
+  emitenteCnpj: null,
+  emitenteFornecedor: null,
+  placa: input.placa,
+  motoristaNome: input.motoristaNome,
+  motoristaTelefone: input.motoristaCelular,
+  recebimentoColaborador: null,
+  recebimentoPeso: input.recebimentoPeso,
+  recebimentoPatioDescarga: null,
+  recebimentoData: null
+});
+
+export const importCsvNotesService = (inputs: CsvNoteInput[]) => upsertIngestedNotes(inputs.map(toIngestedNote));
 
 export const upsertIngestedNoteService = async (input: IngestNoteInput) => {
   const saved = await upsertIngestedNote({

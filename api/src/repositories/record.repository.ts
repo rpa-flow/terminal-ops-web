@@ -48,6 +48,13 @@ export const createRecord = async (input: CreateRecordInput): Promise<Record> =>
   return prisma.record.create({ data: input });
 };
 
+export const createRecords = async (inputs: CreateRecordInput[]): Promise<number> => {
+  if (inputs.length === 0) return 0;
+
+  const result = await prisma.record.createMany({ data: inputs });
+  return result.count;
+};
+
 export const listRecords = async (filters: ListRecordsFilters): Promise<ListRecordsResult> => {
   const where = buildWhere(filters);
   const skip = (filters.page - 1) * filters.perPage;
