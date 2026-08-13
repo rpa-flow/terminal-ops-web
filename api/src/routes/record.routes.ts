@@ -17,7 +17,7 @@ import {
 } from "../validators/record.validator";
 
 const recordRoutes = Router();
-const CSV_ROW_LIMIT = 5_000;
+const CSV_ROW_LIMIT = 50_000;
 
 const upload = multer({
   storage: multer.memoryStorage(),
