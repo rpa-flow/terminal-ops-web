@@ -555,7 +555,8 @@ const buildOpenApiDocument = (baseUrl: string) => ({
                 properties: {
                   file: {
                     type: "string",
-                    format: "binary"
+                    format: "binary",
+                    description: "Arquivo CSV com ate 5.000 linhas e 10 MB"
                   }
                 }
               }

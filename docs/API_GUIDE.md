@@ -47,7 +47,7 @@ Nao identificado no projeto atual:
 Formato de request:
 
 - JSON para a maioria dos endpoints.
-- `multipart/form-data` para `/api/records/csv`.
+- `multipart/form-data` para `/api/records/csv`, com arquivo de ate 5.000 linhas e 10 MB.
 - Query string para filtros de listagem.
 
 Formato de response:
@@ -297,4 +297,3 @@ Ponto de atencao:
 
 - `X-Provision-Key` nao aparece nos `allowedHeaders` do CORS atual.
 - Rotas `/api/records/:numeroNota/status` tambem passam por `csrfProtection` por estarem sob `/api/records`.
-
