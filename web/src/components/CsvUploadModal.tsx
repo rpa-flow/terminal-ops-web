@@ -47,7 +47,7 @@ export const CsvUploadModal = ({ onClose, onSuccess }: Props) => {
           dataHora; numeroNota; notaOriginal (Minerion); status; notaPesagemId; motoristaNome; motoristaCelular; placa; terminal; Peso
         </div>
         <p className="mb-4 text-xs text-outline">
-          Limite: 500 linhas por envio. Datas ISO-8601 ou DD/MM/AAAA são aceitas. Linhas do terminal TCS são importadas como notas; as demais, como registros.
+          Limite: 5.000 linhas por envio. Datas ISO-8601 ou DD/MM/AAAA são aceitas. Linhas do terminal TCS são importadas como notas; as demais, como registros.
         </p>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">

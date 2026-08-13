@@ -17,10 +17,11 @@ import {
 } from "../validators/record.validator";
 
 const recordRoutes = Router();
+const CSV_ROW_LIMIT = 5_000;
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+  limits: { fileSize: 10 * 1024 * 1024, files: 1 },
   fileFilter: (_req, file, cb) => {
     if (!file.originalname.toLowerCase().endsWith(".csv")) {
       cb(new Error("Only CSV files are accepted"));
@@ -117,8 +118,8 @@ recordRoutes.post("/csv", upload.single("file"), async (req, res) => {
     return;
   }
 
-  if (rows.length > 500) {
-    res.status(400).json({ message: "CSV exceeds the 500 row limit per upload" });
+  if (rows.length > CSV_ROW_LIMIT) {
+    res.status(400).json({ message: `CSV exceeds the ${CSV_ROW_LIMIT} row limit per upload` });
     return;
   }
 
