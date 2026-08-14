@@ -2,7 +2,7 @@ import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { AppNavigation } from "../components/AppNavigation";
 import { useAuth } from "../hooks/useAuth";
-import { createShipmentRequest, listShipmentsRequest } from "../services/shipments.service";
+import { createShipmentRequest, deleteShipmentRequest, listShipmentsRequest } from "../services/shipments.service";
 import type { ShipmentsResponse } from "../types/api";
 
 const number = (value: number) => new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 3 }).format(value);
@@ -13,6 +13,7 @@ export const ShipmentsPage = () => {
   const [data, setData] = useState<ShipmentsResponse | null>(null);
   const [form, setForm] = useState({ shippedAt: new Date().toISOString().slice(0, 10), volume: "", destination: "", document: "", notes: "" });
   const [message, setMessage] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const terminal = area?.toUpperCase() as "TBJC" | "TCS";
   const load = useCallback(async () => token && setData(await listShipmentsRequest(token, terminal)), [token, terminal]);
   useEffect(() => {
@@ -39,6 +40,21 @@ export const ShipmentsPage = () => {
     } catch { setMessage("Não foi possível registrar o embarque."); }
   };
 
+  const remove = async (id: string) => {
+    if (!token || !window.confirm("Tem certeza de que deseja excluir este embarque?")) return;
+    setMessage(null);
+    setDeletingId(id);
+    try {
+      await deleteShipmentRequest(token, id);
+      setMessage("Embarque excluído com sucesso.");
+      await load();
+    } catch {
+      setMessage("Não foi possível excluir o embarque.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return <main className="app-with-sidebar min-h-screen bg-surface">
     <header className="border-b border-outline-variant bg-surface-container-lowest"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4"><div className="flex items-center gap-4"><AppNavigation current="shipments" reportArea={area as "tbjc" | "tcs"} /><div><h1 className="text-[22px] font-medium">Embarques — {terminal}</h1><p className="text-sm text-on-surface-variant">Lançamento manual • {user?.email}</p></div></div><button className="btn-muted" onClick={logout}>Sair</button></div></header>
     <section className="mx-auto grid max-w-7xl gap-4 px-4 py-6">
@@ -56,7 +72,7 @@ export const ShipmentsPage = () => {
         <label className="text-sm md:col-span-2">Observações<input className="input mt-1 w-full" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></label>
         <div><button className="btn-primary" type="submit">Registrar embarque</button></div>{message && <p className="text-sm">{message}</p>}
       </form>
-      <div className="overflow-x-auto rounded border border-outline-variant bg-surface-container-lowest"><table className="min-w-full text-left text-sm"><thead className="bg-surface"><tr><th className="px-4 py-3">Data</th><th className="px-4 py-3">Volume</th><th className="px-4 py-3">Destino</th><th className="px-4 py-3">Documento</th><th className="px-4 py-3">Observações</th></tr></thead><tbody>{data?.items.map((item) => <tr key={item.id} className="border-t border-surface-container-high"><td className="px-4 py-3">{new Date(item.shippedAt).toLocaleDateString("pt-BR")}</td><td className="px-4 py-3">{number(item.volume)}</td><td className="px-4 py-3">{item.destination ?? "-"}</td><td className="px-4 py-3">{item.document ?? "-"}</td><td className="px-4 py-3">{item.notes ?? "-"}</td></tr>)}</tbody></table></div>
+      <div className="overflow-x-auto rounded border border-outline-variant bg-surface-container-lowest"><table className="min-w-full text-left text-sm"><thead className="bg-surface"><tr><th className="px-4 py-3">Data</th><th className="px-4 py-3">Volume</th><th className="px-4 py-3">Destino</th><th className="px-4 py-3">Documento</th><th className="px-4 py-3">Observações</th><th className="px-4 py-3 text-right">Ações</th></tr></thead><tbody>{data?.items.map((item) => <tr key={item.id} className="border-t border-surface-container-high"><td className="px-4 py-3">{new Date(item.shippedAt).toLocaleDateString("pt-BR")}</td><td className="px-4 py-3">{number(item.volume)}</td><td className="px-4 py-3">{item.destination ?? "-"}</td><td className="px-4 py-3">{item.document ?? "-"}</td><td className="px-4 py-3">{item.notes ?? "-"}</td><td className="px-4 py-3 text-right"><button type="button" className="btn-muted text-error" disabled={deletingId !== null} onClick={() => void remove(item.id)}>{deletingId === item.id ? "Excluindo..." : "Excluir"}</button></td></tr>)}</tbody></table></div>
     </section>
   </main>;
 };

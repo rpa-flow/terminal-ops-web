@@ -19,5 +19,9 @@ export const listShipmentsQuerySchema = z.object({
   endDate: z.coerce.date().optional()
 }).strict();
 
+export const deleteShipmentParamsSchema = z.object({
+  id: z.uuid()
+}).strict();
+
 export type CreateShipmentInput = z.infer<typeof createShipmentSchema>;
 export type ListShipmentsInput = z.infer<typeof listShipmentsQuerySchema>;
