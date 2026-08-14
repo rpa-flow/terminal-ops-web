@@ -46,3 +46,8 @@ export const listShipmentsService = async (filters: ListShipmentsInput) => {
     items: items.map((item) => ({ ...item, volume: item.volume.toNumber(), destination: clean(item.destination), document: clean(item.document), notes: clean(item.notes) }))
   };
 };
+
+export const deleteShipmentService = async (id: string) => {
+  const result = await prisma.shipment.deleteMany({ where: { id } });
+  return result.count > 0;
+};
