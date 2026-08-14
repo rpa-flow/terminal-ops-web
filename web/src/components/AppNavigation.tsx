@@ -8,6 +8,19 @@ type AppNavigationProps = {
 export const AppNavigation = ({ current, reportArea }: AppNavigationProps) => {
   const navigate = useNavigate();
   const selectedArea = current === "notes" || reportArea === "tcs" ? "tcs" : "tbjc";
+  const navigateToArea = (area: "tbjc" | "tcs") => {
+    if (current === "shipments") {
+      navigate(`/embarques/${area}`);
+      return;
+    }
+
+    if (current === "reports") {
+      navigate(`/relatorios/${area}`);
+      return;
+    }
+
+    navigate(area === "tbjc" ? "/" : "/notas");
+  };
 
   return (
     <aside className="app-sidebar" aria-label="Navegação principal">
@@ -27,7 +40,7 @@ export const AppNavigation = ({ current, reportArea }: AppNavigationProps) => {
             id="terminal-navigation"
             className="w-full rounded-lg border border-primary-container/40 bg-on-primary/10 px-3 py-2 font-medium text-on-primary outline-none focus:ring-2 focus:ring-secondary"
             value={selectedArea}
-            onChange={(event) => navigate(event.target.value === "tbjc" ? "/" : "/notas")}
+            onChange={(event) => navigateToArea(event.target.value as "tbjc" | "tcs")}
             aria-label="Selecionar terminal"
           >
             <option value="tbjc">TBJC — Registros</option>
