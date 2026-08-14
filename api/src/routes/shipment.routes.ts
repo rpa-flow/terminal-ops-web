@@ -10,6 +10,6 @@ shipmentRoutes.get("/", validate(listShipmentsQuerySchema, "query"), async (_req
   res.status(200).json(await listShipmentsService(res.locals.validatedQuery));
 });
 shipmentRoutes.post("/", validate(createShipmentSchema, "body"), async (req, res) => {
-  res.status(201).json(await createShipmentService(res.locals.validatedBody, req.auth!.userId));
+  res.status(201).json(await createShipmentService(req.body, req.auth!.userId));
 });
 export { shipmentRoutes };
