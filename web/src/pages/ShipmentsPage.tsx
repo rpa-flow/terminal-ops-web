@@ -29,7 +29,9 @@ export const ShipmentsPage = () => {
     try {
       await createShipmentRequest(token, {
         terminal, shippedAt: `${form.shippedAt}T12:00:00.000Z`, volume: Number(form.volume.replace(",", ".")),
-        destination: form.destination || null, document: form.document || null, notes: form.notes || null
+        ...(form.destination.trim() ? { destination: form.destination.trim() } : {}),
+        ...(form.document.trim() ? { document: form.document.trim() } : {}),
+        ...(form.notes.trim() ? { notes: form.notes.trim() } : {})
       });
       setForm((current) => ({ ...current, volume: "", destination: "", document: "", notes: "" }));
       setMessage("Embarque registrado com sucesso.");
