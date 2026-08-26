@@ -63,7 +63,7 @@ export const listRecords = async (filters: ListRecordsFilters): Promise<ListReco
     prisma.record.count({ where }),
     prisma.record.findMany({
       where,
-      orderBy: { dataHora: "desc" },
+      orderBy: [{ dataHora: "desc" }, { createdAt: "desc" }],
       skip,
       take: filters.perPage
     })

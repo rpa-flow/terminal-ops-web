@@ -8,6 +8,9 @@ type AppNavigationProps = {
 export const AppNavigation = ({ current, reportArea }: AppNavigationProps) => {
   const navigate = useNavigate();
   const selectedArea = current === "notes" || reportArea === "tcs" ? "tcs" : "tbjc";
+  const operationalPath = selectedArea === "tbjc" ? "/" : "/notas";
+  const operationalLabel = selectedArea === "tbjc" ? "Registros" : "Notas";
+  const isOperationalView = current === "records" || current === "notes";
   const navigateToArea = (area: "tbjc" | "tcs") => {
     if (current === "shipments") {
       navigate(`/embarques/${area}`);
@@ -47,6 +50,13 @@ export const AppNavigation = ({ current, reportArea }: AppNavigationProps) => {
             <option value="tcs">TCS — Notas</option>
           </select>
         </div>
+        <Link
+          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${isOperationalView ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`}
+          to={operationalPath}
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5"><path d="M4 5h16M4 12h16M4 19h16" strokeWidth="1.8" strokeLinecap="round" /></svg>
+          {operationalLabel}
+        </Link>
         <Link
           className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${current === "reports" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`}
           to={`/relatorios/${selectedArea}`}
