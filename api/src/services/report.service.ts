@@ -58,6 +58,8 @@ const percentage = (part: number, total: number): number => {
 };
 
 const buildRecordWhere = (filters: ReportOverviewQueryInput): Prisma.RecordWhereInput => {
+  // Keep report dates aligned with the Data/Hora filter shown on the records screen.
+  // createdAt is the ingestion timestamp and can fall on a later day after a CSV import.
   const where: Prisma.RecordWhereInput = {
     createdAt: {
       gte: filters.startDate,
