@@ -24,7 +24,11 @@ const buildWhere = (filters: ListRecordsFilters): Prisma.RecordWhereInput => {
   }
 
   if (filters.terminal) {
-    where.terminal = { contains: filters.terminal, mode: "insensitive" };
+    const normalized = filters.terminal.trim().toUpperCase();
+    const aliases = normalized === "TBJC" ? ["TBJC", "TJBC"] : [normalized];
+    where.OR = aliases.map((terminal) => ({
+      terminal: { contains: terminal, mode: "insensitive" }
+    }));
   }
 
   if (filters.startDate || filters.endDate) {

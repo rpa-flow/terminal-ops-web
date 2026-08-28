@@ -57,7 +57,16 @@ const percentage = (part: number, total: number): number => {
   return Number(((part / total) * 100).toFixed(1));
 };
 
+const terminalAliases = (terminal: string | undefined): string[] => {
+  if (!terminal) return [];
+
+  const normalized = terminal.trim().toUpperCase();
+  return normalized === "TBJC" ? ["TBJC", "TJBC"] : [normalized];
+};
+
 const buildRecordWhere = (filters: ReportOverviewQueryInput): Prisma.RecordWhereInput => {
+  // Keep report dates aligned with the Data/Hora filter shown on the records screen.
+  // createdAt is the ingestion timestamp and can fall on a later day after a CSV import.
   const where: Prisma.RecordWhereInput = {
     dataHora: {
       gte: filters.startDate,
@@ -65,8 +74,11 @@ const buildRecordWhere = (filters: ReportOverviewQueryInput): Prisma.RecordWhere
     }
   };
 
-  if (filters.terminal) {
-    where.terminal = { contains: filters.terminal, mode: "insensitive" };
+  const aliases = terminalAliases(filters.terminal);
+  if (aliases.length > 0) {
+    where.OR = aliases.map((terminal) => ({
+      terminal: { contains: terminal, mode: "insensitive" }
+    }));
   }
 
   return where;
@@ -80,8 +92,11 @@ const buildNoteWhere = (filters: ReportOverviewQueryInput): Prisma.NoteWhereInpu
     }
   };
 
-  if (filters.terminal) {
-    where.terminal = { contains: filters.terminal, mode: "insensitive" };
+  const aliases = terminalAliases(filters.terminal);
+  if (aliases.length > 0) {
+    where.OR = aliases.map((terminal) => ({
+      terminal: { contains: terminal, mode: "insensitive" }
+    }));
   }
 
   return where;
@@ -156,18 +171,30 @@ const buildDailyVolumes = (
 };
 
 const buildRawConditions = (filters: ReportOverviewQueryInput) => {
-  const terminalPattern = filters.terminal ? `%${filters.terminal}%` : undefined;
+  const terminalPatterns = terminalAliases(filters.terminal).map((terminal) => `%${terminal}%`);
+  const noteTerminalCondition = terminalPatterns.length
+    ? Prisma.sql`AND (${Prisma.join(
+        terminalPatterns.map((pattern) => Prisma.sql`n.terminal ILIKE ${pattern}`),
+        " OR "
+      )})`
+    : Prisma.empty;
+  const recordTerminalCondition = terminalPatterns.length
+    ? Prisma.sql`AND (${Prisma.join(
+        terminalPatterns.map((pattern) => Prisma.sql`r.terminal ILIKE ${pattern}`),
+        " OR "
+      )})`
+    : Prisma.empty;
 
   return {
     noteConditions: Prisma.sql`
       n.created_at >= ${filters.startDate}
       AND n.created_at <= ${filters.endDate}
-      ${terminalPattern ? Prisma.sql`AND n.terminal ILIKE ${terminalPattern}` : Prisma.empty}
+      ${noteTerminalCondition}
     `,
     recordConditions: Prisma.sql`
       r.data_hora >= ${filters.startDate}
       AND r.data_hora <= ${filters.endDate}
-      ${terminalPattern ? Prisma.sql`AND r.terminal ILIKE ${terminalPattern}` : Prisma.empty}
+      ${recordTerminalCondition}
     `
   };
 };
