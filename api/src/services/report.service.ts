@@ -59,7 +59,7 @@ const percentage = (part: number, total: number): number => {
 
 const buildRecordWhere = (filters: ReportOverviewQueryInput): Prisma.RecordWhereInput => {
   const where: Prisma.RecordWhereInput = {
-    dataHora: {
+    createdAt: {
       gte: filters.startDate,
       lte: filters.endDate
     }
@@ -124,7 +124,7 @@ const buildDailyVolumes = (
   startDate: Date,
   endDate: Date,
   noteDates: { createdAt: Date }[],
-  recordDates: { dataHora: Date }[]
+  recordDates: { createdAt: Date }[]
 ): DailyVolumeItem[] => {
   const buckets = new Map<string, DailyVolumeItem>();
   const cursor = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
@@ -145,7 +145,7 @@ const buildDailyVolumes = (
   });
 
   recordDates.forEach((record) => {
-    const key = dateKey(record.dataHora);
+    const key = dateKey(record.createdAt);
     const bucket = buckets.get(key);
     if (bucket) {
       bucket.receivedRecords += 1;
@@ -165,8 +165,8 @@ const buildRawConditions = (filters: ReportOverviewQueryInput) => {
       ${terminalPattern ? Prisma.sql`AND n.terminal ILIKE ${terminalPattern}` : Prisma.empty}
     `,
     recordConditions: Prisma.sql`
-      r.data_hora >= ${filters.startDate}
-      AND r.data_hora <= ${filters.endDate}
+      r.created_at >= ${filters.startDate}
+      AND r.created_at <= ${filters.endDate}
       ${terminalPattern ? Prisma.sql`AND r.terminal ILIKE ${terminalPattern}` : Prisma.empty}
     `
   };
@@ -231,7 +231,7 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       }
     }),
     prisma.note.findMany({ where: noteWhere, select: { createdAt: true } }),
-    prisma.record.findMany({ where: recordWhere, select: { dataHora: true } }),
+    prisma.record.findMany({ where: recordWhere, select: { createdAt: true } }),
     useNoteReceipts
       ? prisma.note.findMany({
           where: { ...noteWhere, recebimentoPeso: { not: null } },
@@ -254,9 +254,9 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       AND ${recordConditions}
     `,
     prisma.$queryRaw<AverageRow[]>`
-      SELECT AVG(ABS(EXTRACT(EPOCH FROM (matched.first_weigh_at - matched.created_at))) / 3600)::float AS "averageHours"
+      SELECT AVG(ABS(EXTRACT(EPOCH FROM (matched.first_record_at - matched.created_at))) / 3600)::float AS "averageHours"
       FROM (
-        SELECT n.codigo, n.created_at, MIN(r.data_hora) AS first_weigh_at
+        SELECT n.codigo, n.created_at, MIN(r.created_at) AS first_record_at
         FROM notes n
         INNER JOIN records r ON r.numero_nota = n.codigo
         WHERE ${noteConditions}
