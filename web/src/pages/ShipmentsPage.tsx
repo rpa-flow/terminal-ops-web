@@ -42,7 +42,7 @@ export const ShipmentsPage = () => {
   };
 
   const remove = async (id: string) => {
-    if (!token || !window.confirm("Tem certeza de que deseja excluir este embarque?")) return;
+    if (!token || !window.confirm("Excluir este embarque? Os saldos serão recalculados.")) return;
     setMessage(null);
     setDeletingId(id);
     try {
@@ -74,7 +74,7 @@ export const ShipmentsPage = () => {
         <label className="text-sm md:col-span-2">Observações<input className="input mt-1 w-full" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></label>
         <div><button className="btn-primary" type="submit">Registrar embarque</button></div>{message && <p className="text-sm">{message}</p>}
       </form>
-      <div className="overflow-x-auto rounded border border-outline-variant bg-surface-container-lowest"><table className="min-w-full text-left text-sm"><thead className="bg-surface"><tr><th className="px-4 py-3">Data</th><th className="px-4 py-3">Volume</th>{terminal === "TCS" && <th className="px-4 py-3">Pilha</th>}<th className="px-4 py-3">Destino</th><th className="px-4 py-3">Documento</th><th className="px-4 py-3">Observações</th></tr></thead><tbody>{data?.items.map((item) => <tr key={item.id} className="border-t border-surface-container-high"><td className="px-4 py-3">{new Date(item.shippedAt).toLocaleDateString("pt-BR")}</td><td className="px-4 py-3">{number(item.volume)}</td>{terminal === "TCS" && <td className="px-4 py-3">{item.pile ?? "Não informada"}</td>}<td className="px-4 py-3">{item.destination ?? "-"}</td><td className="px-4 py-3">{item.document ?? "-"}</td><td className="px-4 py-3">{item.notes ?? "-"}</td></tr>)}</tbody></table></div>
+      <div className="overflow-x-auto rounded border border-outline-variant bg-surface-container-lowest"><table className="min-w-full text-left text-sm"><thead className="bg-surface"><tr><th className="px-4 py-3">Data</th><th className="px-4 py-3">Volume</th>{terminal === "TCS" && <th className="px-4 py-3">Pilha</th>}<th className="px-4 py-3">Destino</th><th className="px-4 py-3">Documento</th><th className="px-4 py-3">Observações</th><th className="px-4 py-3"><span className="sr-only">Ações</span></th></tr></thead><tbody>{data?.items.map((item) => <tr key={item.id} className="border-t border-surface-container-high"><td className="px-4 py-3">{new Date(item.shippedAt).toLocaleDateString("pt-BR")}</td><td className="px-4 py-3">{number(item.volume)}</td>{terminal === "TCS" && <td className="px-4 py-3">{item.pile ?? "Não informada"}</td>}<td className="px-4 py-3">{item.destination ?? "-"}</td><td className="px-4 py-3">{item.document ?? "-"}</td><td className="px-4 py-3">{item.notes ?? "-"}</td><td className="px-4 py-3 text-right"><button type="button" className="text-sm text-error hover:underline disabled:cursor-not-allowed disabled:opacity-60" onClick={() => void remove(item.id)} disabled={deletingId === item.id}>{deletingId === item.id ? "Excluindo..." : "Excluir"}</button></td></tr>)}</tbody></table></div>
     </section>
   </main>;
 };
