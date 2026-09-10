@@ -11,12 +11,13 @@ export const createShipmentService = async (input: CreateShipmentInput, userId: 
     terminal: input.terminal,
     shippedAt: input.shippedAt,
     volume: input.volume,
+    pile: input.pile ?? null,
     destination: input.destination ?? null,
     document: input.document ?? null,
     notes: input.notes ?? null,
     createdBy: userId
   } });
-  return { ...shipment, volume: shipment.volume.toNumber(), destination: clean(shipment.destination), document: clean(shipment.document), notes: clean(shipment.notes) };
+  return { ...shipment, volume: shipment.volume.toNumber(), pile: clean(shipment.pile), destination: clean(shipment.destination), document: clean(shipment.document), notes: clean(shipment.notes) };
 };
 
 export const listShipmentsService = async (filters: ListShipmentsInput) => {
@@ -27,15 +28,20 @@ export const listShipmentsService = async (filters: ListShipmentsInput) => {
     terminal: filters.terminal,
     ...(filters.startDate || filters.endDate ? { shippedAt: dateFilter } : {})
   };
-  const [items, shippedAggregate, receivedRecords] = await prisma.$transaction([
+  const [items, shippedAggregate, receivedEntries] = await prisma.$transaction([
     prisma.shipment.findMany({ where, orderBy: { shippedAt: "desc" }, take: 200 }),
     prisma.shipment.aggregate({ where, _sum: { volume: true } }),
-    prisma.record.findMany({
-      where: { terminal: { contains: filters.terminal, mode: "insensitive" }, recebimentoPeso: { not: null } },
-      select: { recebimentoPeso: true }
-    })
+    filters.terminal === "TCS"
+      ? prisma.note.findMany({
+          where: { terminal: { contains: filters.terminal, mode: "insensitive" }, recebimentoPeso: { not: null } },
+          select: { recebimentoPeso: true }
+        })
+      : prisma.record.findMany({
+          where: { terminal: { contains: filters.terminal, mode: "insensitive" }, recebimentoPeso: { not: null } },
+          select: { recebimentoPeso: true }
+        })
   ]);
-  const receivedVolume = receivedRecords.reduce((total, item) => {
+  const receivedVolume = receivedEntries.reduce((total, item) => {
     const normalized = item.recebimentoPeso?.replace(/\./g, "").replace(",", ".") ?? "0";
     const value = Number(normalized.replace(/[^0-9.-]/g, ""));
     return total + (Number.isFinite(value) ? value : 0);
@@ -43,6 +49,6 @@ export const listShipmentsService = async (filters: ListShipmentsInput) => {
   const shippedVolume = shippedAggregate._sum.volume?.toNumber() ?? 0;
   return {
     summary: { receivedVolume, shippedVolume, availableVolume: receivedVolume - shippedVolume },
-    items: items.map((item) => ({ ...item, volume: item.volume.toNumber(), destination: clean(item.destination), document: clean(item.document), notes: clean(item.notes) }))
+    items: items.map((item) => ({ ...item, volume: item.volume.toNumber(), pile: clean(item.pile), destination: clean(item.destination), document: clean(item.document), notes: clean(item.notes) }))
   };
 };

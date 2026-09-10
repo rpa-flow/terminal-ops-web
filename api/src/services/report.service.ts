@@ -21,6 +21,8 @@ type DailyReceivedWeightItem = {
 
 type PileBalanceItem = {
   pile: string;
+  received: number;
+  shipped: number;
   balance: number;
 };
 
@@ -122,17 +124,32 @@ const parseWeight = (value: string | null): number => {
 };
 
 const buildPileBalances = (
-  records: { recebimentoPatioDescarga: string | null; recebimentoPeso: string | null }[]
+  receipts: { recebimentoPatioDescarga: string | null; recebimentoPeso: string | null }[],
+  shipments: { pile: string | null; volume: Prisma.Decimal }[]
 ): PileBalanceItem[] => {
-  const balances = new Map<string, number>();
+  const balances = new Map<string, { received: number; shipped: number }>();
 
-  records.forEach((record) => {
-    const pile = record.recebimentoPatioDescarga?.trim() || "Não informada";
-    balances.set(pile, (balances.get(pile) ?? 0) + parseWeight(record.recebimentoPeso));
+  receipts.forEach((receipt) => {
+    const pile = receipt.recebimentoPatioDescarga?.trim() || "Não informada";
+    const current = balances.get(pile) ?? { received: 0, shipped: 0 };
+    current.received += parseWeight(receipt.recebimentoPeso);
+    balances.set(pile, current);
   });
 
-  return Array.from(balances, ([pile, balance]) => ({ pile, balance }))
-    .filter((item) => item.balance !== 0)
+  shipments.forEach((shipment) => {
+    const pile = shipment.pile?.trim() || "Não informada";
+    const current = balances.get(pile) ?? { received: 0, shipped: 0 };
+    current.shipped += shipment.volume.toNumber();
+    balances.set(pile, current);
+  });
+
+  return Array.from(balances, ([pile, values]) => ({
+    pile,
+    received: Number(values.received.toFixed(3)),
+    shipped: Number(values.shipped.toFixed(3)),
+    balance: Number((values.received - values.shipped).toFixed(3))
+  }))
+    .filter((item) => item.received !== 0 || item.shipped !== 0)
     .sort((a, b) => b.balance - a.balance);
 };
 
@@ -219,6 +236,13 @@ const buildRawConditions = (filters: ReportOverviewQueryInput) => {
 export const getReportOverviewService = async (filters: ReportOverviewQueryInput) => {
   const recordWhere = buildRecordWhere(filters);
   const noteWhere = buildNoteWhere(filters);
+  const shipmentWhere: Prisma.ShipmentWhereInput = {
+    ...(filters.terminal ? { terminal: filters.terminal } : {}),
+    shippedAt: {
+      gte: filters.startDate,
+      lte: filters.endDate
+    }
+  };
   const useNoteReceipts = filters.terminal?.trim().toUpperCase() === "TCS";
   const pendingNoteWhere: Prisma.NoteWhereInput = {
     ...noteWhere,
@@ -244,7 +268,8 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
     oldestPendingNotes,
     noteDates,
     recordDates,
-    pileRecords
+    pileRecords,
+    shipments
   ] = await prisma.$transaction([
     prisma.note.count({ where: noteWhere }),
     prisma.record.count({ where: recordWhere }),
@@ -283,7 +308,8 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       : prisma.record.findMany({
           where: { ...recordWhere, recebimentoPeso: { not: null } },
           select: { dataHora: true, createdAt: true, recebimentoPatioDescarga: true, recebimentoPeso: true }
-        })
+        }),
+    prisma.shipment.findMany({ where: shipmentWhere, select: { pile: true, volume: true } })
   ]);
 
   const { noteConditions, recordConditions } = buildRawConditions(filters);
@@ -343,7 +369,9 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
     ageHours: Number(((now - note.createdAt.getTime()) / (60 * 60 * 1000)).toFixed(1))
   }));
 
-  const pileBalances = buildPileBalances(pileRecords);
+  const receivedMaterialWeight = pileRecords.reduce((total, item) => total + parseWeight(item.recebimentoPeso), 0);
+  const shippedMaterialWeight = shipments.reduce((total, item) => total + item.volume.toNumber(), 0);
+  const pileBalances = useNoteReceipts ? buildPileBalances(pileRecords, shipments) : [];
   const dailyReceivedWeights = buildDailyReceivedWeights(filters.startDate, filters.endDate, pileRecords);
 
   return {
@@ -355,7 +383,9 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
     summary: {
       emittedNotes,
       receivedRecords: weighedRecords,
-      receivedMaterialWeight: pileBalances.reduce((total, item) => total + item.balance, 0),
+      receivedMaterialWeight: Number(receivedMaterialWeight.toFixed(3)),
+      shippedMaterialWeight: Number(shippedMaterialWeight.toFixed(3)),
+      availableMaterialWeight: Number((receivedMaterialWeight - shippedMaterialWeight).toFixed(3)),
       matchedNotes,
       pendingNotes,
       pendingOver24h,

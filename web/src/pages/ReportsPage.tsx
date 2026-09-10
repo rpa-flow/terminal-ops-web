@@ -146,42 +146,25 @@ const DailyWeightChart = ({ items }: { items: DailyReceivedWeightItem[] }) => {
   );
 };
 
-const PileBalanceChart = ({ items, area }: { items: PileBalanceItem[]; area: "tbjc" | "tcs" }) => {
-  const max = Math.max(...items.map((item) => item.balance), 1);
-
+const PileBalanceTable = ({ items }: { items: PileBalanceItem[] }) => {
   return (
-    <section className="rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <section className="overflow-hidden rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
       <div className="border-b border-surface-container-high bg-primary px-4 py-3 text-on-primary">
-        <h2 className="text-center text-lg font-semibold uppercase tracking-wide">
-          {area === "tcs" ? "Material recebido por pátio" : "Saldo atualizado por pilha"}
-        </h2>
-        <p className="mt-1 text-center text-xs text-on-primary/75">Volume recebido no período selecionado</p>
+        <h2 className="text-center text-lg font-semibold uppercase tracking-wide">Saldo atualizado por pilha</h2>
+        <p className="mt-1 text-center text-xs text-on-primary/75">Recebimentos e embarques no período selecionado</p>
       </div>
       {items.length === 0 ? (
         <p className="p-6 text-center text-sm text-on-surface-variant">Nenhum recebimento com peso e pilha no período.</p>
       ) : (
-        <div className="overflow-x-auto p-4">
-          <div className="flex min-w-[640px] items-end gap-3 border-b border-outline-variant px-2 pt-10" style={{ height: 290 }}>
-            {items.map((item) => {
-              const height = Math.max(5, (item.balance / max) * 190);
-              return (
-                <div key={item.pile} className="flex min-w-20 flex-1 flex-col items-center justify-end self-stretch">
-                  <div className="flex flex-1 items-end">
-                    <div
-                      className="relative w-12 rounded-t bg-gradient-to-t from-primary to-[#8ba9dc] shadow-sm sm:w-14"
-                      style={{ height }}
-                      title={`${item.pile}: ${formatNumber(item.balance)}`}
-                    >
-                      <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-on-surface-variant">
-                        {formatNumber(item.balance)}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="mt-3 min-h-10 max-w-24 text-center text-xs font-semibold uppercase text-on-surface-variant">{item.pile}</span>
-                </div>
-              );
-            })}
-          </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-surface text-on-surface-variant">
+              <tr><th className="px-4 py-3">Pilha</th><th className="px-4 py-3 text-right">Recebido</th><th className="px-4 py-3 text-right">Embarcado</th><th className="px-4 py-3 text-right">Saldo atual</th></tr>
+            </thead>
+            <tbody>
+              {items.map((item) => <tr key={item.pile} className="border-t border-surface-container-high"><td className="px-4 py-3 font-medium">{item.pile}</td><td className="px-4 py-3 text-right text-on-secondary-container">{formatNumber(item.received)}</td><td className="px-4 py-3 text-right text-error">{formatNumber(item.shipped)}</td><td className="px-4 py-3 text-right font-semibold text-primary">{formatNumber(item.balance)}</td></tr>)}
+            </tbody>
+          </table>
         </div>
       )}
     </section>
@@ -289,11 +272,16 @@ export const ReportsPage = () => {
               {isTbjc ? (
                 <>
                   <MetricCard label="Recebimentos registrados" value={formatNumber(report.summary.receivedRecords)} accent="text-on-secondary-container" />
+                  <MetricCard label="Volume recebido" value={formatNumber(report.summary.receivedMaterialWeight)} accent="text-on-secondary-container" />
+                  <MetricCard label="Volume embarcado" value={formatNumber(report.summary.shippedMaterialWeight)} accent="text-error" />
+                  <MetricCard label="Saldo disponível" value={formatNumber(report.summary.availableMaterialWeight)} accent="text-primary" />
                 </>
               ) : (
                 <>
                   <MetricCard label="Notas emitidas Bemisa" value={formatNumber(report.summary.emittedNotes)} accent="text-primary" />
                   <MetricCard label="Material recebido" value={formatNumber(report.summary.receivedMaterialWeight)} accent="text-on-secondary-container" />
+                  <MetricCard label="Material embarcado" value={formatNumber(report.summary.shippedMaterialWeight)} accent="text-error" />
+                  <MetricCard label="Saldo atual" value={formatNumber(report.summary.availableMaterialWeight)} accent="text-primary" />
                   <MetricCard label="Notas pendentes" value={formatNumber(report.summary.pendingNotes)} accent="text-warning" />
                   <MetricCard label="Pendentes +24h" value={formatNumber(report.summary.pendingOver24h)} accent="text-error" />
                 </>
@@ -304,7 +292,7 @@ export const ReportsPage = () => {
 
             <DailyWeightChart items={report.dailyReceivedWeights} />
 
-            <PileBalanceChart items={report.pileBalances} area={area} />
+            {!isTbjc && <PileBalanceTable items={report.pileBalances} />}
 
             <div className="grid gap-4 lg:grid-cols-2">
               {isTbjc ? (
