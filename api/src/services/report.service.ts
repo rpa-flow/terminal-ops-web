@@ -14,6 +14,11 @@ type DailyVolumeItem = {
   receivedRecords: number;
 };
 
+type DailyReceivedWeightItem = {
+  date: string;
+  totalWeight: number;
+};
+
 type PileBalanceItem = {
   pile: string;
   balance: number;
@@ -74,10 +79,21 @@ const buildRecordWhere = (filters: ReportOverviewQueryInput): Prisma.RecordWhere
 
 const buildNoteWhere = (filters: ReportOverviewQueryInput): Prisma.NoteWhereInput => {
   const where: Prisma.NoteWhereInput = {
-    createdAt: {
-      gte: filters.startDate,
-      lte: filters.endDate
-    }
+    OR: [
+      {
+        dataHora: {
+          gte: filters.startDate,
+          lte: filters.endDate
+        }
+      },
+      {
+        dataHora: null,
+        createdAt: {
+          gte: filters.startDate,
+          lte: filters.endDate
+        }
+      }
+    ]
   };
 
   if (filters.terminal) {
@@ -123,7 +139,7 @@ const buildPileBalances = (
 const buildDailyVolumes = (
   startDate: Date,
   endDate: Date,
-  noteDates: { createdAt: Date }[],
+  noteDates: { dataHora: Date | null; createdAt: Date }[],
   recordDates: { dataHora: Date }[]
 ): DailyVolumeItem[] => {
   const buckets = new Map<string, DailyVolumeItem>();
@@ -137,7 +153,7 @@ const buildDailyVolumes = (
   }
 
   noteDates.forEach((note) => {
-    const key = dateKey(note.createdAt);
+    const key = dateKey(note.dataHora ?? note.createdAt);
     const bucket = buckets.get(key);
     if (bucket) {
       bucket.emittedNotes += 1;
@@ -155,13 +171,41 @@ const buildDailyVolumes = (
   return Array.from(buckets.values());
 };
 
+const buildDailyReceivedWeights = (
+  startDate: Date,
+  endDate: Date,
+  receipts: { dataHora: Date | null; createdAt: Date; recebimentoPeso: string | null }[]
+): DailyReceivedWeightItem[] => {
+  const buckets = new Map<string, DailyReceivedWeightItem>();
+  const cursor = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
+  const last = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
+
+  while (cursor <= last && buckets.size < 366) {
+    const key = dateKey(cursor);
+    buckets.set(key, { date: key, totalWeight: 0 });
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  receipts.forEach((receipt) => {
+    const bucket = buckets.get(dateKey(receipt.dataHora ?? receipt.createdAt));
+    if (bucket) bucket.totalWeight += parseWeight(receipt.recebimentoPeso);
+  });
+
+  return Array.from(buckets.values()).map((item) => ({
+    ...item,
+    totalWeight: Number(item.totalWeight.toFixed(3))
+  }));
+};
+
 const buildRawConditions = (filters: ReportOverviewQueryInput) => {
   const terminalPattern = filters.terminal ? `%${filters.terminal}%` : undefined;
 
   return {
     noteConditions: Prisma.sql`
-      n.created_at >= ${filters.startDate}
-      AND n.created_at <= ${filters.endDate}
+      (
+        (n.data_hora >= ${filters.startDate} AND n.data_hora <= ${filters.endDate})
+        OR (n.data_hora IS NULL AND n.created_at >= ${filters.startDate} AND n.created_at <= ${filters.endDate})
+      )
       ${terminalPattern ? Prisma.sql`AND n.terminal ILIKE ${terminalPattern}` : Prisma.empty}
     `,
     recordConditions: Prisma.sql`
@@ -183,7 +227,6 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
   const pendingOver24hWhere: Prisma.NoteWhereInput = {
     ...pendingNoteWhere,
     createdAt: {
-      ...(noteWhere.createdAt as Prisma.DateTimeFilter<"Note">),
       lt: new Date(Date.now() - 24 * 60 * 60 * 1000)
     }
   };
@@ -230,16 +273,16 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
         createdAt: true
       }
     }),
-    prisma.note.findMany({ where: noteWhere, select: { createdAt: true } }),
+    prisma.note.findMany({ where: noteWhere, select: { dataHora: true, createdAt: true } }),
     prisma.record.findMany({ where: recordWhere, select: { dataHora: true } }),
     useNoteReceipts
       ? prisma.note.findMany({
           where: { ...noteWhere, recebimentoPeso: { not: null } },
-          select: { recebimentoPatioDescarga: true, recebimentoPeso: true }
+          select: { dataHora: true, createdAt: true, recebimentoPatioDescarga: true, recebimentoPeso: true }
         })
       : prisma.record.findMany({
           where: { ...recordWhere, recebimentoPeso: { not: null } },
-          select: { recebimentoPatioDescarga: true, recebimentoPeso: true }
+          select: { dataHora: true, createdAt: true, recebimentoPatioDescarga: true, recebimentoPeso: true }
         })
   ]);
 
@@ -301,6 +344,7 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
   }));
 
   const pileBalances = buildPileBalances(pileRecords);
+  const dailyReceivedWeights = buildDailyReceivedWeights(filters.startDate, filters.endDate, pileRecords);
 
   return {
     filters: {
@@ -329,6 +373,7 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       recordsByTerminal: normalizeBreakdown(recordTerminalRows, (row) => row.terminal).slice(0, 8)
     },
     dailyVolumes: buildDailyVolumes(filters.startDate, filters.endDate, noteDates, recordDates),
+    dailyReceivedWeights,
     pileBalances,
     pendingOldest
   };

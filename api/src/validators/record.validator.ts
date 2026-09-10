@@ -45,6 +45,14 @@ const parseDateTime = (value: string): Date | null => {
   return candidate;
 };
 
+const parseDateFilter = (value: string, isEndDate: boolean): Date | null => {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value.trim())) {
+    return parseDateTime(`${value}T${isEndDate ? "23:59:59.999" : "00:00:00.000"}`);
+  }
+
+  return parseDateTime(value);
+};
+
 const optionalRecordPesagemIdSchema = z.union([z.string().trim().min(1).max(64), z.number()]).optional();
 
 export const createRecordSchema = z
@@ -140,21 +148,21 @@ export const listRecordsQuerySchema = z
   .strict()
   .superRefine((value, ctx) => {
     if (value.startDate) {
-      if (!parseDateTime(value.startDate)) {
+      if (!parseDateFilter(value.startDate, false)) {
         ctx.addIssue({ code: "custom", message: "Invalid startDate", path: ["startDate"] });
       }
     }
 
     if (value.endDate) {
-      if (!parseDateTime(value.endDate)) {
+      if (!parseDateFilter(value.endDate, true)) {
         ctx.addIssue({ code: "custom", message: "Invalid endDate", path: ["endDate"] });
       }
     }
   })
   .transform((input) => ({
     ...input,
-    startDate: input.startDate ? (parseDateTime(input.startDate) as Date) : undefined,
-    endDate: input.endDate ? (parseDateTime(input.endDate) as Date) : undefined,
+    startDate: input.startDate ? (parseDateFilter(input.startDate, false) as Date) : undefined,
+    endDate: input.endDate ? (parseDateFilter(input.endDate, true) as Date) : undefined,
     placa: input.placa?.toUpperCase()
   }));
 

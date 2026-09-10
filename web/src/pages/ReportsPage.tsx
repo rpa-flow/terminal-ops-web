@@ -4,7 +4,7 @@ import { Navigate, useParams } from "react-router-dom";
 import { AppNavigation } from "../components/AppNavigation";
 import { useAuth } from "../hooks/useAuth";
 import { getReportOverviewRequest } from "../services/reports.service";
-import type { DailyVolumeItem, PileBalanceItem, ReportBreakdownItem, ReportOverviewResponse } from "../types/api";
+import type { DailyReceivedWeightItem, DailyVolumeItem, PileBalanceItem, ReportBreakdownItem, ReportOverviewResponse } from "../types/api";
 
 const formatInputDate = (date: Date): string => date.toISOString().slice(0, 10);
 
@@ -69,7 +69,7 @@ const DailyVolumeChart = ({ items, area }: { items: DailyVolumeItem[]; area: "tb
   return (
     <section className="rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-semibold text-on-surface">Evolução diária</h2>
+        <h2 className="text-base font-semibold text-on-surface">{area === "tcs" ? "Notas recebidas por dia" : "Registros recebidos por dia"}</h2>
         <div className="flex items-center gap-4 text-xs text-on-surface-variant">
           {area === "tcs" && <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" />Notas emitidas</span>}
           {area === "tbjc" && <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-secondary" />Recebimentos</span>}
@@ -106,6 +106,39 @@ const DailyVolumeChart = ({ items, area }: { items: DailyVolumeItem[]; area: "tb
                 )}
               </g>
             );
+          })}
+        </svg>
+      </div>
+    </section>
+  );
+};
+
+const DailyWeightChart = ({ items }: { items: DailyReceivedWeightItem[] }) => {
+  const width = 760;
+  const height = 260;
+  const padding = 34;
+  const chartHeight = height - padding * 2;
+  const chartWidth = width - padding * 2;
+  const max = Math.max(...items.map((item) => item.totalWeight), 1);
+  const step = items.length > 1 ? chartWidth / items.length : chartWidth;
+  const barWidth = Math.max(4, Math.min(14, step / 3));
+  const labelEvery = Math.max(1, Math.ceil(items.length / 6));
+
+  return (
+    <section className="rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
+      <h2 className="text-base font-semibold text-on-surface">Quantidade recebida por dia</h2>
+      <div className="mt-4 overflow-x-auto">
+        <svg className="min-w-[680px]" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Quantidade recebida por dia">
+          <line x1={padding} x2={width - padding} y1={height - padding} y2={height - padding} stroke="#c3c7cf" />
+          <line x1={padding} x2={padding} y1={padding} y2={height - padding} stroke="#c3c7cf" />
+          {[0, 0.5, 1].map((tick) => {
+            const y = height - padding - tick * chartHeight;
+            return <g key={tick}><line x1={padding} x2={width - padding} y1={y} y2={y} stroke="#e5edff" /><text x={padding - 8} y={y + 4} textAnchor="end" className="fill-outline text-[10px]">{formatNumber(Math.round(max * tick))}</text></g>;
+          })}
+          {items.map((item, index) => {
+            const x = padding + index * step + step / 2;
+            const barHeight = (item.totalWeight / max) * chartHeight;
+            return <g key={item.date}><rect x={x - barWidth / 2} y={height - padding - barHeight} width={barWidth} height={barHeight} rx="2" fill="#23a18e" />{index % labelEvery === 0 && <text x={x} y={height - 10} textAnchor="middle" className="fill-on-surface-variant text-[10px]">{formatDate(item.date)}</text>}</g>;
           })}
         </svg>
       </div>
@@ -268,6 +301,8 @@ export const ReportsPage = () => {
             </section>
 
             <DailyVolumeChart items={report.dailyVolumes} area={area} />
+
+            <DailyWeightChart items={report.dailyReceivedWeights} />
 
             <PileBalanceChart items={report.pileBalances} area={area} />
 

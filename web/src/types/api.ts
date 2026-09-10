@@ -18,8 +18,10 @@ export type RecordItem = {
   notaOriginal: string;
   status: string;
   notaPesagemId: string;
-  motoristaNome: string;
-  motoristaCelular: string;
+  emitenteFornecedor: string | null;
+  motoristaNome: string | null;
+  motoristaCelular: string | null;
+  recebimentoPeso: string | null;
   placa: string;
   terminal: string;
   createdAt: string;
@@ -105,6 +107,11 @@ export type DailyVolumeItem = {
   receivedRecords: number;
 };
 
+export type DailyReceivedWeightItem = {
+  date: string;
+  totalWeight: number;
+};
+
 export type PileBalanceItem = {
   pile: string;
   balance: number;
@@ -147,6 +154,7 @@ export type ReportOverviewResponse = {
     recordsByTerminal: ReportBreakdownItem[];
   };
   dailyVolumes: DailyVolumeItem[];
+  dailyReceivedWeights: DailyReceivedWeightItem[];
   pileBalances: PileBalanceItem[];
   pendingOldest: PendingReportNoteItem[];
 };
