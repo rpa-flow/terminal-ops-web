@@ -172,7 +172,7 @@ const buildDailyVolumes = (
   startDate: Date,
   endDate: Date,
   noteDates: { dataHora: Date | null; createdAt: Date }[],
-  recordDates: { dataHora: Date }[]
+  recordDates: { createdAt: Date }[]
 ): DailyVolumeItem[] => {
   const buckets = new Map<string, DailyVolumeItem>();
   const cursor = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
@@ -250,7 +250,7 @@ const buildRawConditions = (filters: ReportOverviewQueryInput) => {
         (n.data_hora >= ${filters.startDate} AND n.data_hora <= ${filters.endDate})
         OR (n.data_hora IS NULL AND n.created_at >= ${filters.startDate} AND n.created_at <= ${filters.endDate})
       )
-      ${terminalPattern ? Prisma.sql`AND n.terminal ILIKE ${terminalPattern}` : Prisma.empty}
+      ${noteTerminalCondition}
     `,
     recordConditions: Prisma.sql`
       r.data_hora >= ${filters.startDate}
@@ -326,7 +326,7 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       }
     }),
     prisma.note.findMany({ where: noteWhere, select: { dataHora: true, createdAt: true } }),
-    prisma.record.findMany({ where: recordWhere, select: { dataHora: true } }),
+    prisma.record.findMany({ where: recordWhere, select: { createdAt: true } }),
     useNoteReceipts
       ? prisma.note.findMany({
           where: { ...noteWhere, recebimentoPeso: { not: null } },
