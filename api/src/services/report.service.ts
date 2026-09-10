@@ -64,16 +64,28 @@ const percentage = (part: number, total: number): number => {
   return Number(((part / total) * 100).toFixed(1));
 };
 
+const terminalAliases = (terminal: string | undefined): string[] => {
+  if (!terminal) return [];
+
+  const normalized = terminal.trim().toUpperCase();
+  return normalized === "TBJC" ? ["TBJC", "TJBC"] : [normalized];
+};
+
 const buildRecordWhere = (filters: ReportOverviewQueryInput): Prisma.RecordWhereInput => {
+  // Keep report dates aligned with the Data/Hora filter shown on the records screen.
+  // createdAt is the ingestion timestamp and can fall on a later day after a CSV import.
   const where: Prisma.RecordWhereInput = {
-    dataHora: {
+    createdAt: {
       gte: filters.startDate,
       lte: filters.endDate
     }
   };
 
-  if (filters.terminal) {
-    where.terminal = { contains: filters.terminal, mode: "insensitive" };
+  const aliases = terminalAliases(filters.terminal);
+  if (aliases.length > 0) {
+    where.OR = aliases.map((terminal) => ({
+      terminal: { contains: terminal, mode: "insensitive" }
+    }));
   }
 
   return where;
@@ -98,8 +110,11 @@ const buildNoteWhere = (filters: ReportOverviewQueryInput): Prisma.NoteWhereInpu
     ]
   };
 
-  if (filters.terminal) {
-    where.terminal = { contains: filters.terminal, mode: "insensitive" };
+  const aliases = terminalAliases(filters.terminal);
+  if (aliases.length > 0) {
+    where.OR = aliases.map((terminal) => ({
+      terminal: { contains: terminal, mode: "insensitive" }
+    }));
   }
 
   return where;
@@ -178,7 +193,7 @@ const buildDailyVolumes = (
   });
 
   recordDates.forEach((record) => {
-    const key = dateKey(record.dataHora);
+    const key = dateKey(record.createdAt);
     const bucket = buckets.get(key);
     if (bucket) {
       bucket.receivedRecords += 1;
@@ -215,7 +230,19 @@ const buildDailyReceivedWeights = (
 };
 
 const buildRawConditions = (filters: ReportOverviewQueryInput) => {
-  const terminalPattern = filters.terminal ? `%${filters.terminal}%` : undefined;
+  const terminalPatterns = terminalAliases(filters.terminal).map((terminal) => `%${terminal}%`);
+  const noteTerminalCondition = terminalPatterns.length
+    ? Prisma.sql`AND (${Prisma.join(
+        terminalPatterns.map((pattern) => Prisma.sql`n.terminal ILIKE ${pattern}`),
+        " OR "
+      )})`
+    : Prisma.empty;
+  const recordTerminalCondition = terminalPatterns.length
+    ? Prisma.sql`AND (${Prisma.join(
+        terminalPatterns.map((pattern) => Prisma.sql`r.terminal ILIKE ${pattern}`),
+        " OR "
+      )})`
+    : Prisma.empty;
 
   return {
     noteConditions: Prisma.sql`
@@ -228,7 +255,7 @@ const buildRawConditions = (filters: ReportOverviewQueryInput) => {
     recordConditions: Prisma.sql`
       r.data_hora >= ${filters.startDate}
       AND r.data_hora <= ${filters.endDate}
-      ${terminalPattern ? Prisma.sql`AND r.terminal ILIKE ${terminalPattern}` : Prisma.empty}
+      ${recordTerminalCondition}
     `
   };
 };
@@ -323,9 +350,9 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       AND ${recordConditions}
     `,
     prisma.$queryRaw<AverageRow[]>`
-      SELECT AVG(ABS(EXTRACT(EPOCH FROM (matched.first_weigh_at - matched.created_at))) / 3600)::float AS "averageHours"
+      SELECT AVG(ABS(EXTRACT(EPOCH FROM (matched.first_record_at - matched.created_at))) / 3600)::float AS "averageHours"
       FROM (
-        SELECT n.codigo, n.created_at, MIN(r.data_hora) AS first_weigh_at
+        SELECT n.codigo, n.created_at, MIN(r.created_at) AS first_record_at
         FROM notes n
         INNER JOIN records r ON r.numero_nota = n.codigo
         WHERE ${noteConditions}

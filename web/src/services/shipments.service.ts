@@ -9,3 +9,6 @@ export const listShipmentsRequest = (token: string, terminal: "TBJC" | "TCS") =>
 
 export const createShipmentRequest = (token: string, payload: CreateShipmentPayload) =>
   http<ShipmentItem>("/shipments", { token, method: "POST", body: payload });
+
+export const deleteShipmentRequest = (token: string, id: string) =>
+  http<{ message: string }>(`/shipments/${id}`, { token, method: "DELETE" });

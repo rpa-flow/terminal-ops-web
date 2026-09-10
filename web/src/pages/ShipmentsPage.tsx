@@ -2,7 +2,7 @@ import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { AppNavigation } from "../components/AppNavigation";
 import { useAuth } from "../hooks/useAuth";
-import { createShipmentRequest, listShipmentsRequest } from "../services/shipments.service";
+import { createShipmentRequest, deleteShipmentRequest, listShipmentsRequest } from "../services/shipments.service";
 import type { ShipmentsResponse } from "../types/api";
 
 const number = (value: number) => new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 3 }).format(value);
@@ -13,6 +13,7 @@ export const ShipmentsPage = () => {
   const [data, setData] = useState<ShipmentsResponse | null>(null);
   const [form, setForm] = useState({ shippedAt: new Date().toISOString().slice(0, 10), volume: "", pile: "", destination: "", document: "", notes: "" });
   const [message, setMessage] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const terminal = area?.toUpperCase() as "TBJC" | "TCS";
   const load = useCallback(async () => token && setData(await listShipmentsRequest(token, terminal)), [token, terminal]);
   useEffect(() => {
@@ -38,6 +39,21 @@ export const ShipmentsPage = () => {
       setMessage("Embarque registrado com sucesso.");
       await load();
     } catch { setMessage("Não foi possível registrar o embarque."); }
+  };
+
+  const remove = async (id: string) => {
+    if (!token || !window.confirm("Tem certeza de que deseja excluir este embarque?")) return;
+    setMessage(null);
+    setDeletingId(id);
+    try {
+      await deleteShipmentRequest(token, id);
+      setMessage("Embarque excluído com sucesso.");
+      await load();
+    } catch {
+      setMessage("Não foi possível excluir o embarque.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return <main className="app-with-sidebar min-h-screen bg-surface">

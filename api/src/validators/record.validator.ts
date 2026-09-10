@@ -55,6 +55,11 @@ const parseDateFilter = (value: string, isEndDate: boolean): Date | null => {
 
 const optionalRecordPesagemIdSchema = z.union([z.string().trim().min(1).max(64), z.number()]).optional();
 
+const normalizeTerminal = (terminal: string): string => {
+  const normalized = terminal.trim().toUpperCase();
+  return normalized === "TJBC" ? "TBJC" : normalized;
+};
+
 export const createRecordSchema = z
   .object({
     dataHora: z.string().min(16).max(25),
@@ -126,7 +131,7 @@ export const createRecordSchema = z
     recebimentoPatioDescarga: input.recebimento?.patioDescarga ?? null,
     recebimentoData: input.recebimento?.data ?? null,
     recebimentoPlaca: input.recebimento?.placa?.toUpperCase() ?? null,
-    terminal: input.terminal
+    terminal: normalizeTerminal(input.terminal)
   }));
 
 export const ingestNoteSchema = createRecordSchema.refine(
