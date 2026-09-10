@@ -294,17 +294,11 @@ export const ReportsPage = () => {
 
             {!isTbjc && <PileBalanceTable items={report.pileBalances} />}
 
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4">
               {isTbjc ? (
-                <>
-                  <BreakdownBars title="Recebimentos por status" items={report.breakdowns.recordsByStatus} tone="secondary" />
-                  <BreakdownBars title="Recebimentos por terminal" items={report.breakdowns.recordsByTerminal} tone="secondary" />
-                </>
+                <BreakdownBars title="Recebimentos por terminal" items={report.breakdowns.recordsByTerminal} tone="secondary" />
               ) : (
-                <>
-                  <BreakdownBars title="Notas por status" items={report.breakdowns.notesByStatus} tone="primary" />
-                  <BreakdownBars title="Notas por terminal" items={report.breakdowns.notesByTerminal} tone="primary" />
-                </>
+                <BreakdownBars title="Notas por terminal" items={report.breakdowns.notesByTerminal} tone="primary" />
               )}
             </div>
 
