@@ -32,6 +32,7 @@ export type ShipmentItem = {
   terminal: "TBJC" | "TCS";
   shippedAt: string;
   volume: number;
+  pile: string | null;
   destination: string | null;
   document: string | null;
   notes: string | null;
@@ -114,6 +115,8 @@ export type DailyReceivedWeightItem = {
 
 export type PileBalanceItem = {
   pile: string;
+  received: number;
+  shipped: number;
   balance: number;
 };
 
@@ -137,6 +140,8 @@ export type ReportOverviewResponse = {
     emittedNotes: number;
     receivedRecords: number;
     receivedMaterialWeight: number;
+    shippedMaterialWeight: number;
+    availableMaterialWeight: number;
     matchedNotes: number;
     pendingNotes: number;
     pendingOver24h: number;
