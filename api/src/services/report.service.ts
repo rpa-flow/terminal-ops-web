@@ -64,31 +64,15 @@ const percentage = (part: number, total: number): number => {
   return Number(((part / total) * 100).toFixed(1));
 };
 
-const terminalAliases = (terminal: string | undefined): string[] => {
-  if (!terminal) return [];
-
-  const normalized = terminal.trim().toUpperCase();
-  return normalized === "TBJC" ? ["TBJC", "TJBC"] : [normalized];
-};
-
 const buildRecordWhere = (filters: ReportOverviewQueryInput): Prisma.RecordWhereInput => {
-  // Keep report dates aligned with the Data/Hora filter shown on the records screen.
-  // createdAt is the ingestion timestamp and can fall on a later day after a CSV import.
-  const where: Prisma.RecordWhereInput = {
-    createdAt: {
+  // Data/Hora is the operational date shown on the records screen. createdAt is
+  // only the ingestion timestamp and can fall on a later day after a CSV import.
+  return {
+    dataHora: {
       gte: filters.startDate,
       lte: filters.endDate
     }
   };
-
-  const aliases = terminalAliases(filters.terminal);
-  if (aliases.length > 0) {
-    where.OR = aliases.map((terminal) => ({
-      terminal: { contains: terminal, mode: "insensitive" }
-    }));
-  }
-
-  return where;
 };
 
 const buildNoteWhere = (filters: ReportOverviewQueryInput): Prisma.NoteWhereInput => {
@@ -109,13 +93,6 @@ const buildNoteWhere = (filters: ReportOverviewQueryInput): Prisma.NoteWhereInpu
       }
     ]
   };
-
-  const aliases = terminalAliases(filters.terminal);
-  if (aliases.length > 0) {
-    where.OR = aliases.map((terminal) => ({
-      terminal: { contains: terminal, mode: "insensitive" }
-    }));
-  }
 
   return where;
 };
@@ -172,7 +149,7 @@ const buildDailyVolumes = (
   startDate: Date,
   endDate: Date,
   noteDates: { dataHora: Date | null; createdAt: Date }[],
-  recordDates: { createdAt: Date }[]
+  recordDates: { dataHora: Date }[]
 ): DailyVolumeItem[] => {
   const buckets = new Map<string, DailyVolumeItem>();
   const cursor = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
@@ -193,7 +170,7 @@ const buildDailyVolumes = (
   });
 
   recordDates.forEach((record) => {
-    const key = dateKey(record.createdAt);
+    const key = dateKey(record.dataHora);
     const bucket = buckets.get(key);
     if (bucket) {
       bucket.receivedRecords += 1;
@@ -230,32 +207,16 @@ const buildDailyReceivedWeights = (
 };
 
 const buildRawConditions = (filters: ReportOverviewQueryInput) => {
-  const terminalPatterns = terminalAliases(filters.terminal).map((terminal) => `%${terminal}%`);
-  const noteTerminalCondition = terminalPatterns.length
-    ? Prisma.sql`AND (${Prisma.join(
-        terminalPatterns.map((pattern) => Prisma.sql`n.terminal ILIKE ${pattern}`),
-        " OR "
-      )})`
-    : Prisma.empty;
-  const recordTerminalCondition = terminalPatterns.length
-    ? Prisma.sql`AND (${Prisma.join(
-        terminalPatterns.map((pattern) => Prisma.sql`r.terminal ILIKE ${pattern}`),
-        " OR "
-      )})`
-    : Prisma.empty;
-
   return {
     noteConditions: Prisma.sql`
       (
         (n.data_hora >= ${filters.startDate} AND n.data_hora <= ${filters.endDate})
         OR (n.data_hora IS NULL AND n.created_at >= ${filters.startDate} AND n.created_at <= ${filters.endDate})
       )
-      ${noteTerminalCondition}
     `,
     recordConditions: Prisma.sql`
       r.data_hora >= ${filters.startDate}
       AND r.data_hora <= ${filters.endDate}
-      ${recordTerminalCondition}
     `
   };
 };
@@ -326,7 +287,7 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       }
     }),
     prisma.note.findMany({ where: noteWhere, select: { dataHora: true, createdAt: true } }),
-    prisma.record.findMany({ where: recordWhere, select: { createdAt: true } }),
+    prisma.record.findMany({ where: recordWhere, select: { dataHora: true } }),
     useNoteReceipts
       ? prisma.note.findMany({
           where: { ...noteWhere, recebimentoPeso: { not: null } },
