@@ -81,7 +81,7 @@ body {
   }
 
   .app-sidebar {
-    @apply inset-x-0 top-0 h-28 w-full border-b border-r-0 px-4 py-3;
+    @apply inset-x-0 top-0 bottom-auto h-auto min-h-28 w-full border-b border-r-0 px-4 py-3;
   }
 
   .app-sidebar > div:first-child {

@@ -71,6 +71,17 @@ export const AppNavigation = ({ current, reportArea }: AppNavigationProps) => {
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5"><path d="M3 7h11v10H3zM14 11h4l3 3v3h-7M7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           Embarques
         </Link>
+        <details className="border-t border-on-primary/20 pt-4">
+          <summary className="cursor-pointer list-none rounded-lg px-3 py-2 text-sm font-semibold text-on-primary transition hover:bg-on-primary/10 focus:outline-none focus:ring-2 focus:ring-secondary">
+            Configurações
+          </summary>
+          <div className="grid gap-1">
+            <Link className="rounded-lg px-3 py-2 text-sm font-medium text-on-primary transition hover:bg-on-primary/10" to="/fornecedores">Fornecedores</Link>
+            <Link className="rounded-lg px-3 py-2 text-sm font-medium text-on-primary transition hover:bg-on-primary/10" to="/sinter-feeds">Sinter Feed</Link>
+            <Link className="rounded-lg px-3 py-2 text-sm font-medium text-on-primary transition hover:bg-on-primary/10" to="/blends">Blends</Link>
+            <Link className="rounded-lg px-3 py-2 text-sm font-medium text-on-primary transition hover:bg-on-primary/10" to="/classificacoes-por-fornecedor">Classificações por fornecedor</Link>
+          </div>
+        </details>
       </nav>
     </aside>
   );

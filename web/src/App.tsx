@@ -10,7 +10,8 @@ import { PurchaseOrderRulesPage } from "./pages/PurchaseOrderRulesPage";
 import { ReportsPage } from "./pages/ReportsPage";
 import { ShipmentsPage } from "./pages/ShipmentsPage";
 import { IssuersPage } from "./pages/IssuersPage";
-import { SinterFeedsPage } from "./pages/SinterFeedsPage";
+import { IssuerClassificationsPage } from "./pages/IssuerClassificationsPage";
+import { ConfigurationCatalogPage } from "./pages/ConfigurationCatalogPage";
 
 function App() {
   return (
@@ -19,8 +20,11 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/purchase-order-rules" element={<ProtectedRoute><PurchaseOrderRulesPage /></ProtectedRoute>} />
         <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
-        <Route path="/emitentes" element={<ProtectedRoute><IssuersPage /></ProtectedRoute>} />
-        <Route path="/sinter-feeds" element={<ProtectedRoute><SinterFeedsPage /></ProtectedRoute>} />
+        <Route path="/emitentes" element={<Navigate to="/fornecedores" replace />} />
+        <Route path="/fornecedores" element={<ProtectedRoute><IssuersPage /></ProtectedRoute>} />
+        <Route path="/sinter-feeds" element={<ProtectedRoute><ConfigurationCatalogPage kind="feed" /></ProtectedRoute>} />
+        <Route path="/blends" element={<ProtectedRoute><ConfigurationCatalogPage kind="blend" /></ProtectedRoute>} />
+        <Route path="/classificacoes-por-fornecedor" element={<ProtectedRoute><IssuerClassificationsPage /></ProtectedRoute>} />
         <Route
           path="/"
           element={
