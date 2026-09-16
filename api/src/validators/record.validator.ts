@@ -67,6 +67,7 @@ export const createRecordSchema = z
       .object({
         numero: z.string().trim().min(1).max(64),
         chave: z.string().trim().min(1).max(255).optional(),
+        sinterFeed: z.string().trim().min(1).max(120).optional(),
         original: z.string().trim().min(1).max(255),
         pesagemId: optionalRecordPesagemIdSchema,
         pesagemid: optionalRecordPesagemIdSchema,
@@ -117,6 +118,7 @@ export const createRecordSchema = z
     dataHora: parseDateTime(input.dataHora) as Date,
     numeroNota: input.nota.numero,
     notaChave: input.nota.chave ?? null,
+    sinterFeedValue: input.nota.sinterFeed?.toUpperCase() ?? null,
     notaOriginal: input.nota.original,
     status: input.nota.status,
     notaPesagemId: String(input.nota.pesagemId ?? input.nota.pesagemid ?? input.nota.idPesagem ?? input.nota.idPessagem ?? ""),
@@ -236,6 +238,7 @@ export const csvRowSchema = z
     dataHora: parseDateTime(row.dataHora) as Date,
     numeroNota: row.numeroNota,
     notaChave: null,
+    sinterFeedValue: null,
     notaOriginal: row.notaOriginal || row.numeroNota,
     status: row.status || "PENDENTE",
     notaPesagemId: row.notaPesagemId,

@@ -12,6 +12,7 @@ const sanitizeRecord = (record: {
   dataHora: Date;
   numeroNota: string;
   notaChave: string | null;
+  sinterFeedValue: string | null;
   notaOriginal: string;
   status: string;
   notaPesagemId: string;
@@ -33,6 +34,7 @@ const sanitizeRecord = (record: {
   ...record,
   numeroNota: sanitizeString(record.numeroNota),
   notaChave: sanitizeOptionalString(record.notaChave),
+  sinterFeedValue: sanitizeOptionalString(record.sinterFeedValue),
   notaOriginal: sanitizeString(record.notaOriginal),
   status: sanitizeString(record.status),
   notaPesagemId: sanitizeString(record.notaPesagemId),

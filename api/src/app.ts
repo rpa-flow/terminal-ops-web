@@ -20,6 +20,7 @@ import { catalogRoutes } from "./routes/catalog.routes";
 import { purchaseOrderRuleRoutes } from "./routes/purchase-order-rule.routes";
 import { reportRoutes } from "./routes/report.routes";
 import { shipmentRoutes } from "./routes/shipment.routes";
+import { sinterFeedRoutes } from "./routes/sinter-feed.routes";
 
 const app = express();
 
@@ -86,6 +87,7 @@ app.use("/api/catalog", csrfProtection, catalogRoutes);
 app.use("/api/purchase-order-rules", csrfProtection, purchaseOrderRuleRoutes);
 app.use("/api/reports", csrfProtection, reportRoutes);
 app.use("/api/shipments", csrfProtection, shipmentRoutes);
+app.use("/api", csrfProtection, sinterFeedRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

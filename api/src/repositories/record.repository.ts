@@ -69,11 +69,27 @@ export const createIngestedRecord = async (input: IngestRecordInput): Promise<Re
       update: {}
     });
 
+    const now = new Date();
+    const mapping = input.sinterFeedValue
+      ? await tx.issuerSinterFeedMapping.findFirst({
+          where: {
+            issuerId: issuer.id,
+            isActive: true,
+            startsAt: { lte: now },
+            OR: [{ endsAt: null }, { endsAt: { gte: now } }],
+            sinterFeed: { code: input.sinterFeedValue, isActive: true },
+            blend: { isActive: true }
+          },
+          orderBy: { startsAt: "desc" }
+        })
+      : null;
+
     return tx.record.create({
       data: {
         ...input,
         emitenteCnpj,
-        issuerId: issuer.id
+        issuerId: issuer.id,
+        issuerSinterFeedMappingId: mapping?.id ?? null
       }
     });
   });

@@ -22,6 +22,7 @@ const recordPayloadSchema = {
           example: "00000031732059000106000001234500000000123456",
           description: "Opcional. Em /api/ingest/records, quando enviada deve conter 44 dígitos; o CNPJ do emitente é derivado da chave."
         },
+        sinterFeed: { type: "string", nullable: true, example: "SINTER FEED M01", description: "Opcional. Identificador configurável do Sinter Feed do carregamento." },
         original: { type: "string", example: "VALOR ORIGINAL" },
         pesagemId: {
           type: "string",
@@ -86,6 +87,8 @@ const recordResponseSchema = {
     emitenteCnpj: { type: "string", nullable: true, example: "31732059000106" },
     emitenteFornecedor: { type: "string", nullable: true, example: "BASSARI MINERACAO LTDA" },
     issuerId: { type: "string", format: "uuid", nullable: true },
+    sinterFeedValue: { type: "string", nullable: true, example: "SINTER FEED M01" },
+    issuerSinterFeedMappingId: { type: "string", format: "uuid", nullable: true },
     motoristaNome: { type: "string", nullable: true, example: "Joao" },
     motoristaCelular: { type: "string", nullable: true, example: "31999999999" },
     placa: { type: "string", example: "ABC1234" },
