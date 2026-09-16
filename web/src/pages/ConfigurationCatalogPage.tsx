@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { AppHeader } from "../components/AppHeader";
-import { ConfigurationNavigation } from "../components/ConfigurationNavigation";
+import { ConfigurationPageHeader } from "../components/ConfigurationPageHeader";
 import { useAuth } from "../hooks/useAuth";
 import { createBlendRequest, createSinterFeedRequest, listBlendsRequest, listSinterFeedsRequest, updateBlendRequest, updateSinterFeedRequest, type Blend, type SinterFeed } from "../services/sinter-feeds.service";
 
@@ -82,8 +81,8 @@ export const ConfigurationCatalogPage = ({ kind }: { kind: CatalogKind }) => {
     });
   };
 
-  return <main className="min-h-screen bg-surface">
-    <AppHeader title={content.title} subtitle={`${content.hint} · Operador: ${user?.email ?? ""}`} actions={<><ConfigurationNavigation /><button className="btn-muted" onClick={logout}>Sair</button></>} />
+  return <main className="app-with-sidebar min-h-screen bg-surface">
+    <ConfigurationPageHeader current={kind === "feed" ? "sinter-feeds" : "blends"} title={content.title} subtitle={`${content.hint} · Operador: ${user?.email ?? ""}`} onLogout={logout} />
     <section className="mx-auto grid max-w-5xl gap-5 px-4 py-6">
       <section className="surface-card p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">Catálogo</p>

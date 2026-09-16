@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { AppHeader } from "../components/AppHeader";
-import { ConfigurationNavigation } from "../components/ConfigurationNavigation";
+import { ConfigurationPageHeader } from "../components/ConfigurationPageHeader";
 import { useAuth } from "../hooks/useAuth";
 import { listIssuersRequest, updateIssuerRequest, type Issuer } from "../services/sinter-feeds.service";
 
@@ -69,12 +68,8 @@ export const IssuersPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-surface">
-      <AppHeader
-        title="Fornecedores identificados"
-        subtitle={`Fornecedores são incluídos automaticamente a partir das notas importadas. Você pode complementar a descrição operacional. · Operador: ${user?.email ?? ""}`}
-        actions={<><ConfigurationNavigation /><button className="btn-muted" onClick={logout}>Sair</button></>}
-      />
+    <main className="app-with-sidebar min-h-screen bg-surface">
+      <ConfigurationPageHeader current="fornecedores" title="Fornecedores identificados" subtitle={`Fornecedores são incluídos automaticamente a partir das notas importadas. Você pode complementar a descrição operacional. · Operador: ${user?.email ?? ""}`} onLogout={logout} />
       <section className="mx-auto grid max-w-7xl gap-5 px-4 py-6">
         <section className="grid gap-4 border-l-4 border-secondary bg-surface-container-low p-4 md:grid-cols-[1fr_auto] md:items-center">
           <div>

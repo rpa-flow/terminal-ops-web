@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { AppHeader } from "../components/AppHeader";
-import { ConfigurationNavigation } from "../components/ConfigurationNavigation";
+import { ConfigurationPageHeader } from "../components/ConfigurationPageHeader";
 import { useAuth } from "../hooks/useAuth";
 import { createIssuerSinterFeedMappingRequest, deactivateIssuerSinterFeedMappingRequest, listBlendsRequest, listIssuerSinterFeedMappingsRequest, listIssuersRequest, listSinterFeedsRequest, type Blend, type Issuer, type IssuerSinterFeedMapping, type SinterFeed } from "../services/sinter-feeds.service";
 
@@ -41,8 +40,8 @@ export const IssuerClassificationsPage = () => {
   const submit = (event: React.FormEvent) => { event.preventDefault(); if (!token || !form.issuerId || !form.sinterFeedId || !form.blendId) return; void run(async () => { await createIssuerSinterFeedMappingRequest(token, { ...form, startsAt: form.startsAt || undefined }); setForm(emptyForm); setShowForm(false); await load(); }); };
   const deactivate = (item: IssuerSinterFeedMapping) => { if (token) void run(async () => { await deactivateIssuerSinterFeedMappingRequest(token, item.id); await load(); }); };
 
-  return <main className="min-h-screen bg-surface">
-    <AppHeader title="Classificações por fornecedor" subtitle={`Associe fornecedor, Sinter Feed, Blend e vigência · Operador: ${user?.email ?? ""}`} actions={<><ConfigurationNavigation /><button className="btn-muted" onClick={logout}>Sair</button></>} />
+  return <main className="app-with-sidebar min-h-screen bg-surface">
+    <ConfigurationPageHeader current="classificacoes" title="Classificações por fornecedor" subtitle={`Associe fornecedor, Sinter Feed, Blend e vigência · Operador: ${user?.email ?? ""}`} onLogout={logout} />
     <section className="mx-auto grid max-w-7xl gap-5 px-4 py-6">
       <section className="border-l-4 border-secondary bg-surface-container-low p-4"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">Regra de vigência</p><p className="mt-1 text-sm text-on-surface-variant">Para o mesmo fornecedor e Sinter Feed, informe uma vigência que não se sobreponha às classificações existentes. O histórico dos carregamentos permanece preservado.</p></section>
       {error && <p role="alert" className="rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">{error}</p>}

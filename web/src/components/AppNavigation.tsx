@@ -1,11 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 
 type AppNavigationProps = {
-  current: "records" | "notes" | "reports" | "shipments";
+  current: "records" | "notes" | "reports" | "shipments" | "configuration";
   reportArea?: "tbjc" | "tcs";
+  configurationCurrent?: "fornecedores" | "sinter-feeds" | "blends" | "classificacoes";
 };
 
-export const AppNavigation = ({ current, reportArea }: AppNavigationProps) => {
+export const AppNavigation = ({ current, reportArea, configurationCurrent }: AppNavigationProps) => {
   const navigate = useNavigate();
   const selectedArea = current === "notes" || reportArea === "tcs" ? "tcs" : "tbjc";
   const operationalPath = selectedArea === "tbjc" ? "/" : "/notas";
@@ -71,15 +72,15 @@ export const AppNavigation = ({ current, reportArea }: AppNavigationProps) => {
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5"><path d="M3 7h11v10H3zM14 11h4l3 3v3h-7M7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           Embarques
         </Link>
-        <details className="border-t border-on-primary/20 pt-4">
+        <details className="border-t border-on-primary/20 pt-4" open={current === "configuration" ? true : undefined}>
           <summary className="cursor-pointer list-none rounded-lg px-3 py-2 text-sm font-semibold text-on-primary transition hover:bg-on-primary/10 focus:outline-none focus:ring-2 focus:ring-secondary">
             Configurações
           </summary>
           <div className="grid gap-1">
-            <Link className="rounded-lg px-3 py-2 text-sm font-medium text-on-primary transition hover:bg-on-primary/10" to="/fornecedores">Fornecedores</Link>
-            <Link className="rounded-lg px-3 py-2 text-sm font-medium text-on-primary transition hover:bg-on-primary/10" to="/sinter-feeds">Sinter Feed</Link>
-            <Link className="rounded-lg px-3 py-2 text-sm font-medium text-on-primary transition hover:bg-on-primary/10" to="/blends">Blends</Link>
-            <Link className="rounded-lg px-3 py-2 text-sm font-medium text-on-primary transition hover:bg-on-primary/10" to="/classificacoes-por-fornecedor">Classificações por fornecedor</Link>
+            <Link aria-current={configurationCurrent === "fornecedores" ? "page" : undefined} className={`rounded-lg px-3 py-2 text-sm font-medium transition ${configurationCurrent === "fornecedores" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`} to="/fornecedores">Fornecedores</Link>
+            <Link aria-current={configurationCurrent === "sinter-feeds" ? "page" : undefined} className={`rounded-lg px-3 py-2 text-sm font-medium transition ${configurationCurrent === "sinter-feeds" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`} to="/sinter-feeds">Sinter Feed</Link>
+            <Link aria-current={configurationCurrent === "blends" ? "page" : undefined} className={`rounded-lg px-3 py-2 text-sm font-medium transition ${configurationCurrent === "blends" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`} to="/blends">Blends</Link>
+            <Link aria-current={configurationCurrent === "classificacoes" ? "page" : undefined} className={`rounded-lg px-3 py-2 text-sm font-medium transition ${configurationCurrent === "classificacoes" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`} to="/classificacoes-por-fornecedor">Classificações por fornecedor</Link>
           </div>
         </details>
       </nav>
