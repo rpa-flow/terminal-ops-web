@@ -4,7 +4,13 @@ BEGIN
     ALTER TABLE "emitentes" RENAME TO "issuers";
   END IF;
 
-  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'emitentes_pkey') THEN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.issuers'::regclass AND conname = 'emitentes_pkey'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.issuers'::regclass AND conname = 'issuers_pkey'
+  ) THEN
     ALTER TABLE "issuers" RENAME CONSTRAINT "emitentes_pkey" TO "issuers_pkey";
   END IF;
 
@@ -26,7 +32,13 @@ BEGIN
     ALTER INDEX "records_emitente_id_idx" RENAME TO "records_issuer_id_idx";
   END IF;
 
-  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'records_emitente_id_fkey') THEN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.records'::regclass AND conname = 'records_emitente_id_fkey'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.records'::regclass AND conname = 'records_issuer_id_fkey'
+  ) THEN
     ALTER TABLE "records" RENAME CONSTRAINT "records_emitente_id_fkey" TO "records_issuer_id_fkey";
   END IF;
 END $$;

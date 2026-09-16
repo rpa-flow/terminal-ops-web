@@ -9,6 +9,8 @@ import { NotesPage } from "./pages/NotesPage";
 import { PurchaseOrderRulesPage } from "./pages/PurchaseOrderRulesPage";
 import { ReportsPage } from "./pages/ReportsPage";
 import { ShipmentsPage } from "./pages/ShipmentsPage";
+import { IssuersPage } from "./pages/IssuersPage";
+import { SinterFeedsPage } from "./pages/SinterFeedsPage";
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/purchase-order-rules" element={<ProtectedRoute><PurchaseOrderRulesPage /></ProtectedRoute>} />
         <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
+        <Route path="/emitentes" element={<ProtectedRoute><IssuersPage /></ProtectedRoute>} />
+        <Route path="/sinter-feeds" element={<ProtectedRoute><SinterFeedsPage /></ProtectedRoute>} />
         <Route
           path="/"
           element={

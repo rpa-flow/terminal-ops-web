@@ -64,6 +64,7 @@ export const RecordsPage = () => {
               Importar CSV
             </button>
             <HeaderLinkButton to="/purchase-order-rules">Config. OC</HeaderLinkButton>
+            <HeaderLinkButton to="/sinter-feeds">Sinter Feed</HeaderLinkButton>
             <button className="btn-muted" onClick={logout}>
               Sair
             </button>

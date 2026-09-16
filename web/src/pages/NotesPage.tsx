@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { AppNavigation } from "../components/AppNavigation";
+import { HeaderLinkButton } from "../components/AppHeader";
 import { CsvUploadModal } from "../components/CsvUploadModal";
 import { useAuth } from "../hooks/useAuth";
 import { listNotesRequest } from "../services/notes.service";
@@ -54,6 +55,7 @@ export const NotesPage = () => {
           <div className="flex items-center gap-2">
             <button className="btn-muted" onClick={() => void loadPending(page)} disabled={loading}>Atualizar</button>
             <button className="btn-muted" onClick={() => setShowCsvModal(true)}>Importar CSV</button>
+            <HeaderLinkButton to="/sinter-feeds">Sinter Feed</HeaderLinkButton>
             <button className="btn-muted" onClick={logout}>Sair</button>
           </div>
         </div>
