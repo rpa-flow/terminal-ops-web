@@ -26,6 +26,19 @@ type PileBalanceItem = {
   balance: number;
 };
 
+type DailySinterFeedWeightItem = {
+  date: string;
+  totalWeight: number;
+  weights: { code: string; totalWeight: number }[];
+};
+
+type BlendBalanceItem = {
+  blend: string;
+  received: number;
+  shipped: number;
+  balance: number;
+};
+
 type PendingNoteItem = {
   codigo: string;
   terminal: string;
@@ -67,11 +80,15 @@ const percentage = (part: number, total: number): number => {
 const buildRecordWhere = (filters: ReportOverviewQueryInput): Prisma.RecordWhereInput => {
   // Data/Hora is the operational date shown on the records screen. createdAt is
   // only the ingestion timestamp and can fall on a later day after a CSV import.
+  const terminal = filters.terminal?.trim().toUpperCase();
   return {
     dataHora: {
       gte: filters.startDate,
       lte: filters.endDate
-    }
+    },
+    ...(terminal === "TBJC"
+      ? { OR: ["TBJC", "TJBC"].map((value) => ({ terminal: { contains: value, mode: "insensitive" as const } })) }
+      : terminal ? { terminal: { contains: terminal, mode: "insensitive" } } : {})
   };
 };
 
@@ -105,7 +122,16 @@ const normalizeBreakdown = <T extends { _count: { _all: number } }>(
     .map((row) => ({ label: labelSelector(row) || "Nao informado", total: row._count._all }))
     .sort((a, b) => b.total - a.total);
 
-const dateKey = (value: Date): string => value.toISOString().slice(0, 10);
+const dateKey = (value: Date): string => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(value);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value;
+  return `${part("year")}-${part("month")}-${part("day")}`;
+};
 
 const parseWeight = (value: string | null): number => {
   if (!value) return 0;
@@ -113,6 +139,74 @@ const parseWeight = (value: string | null): number => {
   const normalized = value.replace(/\./g, "").replace(",", ".").replace(/[^0-9.-]/g, "");
   const weight = Number(normalized);
   return Number.isFinite(weight) ? weight : 0;
+};
+
+const parseValidWeight = (value: string | null): number | null => {
+  if (!value?.trim()) return null;
+  const normalized = value.replace(/\./g, "").replace(",", ".").replace(/[^0-9.-]/g, "");
+  const weight = Number(normalized);
+  return Number.isFinite(weight) ? weight : null;
+};
+
+const buildDateKeys = (startDate: Date, endDate: Date): string[] => {
+  const keys: string[] = [];
+  const cursor = new Date(`${dateKey(startDate)}T12:00:00.000Z`);
+  const last = new Date(`${dateKey(endDate)}T12:00:00.000Z`);
+  while (cursor <= last && keys.length < 366) {
+    keys.push(cursor.toISOString().slice(0, 10));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return keys;
+};
+
+const buildDailySinterFeedWeights = (
+  startDate: Date,
+  endDate: Date,
+  codes: string[],
+  receipts: { dataHora: Date; recebimentoPeso: string | null; issuerSinterFeedMapping: { sinterFeed: { code: string } } | null }[]
+): DailySinterFeedWeightItem[] => {
+  const buckets = new Map<string, Map<string, number>>();
+  buildDateKeys(startDate, endDate).forEach((key) => buckets.set(key, new Map()));
+  receipts.forEach((receipt) => {
+    const weight = parseValidWeight(receipt.recebimentoPeso);
+    const code = receipt.issuerSinterFeedMapping?.sinterFeed.code;
+    const bucket = buckets.get(dateKey(receipt.dataHora));
+    if (weight === null || !code || !bucket) return;
+    bucket.set(code, (bucket.get(code) ?? 0) + weight);
+  });
+  return Array.from(buckets, ([date, weights]) => ({
+    date,
+    totalWeight: Number(Array.from(weights.values()).reduce((total, value) => total + value, 0).toFixed(3)),
+    weights: codes.map((code) => ({ code, totalWeight: Number((weights.get(code) ?? 0).toFixed(3)) }))
+  }));
+};
+
+const buildBlendBalances = (
+  receipts: { recebimentoPeso: string | null; issuerSinterFeedMapping: { blend: { code: string } } | null }[],
+  shipments: { volume: Prisma.Decimal; blend: { code: string } | null }[],
+  blendCodes: string[]
+): BlendBalanceItem[] => {
+  const balances = new Map(blendCodes.map((code) => [code, { received: 0, shipped: 0 }]));
+  receipts.forEach((receipt) => {
+    const weight = parseValidWeight(receipt.recebimentoPeso);
+    const blend = receipt.issuerSinterFeedMapping?.blend.code;
+    if (weight === null || !blend) return;
+    const current = balances.get(blend) ?? { received: 0, shipped: 0 };
+    current.received += weight;
+    balances.set(blend, current);
+  });
+  shipments.forEach((shipment) => {
+    if (!shipment.blend) return;
+    const current = balances.get(shipment.blend.code) ?? { received: 0, shipped: 0 };
+    current.shipped += shipment.volume.toNumber();
+    balances.set(shipment.blend.code, current);
+  });
+  return Array.from(balances, ([blend, values]) => ({
+    blend,
+    received: Number(values.received.toFixed(3)),
+    shipped: Number(values.shipped.toFixed(3)),
+    balance: Number((values.received - values.shipped).toFixed(3))
+  })).sort((left, right) => left.blend.localeCompare(right.blend));
 };
 
 const buildPileBalances = (
@@ -152,14 +246,7 @@ const buildDailyVolumes = (
   recordDates: { dataHora: Date }[]
 ): DailyVolumeItem[] => {
   const buckets = new Map<string, DailyVolumeItem>();
-  const cursor = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
-  const last = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
-
-  while (cursor <= last && buckets.size < 366) {
-    const key = dateKey(cursor);
-    buckets.set(key, { date: key, emittedNotes: 0, receivedRecords: 0 });
-    cursor.setUTCDate(cursor.getUTCDate() + 1);
-  }
+  buildDateKeys(startDate, endDate).forEach((key) => buckets.set(key, { date: key, emittedNotes: 0, receivedRecords: 0 }));
 
   noteDates.forEach((note) => {
     const key = dateKey(note.dataHora ?? note.createdAt);
@@ -186,14 +273,7 @@ const buildDailyReceivedWeights = (
   receipts: { dataHora: Date | null; createdAt: Date; recebimentoPeso: string | null }[]
 ): DailyReceivedWeightItem[] => {
   const buckets = new Map<string, DailyReceivedWeightItem>();
-  const cursor = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
-  const last = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
-
-  while (cursor <= last && buckets.size < 366) {
-    const key = dateKey(cursor);
-    buckets.set(key, { date: key, totalWeight: 0 });
-    cursor.setUTCDate(cursor.getUTCDate() + 1);
-  }
+  buildDateKeys(startDate, endDate).forEach((key) => buckets.set(key, { date: key, totalWeight: 0 }));
 
   receipts.forEach((receipt) => {
     const bucket = buckets.get(dateKey(receipt.dataHora ?? receipt.createdAt));
@@ -222,6 +302,7 @@ const buildRawConditions = (filters: ReportOverviewQueryInput) => {
 };
 
 export const getReportOverviewService = async (filters: ReportOverviewQueryInput) => {
+  const terminal = filters.terminal?.trim().toUpperCase();
   const recordWhere = buildRecordWhere(filters);
   const noteWhere = buildNoteWhere(filters);
   const shipmentWhere: Prisma.ShipmentWhereInput = {
@@ -257,7 +338,10 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
     noteDates,
     recordDates,
     pileRecords,
-    shipments
+    shipments,
+    tbjcReceipts,
+    activeSinterFeeds,
+    activeBlends
   ] = await prisma.$transaction([
     prisma.note.count({ where: noteWhere }),
     prisma.record.count({ where: recordWhere }),
@@ -297,7 +381,17 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
           where: { ...recordWhere, recebimentoPeso: { not: null } },
           select: { dataHora: true, createdAt: true, recebimentoPatioDescarga: true, recebimentoPeso: true }
         }),
-    prisma.shipment.findMany({ where: shipmentWhere, select: { pile: true, volume: true } })
+    prisma.shipment.findMany({ where: shipmentWhere, select: { pile: true, volume: true, blend: { select: { code: true } } } }),
+    prisma.record.findMany({
+      where: recordWhere,
+      select: {
+        dataHora: true,
+        recebimentoPeso: true,
+        issuerSinterFeedMapping: { select: { sinterFeed: { select: { code: true } }, blend: { select: { code: true } } } }
+      }
+    }),
+    prisma.sinterFeed.findMany({ where: { isActive: true }, select: { code: true }, orderBy: { code: "asc" } }),
+    prisma.blend.findMany({ where: { isActive: true }, select: { code: true }, orderBy: { code: "asc" } })
   ]);
 
   const { noteConditions, recordConditions } = buildRawConditions(filters);
@@ -361,6 +455,22 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
   const shippedMaterialWeight = shipments.reduce((total, item) => total + item.volume.toNumber(), 0);
   const pileBalances = useNoteReceipts ? buildPileBalances(pileRecords, shipments) : [];
   const dailyReceivedWeights = buildDailyReceivedWeights(filters.startDate, filters.endDate, pileRecords);
+  const mappedCodes = tbjcReceipts.flatMap((receipt) => receipt.issuerSinterFeedMapping ? [receipt.issuerSinterFeedMapping.sinterFeed.code] : []);
+  const sinterFeedCodes = Array.from(new Set([...activeSinterFeeds.map((item) => item.code), ...mappedCodes])).sort();
+  const dailySinterFeedWeights = terminal === "TBJC"
+    ? buildDailySinterFeedWeights(filters.startDate, filters.endDate, sinterFeedCodes, tbjcReceipts)
+    : [];
+  const blendBalances = terminal === "TBJC" ? buildBlendBalances(tbjcReceipts, shipments, activeBlends.map((item) => item.code)) : [];
+  const unclassifiedReceivedCount = terminal === "TBJC"
+    ? tbjcReceipts.filter((receipt) => parseValidWeight(receipt.recebimentoPeso) === null || !receipt.issuerSinterFeedMapping).length
+    : 0;
+  const classifiedReceivedWeight = dailySinterFeedWeights.reduce((total, item) => total + item.totalWeight, 0);
+  const classifiedShippedWeight = blendBalances.reduce((total, item) => total + item.shipped, 0);
+  const reportReceivedWeight = terminal === "TBJC" ? Number(classifiedReceivedWeight.toFixed(3)) : Number(receivedMaterialWeight.toFixed(3));
+  const reportShippedWeight = terminal === "TBJC" ? Number(classifiedShippedWeight.toFixed(3)) : Number(shippedMaterialWeight.toFixed(3));
+  const reportDailyReceivedWeights = terminal === "TBJC"
+    ? dailySinterFeedWeights.map(({ date, totalWeight }) => ({ date, totalWeight }))
+    : dailyReceivedWeights;
 
   return {
     filters: {
@@ -371,9 +481,9 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
     summary: {
       emittedNotes,
       receivedRecords: weighedRecords,
-      receivedMaterialWeight: Number(receivedMaterialWeight.toFixed(3)),
-      shippedMaterialWeight: Number(shippedMaterialWeight.toFixed(3)),
-      availableMaterialWeight: Number((receivedMaterialWeight - shippedMaterialWeight).toFixed(3)),
+      receivedMaterialWeight: reportReceivedWeight,
+      shippedMaterialWeight: reportShippedWeight,
+      availableMaterialWeight: Number((reportReceivedWeight - reportShippedWeight).toFixed(3)),
       matchedNotes,
       pendingNotes,
       pendingOver24h,
@@ -391,8 +501,12 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       recordsByTerminal: normalizeBreakdown(recordTerminalRows, (row) => row.terminal).slice(0, 8)
     },
     dailyVolumes: buildDailyVolumes(filters.startDate, filters.endDate, noteDates, recordDates),
-    dailyReceivedWeights,
+    dailyReceivedWeights: reportDailyReceivedWeights,
     pileBalances,
+    dailySinterFeedWeights,
+    sinterFeedCodes,
+    blendBalances,
+    unclassifiedReceivedCount,
     pendingOldest
   };
 };

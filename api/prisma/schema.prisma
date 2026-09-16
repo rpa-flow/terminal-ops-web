@@ -3,7 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -21,6 +23,8 @@ model Shipment {
   terminal    String   @db.VarChar(16)
   shippedAt   DateTime @map("shipped_at") @db.Timestamp(3)
   volume      Decimal  @db.Decimal(18, 3)
+  blendId     String?  @map("blend_id") @db.Uuid
+  blend       Blend?   @relation(fields: [blendId], references: [id], onDelete: Restrict)
   pile        String?  @db.VarChar(120)
   destination String?  @db.VarChar(120)
   document    String?  @db.VarChar(64)
@@ -29,6 +33,7 @@ model Shipment {
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(3)
 
   @@index([terminal, shippedAt])
+  @@index([blendId])
   @@map("shipments")
 }
 
@@ -101,6 +106,7 @@ model Blend {
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(3)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
   mappings    IssuerSinterFeedMapping[]
+  shipments   Shipment[]
 
   @@map("blends")
 }

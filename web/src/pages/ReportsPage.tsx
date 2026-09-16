@@ -4,9 +4,9 @@ import { Navigate, useParams } from "react-router-dom";
 import { AppNavigation } from "../components/AppNavigation";
 import { useAuth } from "../hooks/useAuth";
 import { getReportOverviewRequest } from "../services/reports.service";
-import type { DailyReceivedWeightItem, DailyVolumeItem, PileBalanceItem, ReportBreakdownItem, ReportOverviewResponse } from "../types/api";
+import type { BlendBalanceItem, DailyReceivedWeightItem, DailySinterFeedWeightItem, DailyVolumeItem, PileBalanceItem, ReportBreakdownItem, ReportOverviewResponse } from "../types/api";
 
-const formatInputDate = (date: Date): string => date.toISOString().slice(0, 10);
+const formatInputDate = (date: Date): string => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 
 const getDefaultFilters = (terminal: "TBJC" | "TCS") => {
   const endDate = new Date();
@@ -171,6 +171,41 @@ const PileBalanceTable = ({ items }: { items: PileBalanceItem[] }) => {
   );
 };
 
+const SinterFeedDailyChart = ({ items, codes }: { items: DailySinterFeedWeightItem[]; codes: string[] }) => {
+  const width = 760;
+  const height = 260;
+  const padding = 34;
+  const chartHeight = height - padding * 2;
+  const chartWidth = width - padding * 2;
+  const max = Math.max(...items.map((item) => item.totalWeight), 1);
+  const step = items.length > 1 ? chartWidth / items.length : chartWidth;
+  const barWidth = Math.max(4, Math.min(18, step / 2));
+  const labelEvery = Math.max(1, Math.ceil(items.length / 6));
+  const colors = ["#23a18e", "#2b3a7e", "#b34b00", "#7357c7", "#926f00", "#a43d75"];
+  return <section className="rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-2"><div><h2 className="text-base font-semibold text-on-surface">Quantidade recebida por dia e Sinter Feed</h2><p className="text-sm text-on-surface-variant">Toneladas classificadas</p></div><div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-on-surface-variant">{codes.map((code, index) => <span className="flex items-center gap-1" key={code}><span className="h-2 w-2 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />SF {code}</span>)}</div></div><div className="mt-4 overflow-x-auto"><svg className="min-w-[680px]" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Quantidade recebida por dia e Sinter Feed">{[0, 0.5, 1].map((tick) => { const y = height - padding - tick * chartHeight; return <g key={tick}><line x1={padding} x2={width - padding} y1={y} y2={y} stroke="#e5edff" /><text x={padding - 8} y={y + 4} textAnchor="end" className="fill-outline text-[10px]">{formatNumber(Math.round(max * tick))}</text></g>; })}{items.map((item, index) => { const x = padding + index * step + step / 2; let offset = 0; return <g key={item.date}>{item.weights.map((weight, weightIndex) => { const valueHeight = (weight.totalWeight / max) * chartHeight; const y = height - padding - offset - valueHeight; offset += valueHeight; return <rect key={weight.code} x={x - barWidth / 2} y={y} width={barWidth} height={valueHeight} fill={colors[weightIndex % colors.length]} />; })}{index % labelEvery === 0 && <text x={x} y={height - 10} textAnchor="middle" className="fill-on-surface-variant text-[10px]">{formatDate(item.date)}</text>}</g>; })}</svg></div></section>;
+};
+
+const DailySinterFeedTable = ({ items, codes, unclassifiedCount }: { items: DailySinterFeedWeightItem[]; codes: string[]; unclassifiedCount: number }) => (
+  <section className="overflow-hidden rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-surface-container-high px-4 py-3">
+      <div><h2 className="text-base font-semibold text-on-surface">Quantidade recebida por Sinter Feed</h2><p className="text-sm text-on-surface-variant">Toneladas por dia no período selecionado</p></div>
+      <span className="rounded bg-error-container px-2 py-1 text-sm text-on-error-container">Não classificados: {formatNumber(unclassifiedCount)}</span>
+    </div>
+    <div className="overflow-x-auto"><table className="min-w-full text-right text-sm"><thead className="bg-surface text-on-surface-variant"><tr><th className="px-4 py-3 text-left">Data</th>{codes.map((code) => <th className="px-4 py-3" key={code}>SF {code}</th>)}<th className="px-4 py-3">Total</th></tr></thead><tbody>{items.map((item) => <tr className="border-t border-surface-container-high" key={item.date}><td className="px-4 py-3 text-left font-medium">{formatDate(item.date)}</td>{item.weights.map((weight) => <td className="px-4 py-3" key={weight.code}>{formatNumber(weight.totalWeight)}</td>)}<td className="px-4 py-3 font-semibold text-primary">{formatNumber(item.totalWeight)}</td></tr>)}</tbody></table></div>
+  </section>
+);
+
+const BlendBalancePanel = ({ items }: { items: BlendBalanceItem[] }) => {
+  const max = Math.max(...items.map((item) => Math.abs(item.balance)), 1);
+  const totals = items.reduce((total, item) => ({ received: total.received + item.received, shipped: total.shipped + item.shipped, balance: total.balance + item.balance }), { received: 0, shipped: 0, balance: 0 });
+  return (
+    <section className="overflow-hidden rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
+      <div className="border-b border-surface-container-high bg-primary px-4 py-3 text-on-primary"><h2 className="text-center text-lg font-semibold uppercase tracking-wide">Saldo atualizado por Blend</h2><p className="mt-1 text-center text-xs text-on-primary/75">Recebido menos embarcado no período selecionado</p></div>
+      {items.length === 0 ? <p className="p-6 text-center text-sm text-on-surface-variant">Nenhum Blend ativo cadastrado.</p> : <div className="grid gap-5 p-4 lg:grid-cols-2"><div className="grid content-start gap-3" role="img" aria-label="Gráfico de saldo por Blend">{items.map((item) => <div key={item.blend}><div className="mb-1 flex justify-between gap-3 text-sm"><span className="font-medium">{item.blend}</span><span>{formatNumber(item.balance)} t</span></div><div className="h-5 overflow-hidden rounded bg-surface-container"><div className={`h-full rounded ${item.balance < 0 ? "bg-error" : "bg-secondary"}`} style={{ width: `${Math.max(2, (Math.abs(item.balance) / max) * 100)}%` }} /></div></div>)}</div><div className="overflow-x-auto"><table className="min-w-full text-right text-sm"><thead className="bg-surface text-on-surface-variant"><tr><th className="px-3 py-2 text-left">Blend</th><th className="px-3 py-2">Recebido</th><th className="px-3 py-2">Embarcado</th><th className="px-3 py-2">Saldo</th></tr></thead><tbody>{items.map((item) => <tr className="border-t border-surface-container-high" key={item.blend}><td className="px-3 py-2 text-left font-medium">{item.blend}</td><td className="px-3 py-2">{formatNumber(item.received)}</td><td className="px-3 py-2 text-error">{formatNumber(item.shipped)}</td><td className={`px-3 py-2 font-semibold ${item.balance < 0 ? "text-error" : "text-primary"}`}>{formatNumber(item.balance)}</td></tr>)}<tr className="border-t-2 border-primary bg-surface"><td className="px-3 py-2 text-left font-semibold">Total</td><td className="px-3 py-2 font-semibold">{formatNumber(totals.received)}</td><td className="px-3 py-2 font-semibold text-error">{formatNumber(totals.shipped)}</td><td className={`px-3 py-2 font-semibold ${totals.balance < 0 ? "text-error" : "text-primary"}`}>{formatNumber(totals.balance)}</td></tr></tbody></table></div></div>}
+    </section>
+  );
+};
+
 export const ReportsPage = () => {
   const { area } = useParams();
   const { token, user, logout } = useAuth();
@@ -275,6 +310,7 @@ export const ReportsPage = () => {
                   <MetricCard label="Volume recebido" value={formatNumber(report.summary.receivedMaterialWeight)} accent="text-on-secondary-container" />
                   <MetricCard label="Volume embarcado" value={formatNumber(report.summary.shippedMaterialWeight)} accent="text-error" />
                   <MetricCard label="Saldo disponível" value={formatNumber(report.summary.availableMaterialWeight)} accent="text-primary" />
+                  <MetricCard label="Não classificados" value={formatNumber(report.unclassifiedReceivedCount)} accent="text-error" />
                 </>
               ) : (
                 <>
@@ -290,7 +326,12 @@ export const ReportsPage = () => {
 
             <DailyVolumeChart items={report.dailyVolumes} area={area} />
 
-            <DailyWeightChart items={report.dailyReceivedWeights} />
+            {isTbjc ? <SinterFeedDailyChart items={report.dailySinterFeedWeights} codes={report.sinterFeedCodes} /> : <DailyWeightChart items={report.dailyReceivedWeights} />}
+
+            {isTbjc && <>
+              <DailySinterFeedTable items={report.dailySinterFeedWeights} codes={report.sinterFeedCodes} unclassifiedCount={report.unclassifiedReceivedCount} />
+              <BlendBalancePanel items={report.blendBalances} />
+            </>}
 
             {!isTbjc && <PileBalanceTable items={report.pileBalances} />}
 

@@ -32,6 +32,8 @@ export type ShipmentItem = {
   terminal: "TBJC" | "TCS";
   shippedAt: string;
   volume: number;
+  blendId: string | null;
+  blend: { id: string; code: string; description: string | null } | null;
   pile: string | null;
   destination: string | null;
   document: string | null;
@@ -113,6 +115,24 @@ export type DailyReceivedWeightItem = {
   totalWeight: number;
 };
 
+export type SinterFeedWeight = {
+  code: string;
+  totalWeight: number;
+};
+
+export type DailySinterFeedWeightItem = {
+  date: string;
+  totalWeight: number;
+  weights: SinterFeedWeight[];
+};
+
+export type BlendBalanceItem = {
+  blend: string;
+  received: number;
+  shipped: number;
+  balance: number;
+};
+
 export type PileBalanceItem = {
   pile: string;
   received: number;
@@ -161,6 +181,10 @@ export type ReportOverviewResponse = {
   dailyVolumes: DailyVolumeItem[];
   dailyReceivedWeights: DailyReceivedWeightItem[];
   pileBalances: PileBalanceItem[];
+  dailySinterFeedWeights: DailySinterFeedWeightItem[];
+  sinterFeedCodes: string[];
+  blendBalances: BlendBalanceItem[];
+  unclassifiedReceivedCount: number;
   pendingOldest: PendingReportNoteItem[];
 };
 

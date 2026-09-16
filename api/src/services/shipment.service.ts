@@ -11,13 +11,15 @@ export const createShipmentService = async (input: CreateShipmentInput, userId: 
     terminal: input.terminal,
     shippedAt: input.shippedAt,
     volume: input.volume,
+    blendId: input.blendId ?? null,
     pile: input.pile ?? null,
     destination: input.destination ?? null,
     document: input.document ?? null,
     notes: input.notes ?? null,
     createdBy: userId
   } });
-  return { ...shipment, volume: shipment.volume.toNumber(), pile: clean(shipment.pile), destination: clean(shipment.destination), document: clean(shipment.document), notes: clean(shipment.notes) };
+  const saved = await prisma.shipment.findUniqueOrThrow({ where: { id: shipment.id }, include: { blend: true } });
+  return { ...saved, volume: saved.volume.toNumber(), pile: clean(saved.pile), destination: clean(saved.destination), document: clean(saved.document), notes: clean(saved.notes) };
 };
 
 export const listShipmentsService = async (filters: ListShipmentsInput) => {
@@ -29,7 +31,7 @@ export const listShipmentsService = async (filters: ListShipmentsInput) => {
     ...(filters.startDate || filters.endDate ? { shippedAt: dateFilter } : {})
   };
   const [items, shippedAggregate, receivedEntries] = await prisma.$transaction([
-    prisma.shipment.findMany({ where, orderBy: { shippedAt: "desc" }, take: 200 }),
+    prisma.shipment.findMany({ where, include: { blend: true }, orderBy: { shippedAt: "desc" }, take: 200 }),
     prisma.shipment.aggregate({ where, _sum: { volume: true } }),
     filters.terminal === "TCS"
       ? prisma.note.findMany({

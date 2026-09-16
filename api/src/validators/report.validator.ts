@@ -42,6 +42,10 @@ export const reportOverviewQuerySchema = z
       ctx.addIssue({ code: "custom", path: ["startDate"], message: "Data inicial deve ser menor que a final" });
     }
 
+    if (endDate.getTime() - startDate.getTime() > 365 * 24 * 60 * 60 * 1000) {
+      ctx.addIssue({ code: "custom", path: ["endDate"], message: "O período deve ter no máximo 366 dias" });
+    }
+
     return {
       startDate,
       endDate,
