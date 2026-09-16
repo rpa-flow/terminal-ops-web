@@ -1,7 +1,7 @@
 import xss from "xss";
 
-import { createRecord, createRecords, findLatestRecordByNumeroNota, listRecords, updateRecordStatusById } from "../repositories/record.repository";
-import type { CreateRecordInput, ListRecordsFilters } from "../validators/record.validator";
+import { createIngestedRecord, createRecord, createRecords, findLatestRecordByNumeroNota, listRecords, updateRecordStatusById } from "../repositories/record.repository";
+import type { CreateRecordInput, IngestRecordInput, ListRecordsFilters } from "../validators/record.validator";
 import { resolvePurchaseOrder } from "./purchase-order-rule.service";
 
 const sanitizeString = (value: string): string => xss(value, { whiteList: {} });
@@ -17,6 +17,7 @@ const sanitizeRecord = (record: {
   notaPesagemId: string;
   emitenteCnpj: string | null;
   emitenteFornecedor: string | null;
+  issuerId: string | null;
   motoristaNome: string | null;
   motoristaCelular: string | null;
   placa: string;
@@ -54,6 +55,11 @@ export const createRecordService = async (input: CreateRecordInput & { materialI
     await resolvePurchaseOrder(input.materialId, input.supplierId);
   }
   const saved = await createRecord(input);
+  return sanitizeRecord(saved);
+};
+
+export const createIngestedRecordService = async (input: IngestRecordInput) => {
+  const saved = await createIngestedRecord(input);
   return sanitizeRecord(saved);
 };
 

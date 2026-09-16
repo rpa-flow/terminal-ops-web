@@ -1,7 +1,7 @@
 import type { Prisma, Record } from "@prisma/client";
 
 import { prisma } from "../lib/prisma";
-import type { CreateRecordInput, ListRecordsFilters } from "../validators/record.validator";
+import type { CreateRecordInput, IngestRecordInput, ListRecordsFilters } from "../validators/record.validator";
 
 type ListRecordsResult = {
   total: number;
@@ -46,6 +46,33 @@ const buildWhere = (filters: ListRecordsFilters): Prisma.RecordWhereInput => {
 
 export const createRecord = async (input: CreateRecordInput): Promise<Record> => {
   return prisma.record.create({ data: input });
+};
+
+export const createIngestedRecord = async (input: IngestRecordInput): Promise<Record> => {
+  if (!input.notaChave) {
+    return prisma.record.create({ data: input });
+  }
+
+  const emitenteCnpj = input.notaChave.slice(6, 20);
+
+  return prisma.$transaction(async (tx) => {
+    const issuer = await tx.issuer.upsert({
+      where: { cnpj: emitenteCnpj },
+      create: {
+        cnpj: emitenteCnpj,
+        descricao: input.emitenteFornecedor
+      },
+      update: {}
+    });
+
+    return tx.record.create({
+      data: {
+        ...input,
+        emitenteCnpj,
+        issuerId: issuer.id
+      }
+    });
+  });
 };
 
 export const createRecords = async (inputs: CreateRecordInput[]): Promise<number> => {

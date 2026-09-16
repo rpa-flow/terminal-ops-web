@@ -43,6 +43,8 @@ model Record {
   status                     String   @db.VarChar(64)
   emitenteCnpj               String?  @map("emitente_cnpj") @db.VarChar(32)
   emitenteFornecedor         String?  @map("emitente_fornecedor") @db.VarChar(120)
+  issuerId                   String?  @map("issuer_id") @db.Uuid
+  issuer                     Issuer?  @relation(fields: [issuerId], references: [id], onDelete: SetNull)
   motoristaNome              String?  @map("motorista_nome") @db.VarChar(120)
   motoristaCelular           String?  @map("motorista_celular") @db.VarChar(24)
   placa                      String   @db.VarChar(16)
@@ -60,9 +62,20 @@ model Record {
   @@index([motoristaNome])
   @@index([placa])
   @@index([terminal])
+  @@index([issuerId])
   @@map("records")
 }
 
+model Issuer {
+  id        String   @id @default(uuid()) @db.Uuid
+  cnpj      String   @unique @db.VarChar(14)
+  descricao String?  @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
+  records   Record[]
+
+  @@map("issuers")
+}
 
 model Note {
   id        String   @id @default(uuid()) @db.Uuid

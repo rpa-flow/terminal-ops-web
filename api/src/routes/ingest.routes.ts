@@ -5,8 +5,8 @@ import { rateLimitKeyGenerator, rateLimitValidationConfig } from "../lib/rate-li
 import { requireApiKey } from "../middlewares/api-key";
 import { validate } from "../middlewares/validate";
 import { upsertIngestedNoteService } from "../services/note.service";
-import { createRecordService, updateRecordStatusByNumeroNotaService } from "../services/record.service";
-import { createRecordSchema, ingestNoteSchema, updateStatusBodySchema, updateStatusParamsSchema, type UpdateStatusBodyInput } from "../validators/record.validator";
+import { createIngestedRecordService, updateRecordStatusByNumeroNotaService } from "../services/record.service";
+import { ingestNoteSchema, ingestRecordSchema, updateStatusBodySchema, updateStatusParamsSchema, type UpdateStatusBodyInput } from "../validators/record.validator";
 
 const ingestRoutes = Router();
 
@@ -22,8 +22,8 @@ ingestRoutes.use(
   })
 );
 
-ingestRoutes.post("/records", requireApiKey, validate(createRecordSchema), async (req, res) => {
-  const saved = await createRecordService(req.body);
+ingestRoutes.post("/records", requireApiKey, validate(ingestRecordSchema), async (req, res) => {
+  const saved = await createIngestedRecordService(req.body);
   res.status(201).json(saved);
 });
 

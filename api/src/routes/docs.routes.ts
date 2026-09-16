@@ -17,7 +17,11 @@ const recordPayloadSchema = {
       required: ["numero", "original", "status"],
       properties: {
         numero: { type: "string", example: "12345" },
-        chave: { type: "string", example: "00000031732059000106000001234500000000123456" },
+        chave: {
+          type: "string",
+          example: "00000031732059000106000001234500000000123456",
+          description: "Opcional. Em /api/ingest/records, quando enviada deve conter 44 dígitos; o CNPJ do emitente é derivado da chave."
+        },
         original: { type: "string", example: "VALOR ORIGINAL" },
         pesagemId: {
           type: "string",
@@ -81,6 +85,7 @@ const recordResponseSchema = {
     status: { type: "string", example: "PROCESSADO" },
     emitenteCnpj: { type: "string", nullable: true, example: "31732059000106" },
     emitenteFornecedor: { type: "string", nullable: true, example: "BASSARI MINERACAO LTDA" },
+    issuerId: { type: "string", format: "uuid", nullable: true },
     motoristaNome: { type: "string", nullable: true, example: "Joao" },
     motoristaCelular: { type: "string", nullable: true, example: "31999999999" },
     placa: { type: "string", example: "ABC1234" },
@@ -355,7 +360,7 @@ const buildOpenApiDocument = (baseUrl: string) => ({
     "/api/ingest/records": {
       post: {
         tags: ["Ingest"],
-        summary: "Cria um registro com API key",
+        summary: "Cria um registro com API key e vincula automaticamente o emitente quando nota.chave for enviada",
         security: [{ ingestApiKey: [] }],
         requestBody: {
           required: true,
