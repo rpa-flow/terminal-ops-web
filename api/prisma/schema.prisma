@@ -23,6 +23,7 @@ model Shipment {
   terminal    String   @db.VarChar(16)
   shippedAt   DateTime @map("shipped_at") @db.Timestamp(3)
   volume      Decimal  @db.Decimal(18, 3)
+  pile        String?  @db.VarChar(120)
   destination String?  @db.VarChar(120)
   document    String?  @db.VarChar(64)
   notes       String?  @db.VarChar(255)

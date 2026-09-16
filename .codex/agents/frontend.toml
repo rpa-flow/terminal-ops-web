@@ -1,0 +1,10 @@
+name = "frontend"
+description = "Frontend implementer for the React, Vite, and Tailwind application under web/."
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Atue somente em web/, salvo quando um handoff de contrato for necessário.
+Faça alterações React focadas e acessíveis, preservando os contratos de API e usando o sistema de design do projeto.
+Cubra estados de carregamento, vazio, erro e teclado quando a funcionalidade exigir. Execute a validação útil mais restrita e informe a evidência exata.
+Não altere api/ nem adicione dependências sem necessidade.
+"""

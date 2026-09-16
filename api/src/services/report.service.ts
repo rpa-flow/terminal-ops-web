@@ -14,8 +14,15 @@ type DailyVolumeItem = {
   receivedRecords: number;
 };
 
+type DailyReceivedWeightItem = {
+  date: string;
+  totalWeight: number;
+};
+
 type PileBalanceItem = {
   pile: string;
+  received: number;
+  shipped: number;
   balance: number;
 };
 
@@ -58,31 +65,34 @@ const percentage = (part: number, total: number): number => {
 };
 
 const buildRecordWhere = (filters: ReportOverviewQueryInput): Prisma.RecordWhereInput => {
-  const where: Prisma.RecordWhereInput = {
+  // Data/Hora is the operational date shown on the records screen. createdAt is
+  // only the ingestion timestamp and can fall on a later day after a CSV import.
+  return {
     dataHora: {
       gte: filters.startDate,
       lte: filters.endDate
     }
   };
-
-  if (filters.terminal) {
-    where.terminal = { contains: filters.terminal, mode: "insensitive" };
-  }
-
-  return where;
 };
 
 const buildNoteWhere = (filters: ReportOverviewQueryInput): Prisma.NoteWhereInput => {
   const where: Prisma.NoteWhereInput = {
-    createdAt: {
-      gte: filters.startDate,
-      lte: filters.endDate
-    }
+    OR: [
+      {
+        dataHora: {
+          gte: filters.startDate,
+          lte: filters.endDate
+        }
+      },
+      {
+        dataHora: null,
+        createdAt: {
+          gte: filters.startDate,
+          lte: filters.endDate
+        }
+      }
+    ]
   };
-
-  if (filters.terminal) {
-    where.terminal = { contains: filters.terminal, mode: "insensitive" };
-  }
 
   return where;
 };
@@ -106,24 +116,39 @@ const parseWeight = (value: string | null): number => {
 };
 
 const buildPileBalances = (
-  records: { recebimentoPatioDescarga: string | null; recebimentoPeso: string | null }[]
+  receipts: { recebimentoPatioDescarga: string | null; recebimentoPeso: string | null }[],
+  shipments: { pile: string | null; volume: Prisma.Decimal }[]
 ): PileBalanceItem[] => {
-  const balances = new Map<string, number>();
+  const balances = new Map<string, { received: number; shipped: number }>();
 
-  records.forEach((record) => {
-    const pile = record.recebimentoPatioDescarga?.trim() || "Não informada";
-    balances.set(pile, (balances.get(pile) ?? 0) + parseWeight(record.recebimentoPeso));
+  receipts.forEach((receipt) => {
+    const pile = receipt.recebimentoPatioDescarga?.trim() || "Não informada";
+    const current = balances.get(pile) ?? { received: 0, shipped: 0 };
+    current.received += parseWeight(receipt.recebimentoPeso);
+    balances.set(pile, current);
   });
 
-  return Array.from(balances, ([pile, balance]) => ({ pile, balance }))
-    .filter((item) => item.balance !== 0)
+  shipments.forEach((shipment) => {
+    const pile = shipment.pile?.trim() || "Não informada";
+    const current = balances.get(pile) ?? { received: 0, shipped: 0 };
+    current.shipped += shipment.volume.toNumber();
+    balances.set(pile, current);
+  });
+
+  return Array.from(balances, ([pile, values]) => ({
+    pile,
+    received: Number(values.received.toFixed(3)),
+    shipped: Number(values.shipped.toFixed(3)),
+    balance: Number((values.received - values.shipped).toFixed(3))
+  }))
+    .filter((item) => item.received !== 0 || item.shipped !== 0)
     .sort((a, b) => b.balance - a.balance);
 };
 
 const buildDailyVolumes = (
   startDate: Date,
   endDate: Date,
-  noteDates: { createdAt: Date }[],
+  noteDates: { dataHora: Date | null; createdAt: Date }[],
   recordDates: { dataHora: Date }[]
 ): DailyVolumeItem[] => {
   const buckets = new Map<string, DailyVolumeItem>();
@@ -137,7 +162,7 @@ const buildDailyVolumes = (
   }
 
   noteDates.forEach((note) => {
-    const key = dateKey(note.createdAt);
+    const key = dateKey(note.dataHora ?? note.createdAt);
     const bucket = buckets.get(key);
     if (bucket) {
       bucket.emittedNotes += 1;
@@ -155,19 +180,43 @@ const buildDailyVolumes = (
   return Array.from(buckets.values());
 };
 
-const buildRawConditions = (filters: ReportOverviewQueryInput) => {
-  const terminalPattern = filters.terminal ? `%${filters.terminal}%` : undefined;
+const buildDailyReceivedWeights = (
+  startDate: Date,
+  endDate: Date,
+  receipts: { dataHora: Date | null; createdAt: Date; recebimentoPeso: string | null }[]
+): DailyReceivedWeightItem[] => {
+  const buckets = new Map<string, DailyReceivedWeightItem>();
+  const cursor = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
+  const last = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
 
+  while (cursor <= last && buckets.size < 366) {
+    const key = dateKey(cursor);
+    buckets.set(key, { date: key, totalWeight: 0 });
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  receipts.forEach((receipt) => {
+    const bucket = buckets.get(dateKey(receipt.dataHora ?? receipt.createdAt));
+    if (bucket) bucket.totalWeight += parseWeight(receipt.recebimentoPeso);
+  });
+
+  return Array.from(buckets.values()).map((item) => ({
+    ...item,
+    totalWeight: Number(item.totalWeight.toFixed(3))
+  }));
+};
+
+const buildRawConditions = (filters: ReportOverviewQueryInput) => {
   return {
     noteConditions: Prisma.sql`
-      n.created_at >= ${filters.startDate}
-      AND n.created_at <= ${filters.endDate}
-      ${terminalPattern ? Prisma.sql`AND n.terminal ILIKE ${terminalPattern}` : Prisma.empty}
+      (
+        (n.data_hora >= ${filters.startDate} AND n.data_hora <= ${filters.endDate})
+        OR (n.data_hora IS NULL AND n.created_at >= ${filters.startDate} AND n.created_at <= ${filters.endDate})
+      )
     `,
     recordConditions: Prisma.sql`
       r.data_hora >= ${filters.startDate}
       AND r.data_hora <= ${filters.endDate}
-      ${terminalPattern ? Prisma.sql`AND r.terminal ILIKE ${terminalPattern}` : Prisma.empty}
     `
   };
 };
@@ -175,6 +224,13 @@ const buildRawConditions = (filters: ReportOverviewQueryInput) => {
 export const getReportOverviewService = async (filters: ReportOverviewQueryInput) => {
   const recordWhere = buildRecordWhere(filters);
   const noteWhere = buildNoteWhere(filters);
+  const shipmentWhere: Prisma.ShipmentWhereInput = {
+    ...(filters.terminal ? { terminal: filters.terminal } : {}),
+    shippedAt: {
+      gte: filters.startDate,
+      lte: filters.endDate
+    }
+  };
   const useNoteReceipts = filters.terminal?.trim().toUpperCase() === "TCS";
   const pendingNoteWhere: Prisma.NoteWhereInput = {
     ...noteWhere,
@@ -183,7 +239,6 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
   const pendingOver24hWhere: Prisma.NoteWhereInput = {
     ...pendingNoteWhere,
     createdAt: {
-      ...(noteWhere.createdAt as Prisma.DateTimeFilter<"Note">),
       lt: new Date(Date.now() - 24 * 60 * 60 * 1000)
     }
   };
@@ -201,7 +256,8 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
     oldestPendingNotes,
     noteDates,
     recordDates,
-    pileRecords
+    pileRecords,
+    shipments
   ] = await prisma.$transaction([
     prisma.note.count({ where: noteWhere }),
     prisma.record.count({ where: recordWhere }),
@@ -230,17 +286,18 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
         createdAt: true
       }
     }),
-    prisma.note.findMany({ where: noteWhere, select: { createdAt: true } }),
+    prisma.note.findMany({ where: noteWhere, select: { dataHora: true, createdAt: true } }),
     prisma.record.findMany({ where: recordWhere, select: { dataHora: true } }),
     useNoteReceipts
       ? prisma.note.findMany({
           where: { ...noteWhere, recebimentoPeso: { not: null } },
-          select: { recebimentoPatioDescarga: true, recebimentoPeso: true }
+          select: { dataHora: true, createdAt: true, recebimentoPatioDescarga: true, recebimentoPeso: true }
         })
       : prisma.record.findMany({
           where: { ...recordWhere, recebimentoPeso: { not: null } },
-          select: { recebimentoPatioDescarga: true, recebimentoPeso: true }
-        })
+          select: { dataHora: true, createdAt: true, recebimentoPatioDescarga: true, recebimentoPeso: true }
+        }),
+    prisma.shipment.findMany({ where: shipmentWhere, select: { pile: true, volume: true } })
   ]);
 
   const { noteConditions, recordConditions } = buildRawConditions(filters);
@@ -254,9 +311,9 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       AND ${recordConditions}
     `,
     prisma.$queryRaw<AverageRow[]>`
-      SELECT AVG(ABS(EXTRACT(EPOCH FROM (matched.first_weigh_at - matched.created_at))) / 3600)::float AS "averageHours"
+      SELECT AVG(ABS(EXTRACT(EPOCH FROM (matched.first_record_at - matched.created_at))) / 3600)::float AS "averageHours"
       FROM (
-        SELECT n.codigo, n.created_at, MIN(r.data_hora) AS first_weigh_at
+        SELECT n.codigo, n.created_at, MIN(r.created_at) AS first_record_at
         FROM notes n
         INNER JOIN records r ON r.numero_nota = n.codigo
         WHERE ${noteConditions}
@@ -300,7 +357,10 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
     ageHours: Number(((now - note.createdAt.getTime()) / (60 * 60 * 1000)).toFixed(1))
   }));
 
-  const pileBalances = buildPileBalances(pileRecords);
+  const receivedMaterialWeight = pileRecords.reduce((total, item) => total + parseWeight(item.recebimentoPeso), 0);
+  const shippedMaterialWeight = shipments.reduce((total, item) => total + item.volume.toNumber(), 0);
+  const pileBalances = useNoteReceipts ? buildPileBalances(pileRecords, shipments) : [];
+  const dailyReceivedWeights = buildDailyReceivedWeights(filters.startDate, filters.endDate, pileRecords);
 
   return {
     filters: {
@@ -311,7 +371,9 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
     summary: {
       emittedNotes,
       receivedRecords: weighedRecords,
-      receivedMaterialWeight: pileBalances.reduce((total, item) => total + item.balance, 0),
+      receivedMaterialWeight: Number(receivedMaterialWeight.toFixed(3)),
+      shippedMaterialWeight: Number(shippedMaterialWeight.toFixed(3)),
+      availableMaterialWeight: Number((receivedMaterialWeight - shippedMaterialWeight).toFixed(3)),
       matchedNotes,
       pendingNotes,
       pendingOver24h,
@@ -329,6 +391,7 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       recordsByTerminal: normalizeBreakdown(recordTerminalRows, (row) => row.terminal).slice(0, 8)
     },
     dailyVolumes: buildDailyVolumes(filters.startDate, filters.endDate, noteDates, recordDates),
+    dailyReceivedWeights,
     pileBalances,
     pendingOldest
   };

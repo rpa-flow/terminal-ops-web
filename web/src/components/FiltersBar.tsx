@@ -14,8 +14,8 @@ export const FiltersBar = ({ filters, onChange, onApply, onClear }: Props) => {
 
   return (
     <section className="grid gap-3 rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm md:grid-cols-3 lg:grid-cols-6">
-      <input className="input" type="datetime-local" value={filters.startDate ?? ""} onChange={(e) => set("startDate", e.target.value)} />
-      <input className="input" type="datetime-local" value={filters.endDate ?? ""} onChange={(e) => set("endDate", e.target.value)} />
+      <input aria-label="Data inicial" className="input" type="date" value={filters.startDate ?? ""} onChange={(e) => set("startDate", e.target.value)} />
+      <input aria-label="Data final" className="input" type="date" value={filters.endDate ?? ""} onChange={(e) => set("endDate", e.target.value)} />
       <input className="input" placeholder="Status" value={filters.status ?? ""} onChange={(e) => set("status", e.target.value)} />
       <input className="input" placeholder="Motorista" value={filters.motorista ?? ""} onChange={(e) => set("motorista", e.target.value)} />
       <input className="input" placeholder="Placa" value={filters.placa ?? ""} onChange={(e) => set("placa", e.target.value.toUpperCase())} />

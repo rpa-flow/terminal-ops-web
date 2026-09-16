@@ -4,7 +4,7 @@ import { Navigate, useParams } from "react-router-dom";
 import { AppNavigation } from "../components/AppNavigation";
 import { useAuth } from "../hooks/useAuth";
 import { getReportOverviewRequest } from "../services/reports.service";
-import type { DailyVolumeItem, PileBalanceItem, ReportBreakdownItem, ReportOverviewResponse } from "../types/api";
+import type { DailyReceivedWeightItem, DailyVolumeItem, PileBalanceItem, ReportBreakdownItem, ReportOverviewResponse } from "../types/api";
 
 const formatInputDate = (date: Date): string => date.toISOString().slice(0, 10);
 
@@ -69,7 +69,7 @@ const DailyVolumeChart = ({ items, area }: { items: DailyVolumeItem[]; area: "tb
   return (
     <section className="rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-semibold text-on-surface">Evolução diária</h2>
+        <h2 className="text-base font-semibold text-on-surface">{area === "tcs" ? "Notas recebidas por dia" : "Registros recebidos por dia"}</h2>
         <div className="flex items-center gap-4 text-xs text-on-surface-variant">
           {area === "tcs" && <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" />Notas emitidas</span>}
           {area === "tbjc" && <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-secondary" />Recebimentos</span>}
@@ -113,42 +113,58 @@ const DailyVolumeChart = ({ items, area }: { items: DailyVolumeItem[]; area: "tb
   );
 };
 
-const PileBalanceChart = ({ items, area }: { items: PileBalanceItem[]; area: "tbjc" | "tcs" }) => {
-  const max = Math.max(...items.map((item) => item.balance), 1);
+const DailyWeightChart = ({ items }: { items: DailyReceivedWeightItem[] }) => {
+  const width = 760;
+  const height = 260;
+  const padding = 34;
+  const chartHeight = height - padding * 2;
+  const chartWidth = width - padding * 2;
+  const max = Math.max(...items.map((item) => item.totalWeight), 1);
+  const step = items.length > 1 ? chartWidth / items.length : chartWidth;
+  const barWidth = Math.max(4, Math.min(14, step / 3));
+  const labelEvery = Math.max(1, Math.ceil(items.length / 6));
 
   return (
-    <section className="rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <section className="rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
+      <h2 className="text-base font-semibold text-on-surface">Quantidade recebida por dia</h2>
+      <div className="mt-4 overflow-x-auto">
+        <svg className="min-w-[680px]" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Quantidade recebida por dia">
+          <line x1={padding} x2={width - padding} y1={height - padding} y2={height - padding} stroke="#c3c7cf" />
+          <line x1={padding} x2={padding} y1={padding} y2={height - padding} stroke="#c3c7cf" />
+          {[0, 0.5, 1].map((tick) => {
+            const y = height - padding - tick * chartHeight;
+            return <g key={tick}><line x1={padding} x2={width - padding} y1={y} y2={y} stroke="#e5edff" /><text x={padding - 8} y={y + 4} textAnchor="end" className="fill-outline text-[10px]">{formatNumber(Math.round(max * tick))}</text></g>;
+          })}
+          {items.map((item, index) => {
+            const x = padding + index * step + step / 2;
+            const barHeight = (item.totalWeight / max) * chartHeight;
+            return <g key={item.date}><rect x={x - barWidth / 2} y={height - padding - barHeight} width={barWidth} height={barHeight} rx="2" fill="#23a18e" />{index % labelEvery === 0 && <text x={x} y={height - 10} textAnchor="middle" className="fill-on-surface-variant text-[10px]">{formatDate(item.date)}</text>}</g>;
+          })}
+        </svg>
+      </div>
+    </section>
+  );
+};
+
+const PileBalanceTable = ({ items }: { items: PileBalanceItem[] }) => {
+  return (
+    <section className="overflow-hidden rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
       <div className="border-b border-surface-container-high bg-primary px-4 py-3 text-on-primary">
-        <h2 className="text-center text-lg font-semibold uppercase tracking-wide">
-          {area === "tcs" ? "Material recebido por pátio" : "Saldo atualizado por pilha"}
-        </h2>
-        <p className="mt-1 text-center text-xs text-on-primary/75">Volume recebido no período selecionado</p>
+        <h2 className="text-center text-lg font-semibold uppercase tracking-wide">Saldo atualizado por pilha</h2>
+        <p className="mt-1 text-center text-xs text-on-primary/75">Recebimentos e embarques no período selecionado</p>
       </div>
       {items.length === 0 ? (
         <p className="p-6 text-center text-sm text-on-surface-variant">Nenhum recebimento com peso e pilha no período.</p>
       ) : (
-        <div className="overflow-x-auto p-4">
-          <div className="flex min-w-[640px] items-end gap-3 border-b border-outline-variant px-2 pt-10" style={{ height: 290 }}>
-            {items.map((item) => {
-              const height = Math.max(5, (item.balance / max) * 190);
-              return (
-                <div key={item.pile} className="flex min-w-20 flex-1 flex-col items-center justify-end self-stretch">
-                  <div className="flex flex-1 items-end">
-                    <div
-                      className="relative w-12 rounded-t bg-gradient-to-t from-primary to-[#8ba9dc] shadow-sm sm:w-14"
-                      style={{ height }}
-                      title={`${item.pile}: ${formatNumber(item.balance)}`}
-                    >
-                      <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-on-surface-variant">
-                        {formatNumber(item.balance)}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="mt-3 min-h-10 max-w-24 text-center text-xs font-semibold uppercase text-on-surface-variant">{item.pile}</span>
-                </div>
-              );
-            })}
-          </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-surface text-on-surface-variant">
+              <tr><th className="px-4 py-3">Pilha</th><th className="px-4 py-3 text-right">Recebido</th><th className="px-4 py-3 text-right">Embarcado</th><th className="px-4 py-3 text-right">Saldo atual</th></tr>
+            </thead>
+            <tbody>
+              {items.map((item) => <tr key={item.pile} className="border-t border-surface-container-high"><td className="px-4 py-3 font-medium">{item.pile}</td><td className="px-4 py-3 text-right text-on-secondary-container">{formatNumber(item.received)}</td><td className="px-4 py-3 text-right text-error">{formatNumber(item.shipped)}</td><td className="px-4 py-3 text-right font-semibold text-primary">{formatNumber(item.balance)}</td></tr>)}
+            </tbody>
+          </table>
         </div>
       )}
     </section>
@@ -256,11 +272,16 @@ export const ReportsPage = () => {
               {isTbjc ? (
                 <>
                   <MetricCard label="Recebimentos registrados" value={formatNumber(report.summary.receivedRecords)} accent="text-on-secondary-container" />
+                  <MetricCard label="Volume recebido" value={formatNumber(report.summary.receivedMaterialWeight)} accent="text-on-secondary-container" />
+                  <MetricCard label="Volume embarcado" value={formatNumber(report.summary.shippedMaterialWeight)} accent="text-error" />
+                  <MetricCard label="Saldo disponível" value={formatNumber(report.summary.availableMaterialWeight)} accent="text-primary" />
                 </>
               ) : (
                 <>
                   <MetricCard label="Notas emitidas Bemisa" value={formatNumber(report.summary.emittedNotes)} accent="text-primary" />
                   <MetricCard label="Material recebido" value={formatNumber(report.summary.receivedMaterialWeight)} accent="text-on-secondary-container" />
+                  <MetricCard label="Material embarcado" value={formatNumber(report.summary.shippedMaterialWeight)} accent="text-error" />
+                  <MetricCard label="Saldo atual" value={formatNumber(report.summary.availableMaterialWeight)} accent="text-primary" />
                   <MetricCard label="Notas pendentes" value={formatNumber(report.summary.pendingNotes)} accent="text-warning" />
                   <MetricCard label="Pendentes +24h" value={formatNumber(report.summary.pendingOver24h)} accent="text-error" />
                 </>
@@ -269,19 +290,15 @@ export const ReportsPage = () => {
 
             <DailyVolumeChart items={report.dailyVolumes} area={area} />
 
-            <PileBalanceChart items={report.pileBalances} area={area} />
+            <DailyWeightChart items={report.dailyReceivedWeights} />
 
-            <div className="grid gap-4 lg:grid-cols-2">
+            {!isTbjc && <PileBalanceTable items={report.pileBalances} />}
+
+            <div className="grid gap-4">
               {isTbjc ? (
-                <>
-                  <BreakdownBars title="Recebimentos por status" items={report.breakdowns.recordsByStatus} tone="secondary" />
-                  <BreakdownBars title="Recebimentos por terminal" items={report.breakdowns.recordsByTerminal} tone="secondary" />
-                </>
+                <BreakdownBars title="Recebimentos por terminal" items={report.breakdowns.recordsByTerminal} tone="secondary" />
               ) : (
-                <>
-                  <BreakdownBars title="Notas por status" items={report.breakdowns.notesByStatus} tone="primary" />
-                  <BreakdownBars title="Notas por terminal" items={report.breakdowns.notesByTerminal} tone="primary" />
-                </>
+                <BreakdownBars title="Notas por terminal" items={report.breakdowns.notesByTerminal} tone="primary" />
               )}
             </div>
 

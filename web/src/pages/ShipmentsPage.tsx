@@ -2,7 +2,7 @@ import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { AppNavigation } from "../components/AppNavigation";
 import { useAuth } from "../hooks/useAuth";
-import { createShipmentRequest, listShipmentsRequest } from "../services/shipments.service";
+import { createShipmentRequest, deleteShipmentRequest, listShipmentsRequest } from "../services/shipments.service";
 import type { ShipmentsResponse } from "../types/api";
 
 const number = (value: number) => new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 3 }).format(value);
@@ -11,8 +11,9 @@ export const ShipmentsPage = () => {
   const { area } = useParams();
   const { token, user, logout } = useAuth();
   const [data, setData] = useState<ShipmentsResponse | null>(null);
-  const [form, setForm] = useState({ shippedAt: new Date().toISOString().slice(0, 10), volume: "", destination: "", document: "", notes: "" });
+  const [form, setForm] = useState({ shippedAt: new Date().toISOString().slice(0, 10), volume: "", pile: "", destination: "", document: "", notes: "" });
   const [message, setMessage] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const terminal = area?.toUpperCase() as "TBJC" | "TCS";
   const load = useCallback(async () => token && setData(await listShipmentsRequest(token, terminal)), [token, terminal]);
   useEffect(() => {
@@ -29,14 +30,30 @@ export const ShipmentsPage = () => {
     try {
       await createShipmentRequest(token, {
         terminal, shippedAt: `${form.shippedAt}T12:00:00.000Z`, volume: Number(form.volume.replace(",", ".")),
+        ...(terminal === "TCS" ? { pile: form.pile.trim() } : {}),
         ...(form.destination.trim() ? { destination: form.destination.trim() } : {}),
         ...(form.document.trim() ? { document: form.document.trim() } : {}),
         ...(form.notes.trim() ? { notes: form.notes.trim() } : {})
       });
-      setForm((current) => ({ ...current, volume: "", destination: "", document: "", notes: "" }));
+      setForm((current) => ({ ...current, volume: "", pile: "", destination: "", document: "", notes: "" }));
       setMessage("Embarque registrado com sucesso.");
       await load();
     } catch { setMessage("Não foi possível registrar o embarque."); }
+  };
+
+  const remove = async (id: string) => {
+    if (!token || !window.confirm("Excluir este embarque? Os saldos serão recalculados.")) return;
+    setMessage(null);
+    setDeletingId(id);
+    try {
+      await deleteShipmentRequest(token, id);
+      setMessage("Embarque excluído com sucesso.");
+      await load();
+    } catch {
+      setMessage("Não foi possível excluir o embarque.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return <main className="app-with-sidebar min-h-screen bg-surface">
@@ -51,12 +68,13 @@ export const ShipmentsPage = () => {
         <h2 className="font-semibold md:col-span-2 lg:col-span-3">Novo embarque</h2>
         <label className="text-sm">Data<input required type="date" className="input mt-1 w-full" value={form.shippedAt} onChange={(e) => setForm({ ...form, shippedAt: e.target.value })} /></label>
         <label className="text-sm">Volume<input required inputMode="decimal" className="input mt-1 w-full" value={form.volume} onChange={(e) => setForm({ ...form, volume: e.target.value })} /></label>
+        {terminal === "TCS" && <label className="text-sm">Pilha<input required className="input mt-1 w-full" placeholder="Pilha de origem" value={form.pile} onChange={(e) => setForm({ ...form, pile: e.target.value })} /></label>}
         <label className="text-sm">Destino<input className="input mt-1 w-full" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} /></label>
         <label className="text-sm">Documento<input className="input mt-1 w-full" value={form.document} onChange={(e) => setForm({ ...form, document: e.target.value })} /></label>
         <label className="text-sm md:col-span-2">Observações<input className="input mt-1 w-full" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></label>
         <div><button className="btn-primary" type="submit">Registrar embarque</button></div>{message && <p className="text-sm">{message}</p>}
       </form>
-      <div className="overflow-x-auto rounded border border-outline-variant bg-surface-container-lowest"><table className="min-w-full text-left text-sm"><thead className="bg-surface"><tr><th className="px-4 py-3">Data</th><th className="px-4 py-3">Volume</th><th className="px-4 py-3">Destino</th><th className="px-4 py-3">Documento</th><th className="px-4 py-3">Observações</th></tr></thead><tbody>{data?.items.map((item) => <tr key={item.id} className="border-t border-surface-container-high"><td className="px-4 py-3">{new Date(item.shippedAt).toLocaleDateString("pt-BR")}</td><td className="px-4 py-3">{number(item.volume)}</td><td className="px-4 py-3">{item.destination ?? "-"}</td><td className="px-4 py-3">{item.document ?? "-"}</td><td className="px-4 py-3">{item.notes ?? "-"}</td></tr>)}</tbody></table></div>
+      <div className="overflow-x-auto rounded border border-outline-variant bg-surface-container-lowest"><table className="min-w-full text-left text-sm"><thead className="bg-surface"><tr><th className="px-4 py-3">Data</th><th className="px-4 py-3">Volume</th>{terminal === "TCS" && <th className="px-4 py-3">Pilha</th>}<th className="px-4 py-3">Destino</th><th className="px-4 py-3">Documento</th><th className="px-4 py-3">Observações</th><th className="px-4 py-3"><span className="sr-only">Ações</span></th></tr></thead><tbody>{data?.items.map((item) => <tr key={item.id} className="border-t border-surface-container-high"><td className="px-4 py-3">{new Date(item.shippedAt).toLocaleDateString("pt-BR")}</td><td className="px-4 py-3">{number(item.volume)}</td>{terminal === "TCS" && <td className="px-4 py-3">{item.pile ?? "Não informada"}</td>}<td className="px-4 py-3">{item.destination ?? "-"}</td><td className="px-4 py-3">{item.document ?? "-"}</td><td className="px-4 py-3">{item.notes ?? "-"}</td><td className="px-4 py-3 text-right"><button type="button" className="text-sm text-error hover:underline disabled:cursor-not-allowed disabled:opacity-60" onClick={() => void remove(item.id)} disabled={deletingId === item.id}>{deletingId === item.id ? "Excluindo..." : "Excluir"}</button></td></tr>)}</tbody></table></div>
     </section>
   </main>;
 };

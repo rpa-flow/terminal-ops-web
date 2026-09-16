@@ -18,8 +18,10 @@ export type RecordItem = {
   notaOriginal: string;
   status: string;
   notaPesagemId: string;
-  motoristaNome: string;
-  motoristaCelular: string;
+  emitenteFornecedor: string | null;
+  motoristaNome: string | null;
+  motoristaCelular: string | null;
+  recebimentoPeso: string | null;
   placa: string;
   terminal: string;
   createdAt: string;
@@ -30,6 +32,7 @@ export type ShipmentItem = {
   terminal: "TBJC" | "TCS";
   shippedAt: string;
   volume: number;
+  pile: string | null;
   destination: string | null;
   document: string | null;
   notes: string | null;
@@ -105,8 +108,15 @@ export type DailyVolumeItem = {
   receivedRecords: number;
 };
 
+export type DailyReceivedWeightItem = {
+  date: string;
+  totalWeight: number;
+};
+
 export type PileBalanceItem = {
   pile: string;
+  received: number;
+  shipped: number;
   balance: number;
 };
 
@@ -130,6 +140,8 @@ export type ReportOverviewResponse = {
     emittedNotes: number;
     receivedRecords: number;
     receivedMaterialWeight: number;
+    shippedMaterialWeight: number;
+    availableMaterialWeight: number;
     matchedNotes: number;
     pendingNotes: number;
     pendingOver24h: number;
@@ -147,6 +159,7 @@ export type ReportOverviewResponse = {
     recordsByTerminal: ReportBreakdownItem[];
   };
   dailyVolumes: DailyVolumeItem[];
+  dailyReceivedWeights: DailyReceivedWeightItem[];
   pileBalances: PileBalanceItem[];
   pendingOldest: PendingReportNoteItem[];
 };
