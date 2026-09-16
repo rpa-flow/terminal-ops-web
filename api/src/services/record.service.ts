@@ -30,27 +30,33 @@ const sanitizeRecord = (record: {
   recebimentoPlaca: string | null;
   terminal: string;
   createdAt: Date;
-}) => ({
-  ...record,
-  numeroNota: sanitizeString(record.numeroNota),
-  notaChave: sanitizeOptionalString(record.notaChave),
-  sinterFeedValue: sanitizeOptionalString(record.sinterFeedValue),
-  notaOriginal: sanitizeString(record.notaOriginal),
-  status: sanitizeString(record.status),
-  notaPesagemId: sanitizeString(record.notaPesagemId),
-  emitenteCnpj: sanitizeOptionalString(record.emitenteCnpj),
-  emitenteFornecedor: sanitizeOptionalString(record.emitenteFornecedor),
-  motoristaNome: sanitizeOptionalString(record.motoristaNome),
-  motoristaCelular: sanitizeOptionalString(record.motoristaCelular),
-  placa: sanitizeString(record.placa),
-  placaRecebimento: sanitizeOptionalString(record.placaRecebimento),
-  recebimentoColaborador: sanitizeOptionalString(record.recebimentoColaborador),
-  recebimentoPeso: sanitizeOptionalString(record.recebimentoPeso),
-  recebimentoPatioDescarga: sanitizeOptionalString(record.recebimentoPatioDescarga),
-  recebimentoData: sanitizeOptionalString(record.recebimentoData),
-  recebimentoPlaca: sanitizeOptionalString(record.recebimentoPlaca),
-  terminal: sanitizeString(record.terminal)
-});
+  issuerSinterFeedMapping?: { sinterFeed: { code: string }; blend: { code: string } } | null;
+}) => {
+  const { issuerSinterFeedMapping, ...recordValues } = record;
+  return {
+    ...recordValues,
+    numeroNota: sanitizeString(record.numeroNota),
+    notaChave: sanitizeOptionalString(record.notaChave),
+    sinterFeedValue: sanitizeOptionalString(record.sinterFeedValue),
+    notaOriginal: sanitizeString(record.notaOriginal),
+    status: sanitizeString(record.status),
+    notaPesagemId: sanitizeString(record.notaPesagemId),
+    emitenteCnpj: sanitizeOptionalString(record.emitenteCnpj),
+    emitenteFornecedor: sanitizeOptionalString(record.emitenteFornecedor),
+    motoristaNome: sanitizeOptionalString(record.motoristaNome),
+    motoristaCelular: sanitizeOptionalString(record.motoristaCelular),
+    placa: sanitizeString(record.placa),
+    placaRecebimento: sanitizeOptionalString(record.placaRecebimento),
+    recebimentoColaborador: sanitizeOptionalString(record.recebimentoColaborador),
+    recebimentoPeso: sanitizeOptionalString(record.recebimentoPeso),
+    recebimentoPatioDescarga: sanitizeOptionalString(record.recebimentoPatioDescarga),
+    recebimentoData: sanitizeOptionalString(record.recebimentoData),
+    recebimentoPlaca: sanitizeOptionalString(record.recebimentoPlaca),
+    terminal: sanitizeString(record.terminal),
+    sinterFeed: issuerSinterFeedMapping?.sinterFeed.code ?? sanitizeOptionalString(record.sinterFeedValue),
+    blend: issuerSinterFeedMapping?.blend.code ?? null
+  };
+};
 
 export const createRecordService = async (input: CreateRecordInput & { materialId?: string; supplierId?: string }) => {
   if (input.materialId && input.supplierId) {

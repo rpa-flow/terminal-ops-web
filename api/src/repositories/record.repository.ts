@@ -3,9 +3,17 @@ import type { Prisma, Record } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import type { CreateRecordInput, IngestRecordInput, ListRecordsFilters } from "../validators/record.validator";
 
+type ListedRecord = Prisma.RecordGetPayload<{
+  include: {
+    issuerSinterFeedMapping: {
+      select: { sinterFeed: { select: { code: true } }; blend: { select: { code: true } } };
+    };
+  };
+}>;
+
 type ListRecordsResult = {
   total: number;
-  items: Record[];
+  items: ListedRecord[];
 };
 
 const buildWhere = (filters: ListRecordsFilters): Prisma.RecordWhereInput => {
@@ -53,13 +61,20 @@ export const createRecord = async (input: CreateRecordInput): Promise<Record> =>
 };
 
 export const createIngestedRecord = async (input: IngestRecordInput): Promise<Record> => {
-  if (!input.notaChave) {
-    return prisma.record.create({ data: input });
-  }
-
-  const emitenteCnpj = input.notaChave.slice(6, 20);
-
   return prisma.$transaction(async (tx) => {
+    const sinterFeed = input.sinterFeedValue
+      ? await tx.sinterFeed.upsert({
+          where: { code: input.sinterFeedValue },
+          create: { code: input.sinterFeedValue },
+          update: {}
+        })
+      : null;
+
+    if (!input.notaChave) {
+      return tx.record.create({ data: input });
+    }
+
+    const emitenteCnpj = input.notaChave.slice(6, 20);
     const issuer = await tx.issuer.upsert({
       where: { cnpj: emitenteCnpj },
       create: {
@@ -70,14 +85,15 @@ export const createIngestedRecord = async (input: IngestRecordInput): Promise<Re
     });
 
     const now = new Date();
-    const mapping = input.sinterFeedValue
+    const mapping = sinterFeed
       ? await tx.issuerSinterFeedMapping.findFirst({
           where: {
             issuerId: issuer.id,
             isActive: true,
             startsAt: { lte: now },
             OR: [{ endsAt: null }, { endsAt: { gte: now } }],
-            sinterFeed: { code: input.sinterFeedValue, isActive: true },
+            sinterFeedId: sinterFeed.id,
+            sinterFeed: { isActive: true },
             blend: { isActive: true }
           },
           orderBy: { startsAt: "desc" }
@@ -112,7 +128,8 @@ export const listRecords = async (filters: ListRecordsFilters): Promise<ListReco
       where,
       orderBy: [{ dataHora: "desc" }, { createdAt: "desc" }],
       skip,
-      take: filters.perPage
+      take: filters.perPage,
+      include: { issuerSinterFeedMapping: { select: { sinterFeed: { select: { code: true } }, blend: { select: { code: true } } } } }
     })
   ]);
 

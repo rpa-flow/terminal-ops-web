@@ -23,7 +23,8 @@ export type RecordItem = {
   motoristaCelular: string | null;
   recebimentoPeso: string | null;
   placa: string;
-  terminal: string;
+  sinterFeed: string | null;
+  blend: string | null;
   createdAt: string;
 };
 

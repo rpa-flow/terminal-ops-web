@@ -14,7 +14,8 @@ export const RecordsTable = ({ items }: { items: RecordItem[] }) => {
             <th className="px-4 py-3">Fornecedor</th>
             <th className="px-4 py-3">Motorista</th>
             <th className="px-4 py-3">Placa</th>
-            <th className="px-4 py-3">Terminal</th>
+            <th className="px-4 py-3">Sinter Feed</th>
+            <th className="px-4 py-3">Blend</th>
           </tr>
         </thead>
         <tbody>
@@ -27,7 +28,8 @@ export const RecordsTable = ({ items }: { items: RecordItem[] }) => {
               <td className="px-4 py-3">{record.emitenteFornecedor ?? "-"}</td>
               <td className="px-4 py-3">{record.motoristaNome ?? "-"}</td>
               <td className="px-4 py-3">{record.placa}</td>
-              <td className="px-4 py-3">{record.terminal}</td>
+              <td className="px-4 py-3">{record.sinterFeed ?? "-"}</td>
+              <td className="px-4 py-3">{record.blend ?? "-"}</td>
             </tr>
           ))}
         </tbody>
