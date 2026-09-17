@@ -73,8 +73,19 @@ sinterFeedRoutes.post("/issuer-sinter-feed-mappings", validate(createIssuerSinte
   });
   if (overlap) { res.status(409).json({ message: "An active mapping already overlaps this period" }); return; }
   try {
-    const saved = await prisma.issuerSinterFeedMapping.create({ data: { ...req.body, startsAt, endsAt }, include: mappingInclude });
-    res.status(201).json(saved);
+    const result = await prisma.$transaction(async (tx) => {
+      const saved = await tx.issuerSinterFeedMapping.create({ data: { ...req.body, startsAt, endsAt }, include: mappingInclude });
+      const backfilled = await tx.record.updateMany({
+        where: {
+          issuerId: saved.issuerId,
+          sinterFeedValue: saved.sinterFeed.code,
+          issuerSinterFeedMappingId: null
+        },
+        data: { issuerSinterFeedMappingId: saved.id }
+      });
+      return { ...saved, backfilledCount: backfilled.count };
+    });
+    res.status(201).json(result);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && (error.code === "P2002" || error.code === "P2003" || error.code === "P2004")) {
       res.status(409).json({ message: "The mapping conflicts with an active configuration or references unavailable data" });

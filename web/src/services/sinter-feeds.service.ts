@@ -35,6 +35,8 @@ export type IssuerSinterFeedMapping = {
   blend: Blend;
 };
 
+export type CreatedIssuerSinterFeedMapping = IssuerSinterFeedMapping & { backfilledCount: number };
+
 type CatalogInput = { code: string; description?: string | null; isActive?: boolean };
 type MappingInput = { issuerId: string; sinterFeedId: string; blendId: string; startsAt?: string; endsAt?: string | null; isActive?: boolean };
 
@@ -56,6 +58,6 @@ export const updateBlendRequest = (token: string, id: string, input: Pick<Catalo
 
 export const listIssuerSinterFeedMappingsRequest = (token: string) => http<IssuerSinterFeedMapping[]>("/issuer-sinter-feed-mappings", { token });
 export const createIssuerSinterFeedMappingRequest = (token: string, input: MappingInput) =>
-  http<IssuerSinterFeedMapping>("/issuer-sinter-feed-mappings", { method: "POST", token, body: input });
+  http<CreatedIssuerSinterFeedMapping>("/issuer-sinter-feed-mappings", { method: "POST", token, body: input });
 export const deactivateIssuerSinterFeedMappingRequest = (token: string, id: string, endsAt?: string) =>
   http<IssuerSinterFeedMapping>(`/issuer-sinter-feed-mappings/${id}/deactivate`, { method: "POST", token, body: endsAt ? { endsAt } : {} });
