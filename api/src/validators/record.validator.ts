@@ -60,6 +60,16 @@ const normalizeTerminal = (terminal: string): string => {
   return normalized === "TJBC" ? "TBJC" : normalized;
 };
 
+const normalizeSinterFeed = (value: string): string => (value.split("[", 1)[0] ?? "").trim().toUpperCase();
+
+const sinterFeedSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(120)
+  .transform(normalizeSinterFeed)
+  .pipe(z.string().min(1).max(120));
+
 export const createRecordSchema = z
   .object({
     dataHora: z.string().min(16).max(25),
@@ -67,7 +77,7 @@ export const createRecordSchema = z
       .object({
         numero: z.string().trim().min(1).max(64),
         chave: z.string().trim().min(1).max(255).optional(),
-        sinterFeed: z.string().trim().min(1).max(120).optional(),
+        sinterFeed: sinterFeedSchema.optional(),
         original: z.string().trim().min(1).max(255),
         pesagemId: optionalRecordPesagemIdSchema,
         pesagemid: optionalRecordPesagemIdSchema,
@@ -118,7 +128,7 @@ export const createRecordSchema = z
     dataHora: parseDateTime(input.dataHora) as Date,
     numeroNota: input.nota.numero,
     notaChave: input.nota.chave ?? null,
-    sinterFeedValue: input.nota.sinterFeed?.toUpperCase() ?? null,
+    sinterFeedValue: input.nota.sinterFeed ?? null,
     notaOriginal: input.nota.original,
     status: input.nota.status,
     notaPesagemId: String(input.nota.pesagemId ?? input.nota.pesagemid ?? input.nota.idPesagem ?? input.nota.idPessagem ?? ""),

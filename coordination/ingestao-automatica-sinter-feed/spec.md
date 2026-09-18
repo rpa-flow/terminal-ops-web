@@ -19,6 +19,7 @@
 - DR-4: A classificação continua opcional e só é vinculada quando houver fornecedor e relação vigente já configurada.
 - DR-5: Ao criar uma classificação, o sistema deve vinculá-la somente a records ainda sem classificação, do mesmo fornecedor e com o mesmo Sinter Feed.
 - DR-6: A criação da classificação deve retornar a quantidade de records retroclassificados, sem carregar esses records no cliente.
+- DR-7: Quando `nota.sinterFeed` contiver um sufixo entre colchetes, o sistema deve salvar e usar somente o texto anterior ao primeiro `[`.
 
 ## Acceptance scenarios
 
@@ -56,6 +57,14 @@
 
 **And** records de outro fornecedor, outro Sinter Feed ou já classificados não são alterados.
 
+### AC-5: Sinter Feed com NCM no sufixo
+
+**Given** uma requisição com `nota.sinterFeed` igual a `MINERIO DE FERRO SINTER FEED M09 [NCM:26-01.11.00]`
+
+**When** o record for ingerido
+
+**Then** o record, o catálogo e a busca da classificação usam `MINERIO DE FERRO SINTER FEED M09`.
+
 ## Technical decisions
 
 | Decision | Chosen approach | Rationale | Consequence |
@@ -63,9 +72,10 @@
 | Idempotência | `upsert` por `code` dentro da transação de ingestão. | Replica o padrão de fornecedores e evita duplicação concorrente. | Sem migração. |
 | Estado existente | `update: {}`. | Um item inativo não é reativado silenciosamente por dados externos. | Configuração continua sob controle operacional. |
 | Retroclassificação | `updateMany` filtrado por `issuerId`, `sinterFeedValue` e identificador de classificação nulo. | Atualiza no banco em uma única operação, sem transferir records para a tela. | Preserva vínculos históricos já gravados. |
+| Normalização do Feed | Remover o conteúdo a partir do primeiro `[` e aplicar trim/maiúsculas. | NCM e outros metadados no sufixo não devem criar feeds distintos. | A chave do catálogo e das classificações fica estável. |
 
 ## Implementation and verification plan
 
 1. Criar/upsertar o catálogo antes da tentativa de classificação.
 2. Ao criar uma classificação, executar retroclassificação com `updateMany` e retornar a contagem.
-3. Executar validação de API/frontend contra DR-1 a DR-6.
+3. Executar validação de API/frontend contra DR-1 a DR-7.
