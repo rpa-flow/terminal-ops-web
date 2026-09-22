@@ -163,13 +163,13 @@ const buildDailySinterFeedWeights = (
   startDate: Date,
   endDate: Date,
   codes: string[],
-  receipts: { dataHora: Date; recebimentoPeso: string | null; issuerSinterFeedMapping: { sinterFeed: { code: string } } | null }[]
+  receipts: { dataHora: Date; recebimentoPeso: string | null; sinterFeedBlendMapping: { sinterFeed: { code: string } } | null }[]
 ): DailySinterFeedWeightItem[] => {
   const buckets = new Map<string, Map<string, number>>();
   buildDateKeys(startDate, endDate).forEach((key) => buckets.set(key, new Map()));
   receipts.forEach((receipt) => {
     const weight = parseValidWeight(receipt.recebimentoPeso);
-    const code = receipt.issuerSinterFeedMapping?.sinterFeed.code;
+    const code = receipt.sinterFeedBlendMapping?.sinterFeed.code;
     const bucket = buckets.get(dateKey(receipt.dataHora));
     if (weight === null || !code || !bucket) return;
     bucket.set(code, (bucket.get(code) ?? 0) + weight);
@@ -182,14 +182,14 @@ const buildDailySinterFeedWeights = (
 };
 
 const buildBlendBalances = (
-  receipts: { recebimentoPeso: string | null; issuerSinterFeedMapping: { blend: { code: string } } | null }[],
+  receipts: { recebimentoPeso: string | null; sinterFeedBlendMapping: { blend: { code: string } } | null }[],
   shipments: { volume: Prisma.Decimal; blend: { code: string } | null }[],
   blendCodes: string[]
 ): BlendBalanceItem[] => {
   const balances = new Map(blendCodes.map((code) => [code, { received: 0, shipped: 0 }]));
   receipts.forEach((receipt) => {
     const weight = parseValidWeight(receipt.recebimentoPeso);
-    const blend = receipt.issuerSinterFeedMapping?.blend.code;
+    const blend = receipt.sinterFeedBlendMapping?.blend.code;
     if (weight === null || !blend) return;
     const current = balances.get(blend) ?? { received: 0, shipped: 0 };
     current.received += weight;
@@ -387,7 +387,7 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
       select: {
         dataHora: true,
         recebimentoPeso: true,
-        issuerSinterFeedMapping: { select: { sinterFeed: { select: { code: true } }, blend: { select: { code: true } } } }
+        sinterFeedBlendMapping: { select: { sinterFeed: { select: { code: true } }, blend: { select: { code: true } } } }
       }
     }),
     prisma.sinterFeed.findMany({ where: { isActive: true }, select: { code: true }, orderBy: { code: "asc" } }),
@@ -455,14 +455,14 @@ export const getReportOverviewService = async (filters: ReportOverviewQueryInput
   const shippedMaterialWeight = shipments.reduce((total, item) => total + item.volume.toNumber(), 0);
   const pileBalances = useNoteReceipts ? buildPileBalances(pileRecords, shipments) : [];
   const dailyReceivedWeights = buildDailyReceivedWeights(filters.startDate, filters.endDate, pileRecords);
-  const mappedCodes = tbjcReceipts.flatMap((receipt) => receipt.issuerSinterFeedMapping ? [receipt.issuerSinterFeedMapping.sinterFeed.code] : []);
+  const mappedCodes = tbjcReceipts.flatMap((receipt) => receipt.sinterFeedBlendMapping ? [receipt.sinterFeedBlendMapping.sinterFeed.code] : []);
   const sinterFeedCodes = Array.from(new Set([...activeSinterFeeds.map((item) => item.code), ...mappedCodes])).sort();
   const dailySinterFeedWeights = terminal === "TBJC"
     ? buildDailySinterFeedWeights(filters.startDate, filters.endDate, sinterFeedCodes, tbjcReceipts)
     : [];
   const blendBalances = terminal === "TBJC" ? buildBlendBalances(tbjcReceipts, shipments, activeBlends.map((item) => item.code)) : [];
   const unclassifiedReceivedCount = terminal === "TBJC"
-    ? tbjcReceipts.filter((receipt) => parseValidWeight(receipt.recebimentoPeso) === null || !receipt.issuerSinterFeedMapping).length
+    ? tbjcReceipts.filter((receipt) => parseValidWeight(receipt.recebimentoPeso) === null || !receipt.sinterFeedBlendMapping).length
     : 0;
   const classifiedReceivedWeight = dailySinterFeedWeights.reduce((total, item) => total + item.totalWeight, 0);
   const classifiedShippedWeight = blendBalances.reduce((total, item) => total + item.shipped, 0);

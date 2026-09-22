@@ -80,7 +80,6 @@ export const AppNavigation = ({ current, reportArea, configurationCurrent }: App
             <Link aria-current={configurationCurrent === "fornecedores" ? "page" : undefined} className={`rounded-lg px-3 py-2 text-sm font-medium transition ${configurationCurrent === "fornecedores" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`} to="/fornecedores">Fornecedores</Link>
             <Link aria-current={configurationCurrent === "sinter-feeds" ? "page" : undefined} className={`rounded-lg px-3 py-2 text-sm font-medium transition ${configurationCurrent === "sinter-feeds" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`} to="/sinter-feeds">Sinter Feed</Link>
             <Link aria-current={configurationCurrent === "blends" ? "page" : undefined} className={`rounded-lg px-3 py-2 text-sm font-medium transition ${configurationCurrent === "blends" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`} to="/blends">Blends</Link>
-            <Link aria-current={configurationCurrent === "classificacoes" ? "page" : undefined} className={`rounded-lg px-3 py-2 text-sm font-medium transition ${configurationCurrent === "classificacoes" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`} to="/classificacoes-por-fornecedor">Classificações por fornecedor</Link>
           </div>
         </details>
       </nav>

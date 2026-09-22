@@ -10,7 +10,7 @@ type CatalogForm = { code: string; description: string };
 
 const emptyForm: CatalogForm = { code: "", description: "" };
 const details: Record<CatalogKind, { title: string; singular: string; hint: string; maxLength: number }> = {
-  feed: { title: "Sinter Feed", singular: "Sinter Feed", hint: "Códigos recebidos no carregamento e usados para classificar fornecedores.", maxLength: 120 },
+  feed: { title: "Sinter Feed", singular: "Sinter Feed", hint: "Códigos recebidos no carregamento e usados para classificar blends.", maxLength: 120 },
   blend: { title: "Blends", singular: "blend", hint: "Classificações reutilizáveis para recebimentos e embarques.", maxLength: 32 }
 };
 

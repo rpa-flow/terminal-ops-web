@@ -5,7 +5,7 @@ import type { CreateRecordInput, IngestRecordInput, ListRecordsFilters } from ".
 
 type ListedRecord = Prisma.RecordGetPayload<{
   include: {
-    issuerSinterFeedMapping: {
+    sinterFeedBlendMapping: {
       select: { sinterFeed: { select: { code: true } }; blend: { select: { code: true } } };
     };
   };
@@ -70,8 +70,21 @@ export const createIngestedRecord = async (input: IngestRecordInput): Promise<Re
         })
       : null;
 
+    const now = new Date();
+    const mapping = sinterFeed
+      ? await tx.sinterFeedBlendMapping.findFirst({
+          where: {
+            isActive: true,
+            startsAt: { lte: now },
+            OR: [{ endsAt: null }, { endsAt: { gt: now } }],
+            sinterFeedId: sinterFeed.id
+          },
+          orderBy: { startsAt: "desc" }
+        })
+      : null;
+
     if (!input.notaChave) {
-      return tx.record.create({ data: input });
+      return tx.record.create({ data: { ...input, sinterFeedBlendMappingId: mapping?.id ?? null } });
     }
 
     const emitenteCnpj = input.notaChave.slice(6, 20);
@@ -84,28 +97,12 @@ export const createIngestedRecord = async (input: IngestRecordInput): Promise<Re
       update: {}
     });
 
-    const now = new Date();
-    const mapping = sinterFeed
-      ? await tx.issuerSinterFeedMapping.findFirst({
-          where: {
-            issuerId: issuer.id,
-            isActive: true,
-            startsAt: { lte: now },
-            OR: [{ endsAt: null }, { endsAt: { gte: now } }],
-            sinterFeedId: sinterFeed.id,
-            sinterFeed: { isActive: true },
-            blend: { isActive: true }
-          },
-          orderBy: { startsAt: "desc" }
-        })
-      : null;
-
     return tx.record.create({
       data: {
         ...input,
         emitenteCnpj,
         issuerId: issuer.id,
-        issuerSinterFeedMappingId: mapping?.id ?? null
+        sinterFeedBlendMappingId: mapping?.id ?? null
       }
     });
   });
@@ -129,7 +126,7 @@ export const listRecords = async (filters: ListRecordsFilters): Promise<ListReco
       orderBy: [{ dataHora: "desc" }, { createdAt: "desc" }],
       skip,
       take: filters.perPage,
-      include: { issuerSinterFeedMapping: { select: { sinterFeed: { select: { code: true } }, blend: { select: { code: true } } } } }
+      include: { sinterFeedBlendMapping: { select: { sinterFeed: { select: { code: true } }, blend: { select: { code: true } } } } }
     })
   ]);
 

@@ -30,9 +30,9 @@ const sanitizeRecord = (record: {
   recebimentoPlaca: string | null;
   terminal: string;
   createdAt: Date;
-  issuerSinterFeedMapping?: { sinterFeed: { code: string }; blend: { code: string } } | null;
+  sinterFeedBlendMapping?: { sinterFeed: { code: string }; blend: { code: string } } | null;
 }) => {
-  const { issuerSinterFeedMapping, ...recordValues } = record;
+  const { sinterFeedBlendMapping, ...recordValues } = record;
   return {
     ...recordValues,
     numeroNota: sanitizeString(record.numeroNota),
@@ -53,8 +53,8 @@ const sanitizeRecord = (record: {
     recebimentoData: sanitizeOptionalString(record.recebimentoData),
     recebimentoPlaca: sanitizeOptionalString(record.recebimentoPlaca),
     terminal: sanitizeString(record.terminal),
-    sinterFeed: issuerSinterFeedMapping?.sinterFeed.code ?? sanitizeOptionalString(record.sinterFeedValue),
-    blend: issuerSinterFeedMapping?.blend.code ?? null
+    sinterFeed: sinterFeedBlendMapping?.sinterFeed.code ?? sanitizeOptionalString(record.sinterFeedValue),
+    blend: sinterFeedBlendMapping?.blend.code ?? null
   };
 };
 

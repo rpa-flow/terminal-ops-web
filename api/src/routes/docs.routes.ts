@@ -88,7 +88,7 @@ const recordResponseSchema = {
     emitenteFornecedor: { type: "string", nullable: true, example: "BASSARI MINERACAO LTDA" },
     issuerId: { type: "string", format: "uuid", nullable: true },
     sinterFeedValue: { type: "string", nullable: true, example: "SINTER FEED M01" },
-    issuerSinterFeedMappingId: { type: "string", format: "uuid", nullable: true },
+    sinterFeedBlendMappingId: { type: "string", format: "uuid", nullable: true },
     motoristaNome: { type: "string", nullable: true, example: "Joao" },
     motoristaCelular: { type: "string", nullable: true, example: "31999999999" },
     placa: { type: "string", example: "ABC1234" },

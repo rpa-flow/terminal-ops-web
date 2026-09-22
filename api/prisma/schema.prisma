@@ -50,8 +50,8 @@ model Record {
   issuerId                   String?  @map("issuer_id") @db.Uuid
   issuer                     Issuer?  @relation(fields: [issuerId], references: [id], onDelete: SetNull)
   sinterFeedValue            String?  @map("sinter_feed_value") @db.VarChar(120)
-  issuerSinterFeedMappingId  String?  @map("issuer_sinter_feed_mapping_id") @db.Uuid
-  issuerSinterFeedMapping    IssuerSinterFeedMapping? @relation(fields: [issuerSinterFeedMappingId], references: [id], onDelete: SetNull)
+  sinterFeedBlendMappingId   String?  @map("sinter_feed_blend_mapping_id") @db.Uuid
+  sinterFeedBlendMapping     SinterFeedBlendMapping? @relation(fields: [sinterFeedBlendMappingId], references: [id], onDelete: SetNull)
   motoristaNome              String?  @map("motorista_nome") @db.VarChar(120)
   motoristaCelular           String?  @map("motorista_celular") @db.VarChar(24)
   placa                      String   @db.VarChar(16)
@@ -70,7 +70,7 @@ model Record {
   @@index([placa])
   @@index([terminal])
   @@index([issuerId])
-  @@index([issuerSinterFeedMappingId])
+  @@index([sinterFeedBlendMappingId])
   @@map("records")
 }
 
@@ -81,7 +81,6 @@ model Issuer {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
   records   Record[]
-  sinterFeedMappings IssuerSinterFeedMapping[]
 
   @@map("issuers")
 }
@@ -93,7 +92,7 @@ model SinterFeed {
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(3)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
-  mappings    IssuerSinterFeedMapping[]
+  mappings    SinterFeedBlendMapping[]
 
   @@map("sinter_feeds")
 }
@@ -105,15 +104,14 @@ model Blend {
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(3)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
-  mappings    IssuerSinterFeedMapping[]
+  mappings    SinterFeedBlendMapping[]
   shipments   Shipment[]
 
   @@map("blends")
 }
 
-model IssuerSinterFeedMapping {
+model SinterFeedBlendMapping {
   id           String   @id @default(uuid()) @db.Uuid
-  issuerId     String   @map("issuer_id") @db.Uuid
   sinterFeedId String   @map("sinter_feed_id") @db.Uuid
   blendId      String   @map("blend_id") @db.Uuid
   startsAt     DateTime @default(now()) @map("starts_at") @db.Timestamp(3)
@@ -121,15 +119,14 @@ model IssuerSinterFeedMapping {
   isActive     Boolean  @default(true) @map("is_active")
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(3)
   updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
-  issuer       Issuer   @relation(fields: [issuerId], references: [id])
   sinterFeed   SinterFeed @relation(fields: [sinterFeedId], references: [id])
   blend        Blend    @relation(fields: [blendId], references: [id])
   records      Record[]
 
-  @@index([issuerId, sinterFeedId, isActive])
+  @@index([sinterFeedId, isActive])
   @@index([sinterFeedId])
   @@index([blendId])
-  @@map("issuer_sinter_feed_mappings")
+  @@map("sinter_feed_blend_mappings")
 }
 
 model Note {

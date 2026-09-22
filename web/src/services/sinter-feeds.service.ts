@@ -22,23 +22,19 @@ export type Blend = {
   isActive: boolean;
 };
 
-export type IssuerSinterFeedMapping = {
+export type SinterFeedBlendMapping = {
   id: string;
-  issuerId: string;
   sinterFeedId: string;
   blendId: string;
   startsAt: string;
   endsAt: string | null;
   isActive: boolean;
-  issuer: Issuer;
   sinterFeed: SinterFeed;
   blend: Blend;
 };
 
-export type CreatedIssuerSinterFeedMapping = IssuerSinterFeedMapping & { backfilledCount: number };
-
 type CatalogInput = { code: string; description?: string | null; isActive?: boolean };
-type MappingInput = { issuerId: string; sinterFeedId: string; blendId: string; startsAt?: string; endsAt?: string | null; isActive?: boolean };
+type MappingInput = { sinterFeedId: string; blendId: string; startsAt?: string; endsAt?: string | null; isActive?: boolean };
 
 export const listIssuersRequest = (token: string) => http<Issuer[]>("/issuers", { token });
 export const updateIssuerRequest = (token: string, id: string, description: string | null) =>
@@ -56,8 +52,8 @@ export const createBlendRequest = (token: string, input: CatalogInput) =>
 export const updateBlendRequest = (token: string, id: string, input: Pick<CatalogInput, "description" | "isActive">) =>
   http<Blend>(`/blends/${id}`, { method: "PATCH", token, body: input });
 
-export const listIssuerSinterFeedMappingsRequest = (token: string) => http<IssuerSinterFeedMapping[]>("/issuer-sinter-feed-mappings", { token });
-export const createIssuerSinterFeedMappingRequest = (token: string, input: MappingInput) =>
-  http<CreatedIssuerSinterFeedMapping>("/issuer-sinter-feed-mappings", { method: "POST", token, body: input });
-export const deactivateIssuerSinterFeedMappingRequest = (token: string, id: string, endsAt?: string) =>
-  http<IssuerSinterFeedMapping>(`/issuer-sinter-feed-mappings/${id}/deactivate`, { method: "POST", token, body: endsAt ? { endsAt } : {} });
+export const listSinterFeedBlendMappingsRequest = (token: string) => http<SinterFeedBlendMapping[]>("/sinter-feed-blend-mappings", { token });
+export const createSinterFeedBlendMappingRequest = (token: string, input: MappingInput) =>
+  http<SinterFeedBlendMapping>("/sinter-feed-blend-mappings", { method: "POST", token, body: input });
+export const deactivateSinterFeedBlendMappingRequest = (token: string, id: string, endsAt?: string) =>
+  http<SinterFeedBlendMapping>(`/sinter-feed-blend-mappings/${id}/deactivate`, { method: "POST", token, body: endsAt ? { endsAt } : {} });

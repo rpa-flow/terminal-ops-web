@@ -9,8 +9,7 @@ export const createBlendSchema = z.object({ code: z.string().trim().min(1).max(3
 export const updateBlendSchema = z.object({ description: optionalDescription, isActive: z.boolean().optional() }).strict();
 export const updateIssuerSchema = z.object({ description: optionalDescription }).strict();
 
-export const createIssuerSinterFeedMappingSchema = z.object({
-  issuerId: z.string().uuid(),
+export const createSinterFeedBlendMappingSchema = z.object({
   sinterFeedId: z.string().uuid(),
   blendId: z.string().uuid(),
   startsAt: z.coerce.date().optional(),
@@ -22,4 +21,4 @@ export const createIssuerSinterFeedMappingSchema = z.object({
   }
 });
 
-export const deactivateIssuerSinterFeedMappingSchema = z.object({ endsAt: z.coerce.date().optional() }).strict();
+export const deactivateSinterFeedBlendMappingSchema = z.object({ endsAt: z.coerce.date().optional() }).strict();

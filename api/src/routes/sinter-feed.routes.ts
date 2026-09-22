@@ -6,9 +6,9 @@ import { requireAuth } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
 import {
   createBlendSchema,
-  createIssuerSinterFeedMappingSchema,
+  createSinterFeedBlendMappingSchema,
   createSinterFeedSchema,
-  deactivateIssuerSinterFeedMappingSchema,
+  deactivateSinterFeedBlendMappingSchema,
   idParamsSchema,
   updateBlendSchema,
   updateIssuerSchema,
@@ -18,7 +18,7 @@ import {
 const sinterFeedRoutes = Router();
 sinterFeedRoutes.use(requireAuth);
 
-const mappingInclude = { issuer: true, sinterFeed: true, blend: true } as const;
+const mappingInclude = { sinterFeed: true, blend: true } as const;
 
 const respondNotFound = (res: Response) => {
   res.status(404).json({ message: "Not found" });
@@ -56,15 +56,14 @@ sinterFeedRoutes.patch("/issuers/:id", validate(idParamsSchema, "params"), valid
   catch (error) { if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") { respondNotFound(res); return; } throw error; }
 });
 
-sinterFeedRoutes.get("/issuer-sinter-feed-mappings", async (_req, res) => {
-  res.status(200).json(await prisma.issuerSinterFeedMapping.findMany({ include: mappingInclude, orderBy: { startsAt: "desc" } }));
+sinterFeedRoutes.get("/sinter-feed-blend-mappings", async (_req, res) => {
+  res.status(200).json(await prisma.sinterFeedBlendMapping.findMany({ include: mappingInclude, orderBy: { startsAt: "desc" } }));
 });
-sinterFeedRoutes.post("/issuer-sinter-feed-mappings", validate(createIssuerSinterFeedMappingSchema), async (req, res) => {
+sinterFeedRoutes.post("/sinter-feed-blend-mappings", validate(createSinterFeedBlendMappingSchema), async (req, res) => {
   const startsAt = req.body.startsAt ?? new Date();
   const endsAt = req.body.endsAt ?? null;
-  const overlap = await prisma.issuerSinterFeedMapping.findFirst({
+  const overlap = await prisma.sinterFeedBlendMapping.findFirst({
     where: {
-      issuerId: req.body.issuerId,
       sinterFeedId: req.body.sinterFeedId,
       isActive: true,
       startsAt: { lt: endsAt ?? new Date("9999-12-31T23:59:59.999Z") },
@@ -74,16 +73,7 @@ sinterFeedRoutes.post("/issuer-sinter-feed-mappings", validate(createIssuerSinte
   if (overlap) { res.status(409).json({ message: "An active mapping already overlaps this period" }); return; }
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const saved = await tx.issuerSinterFeedMapping.create({ data: { ...req.body, startsAt, endsAt }, include: mappingInclude });
-      const backfilled = await tx.record.updateMany({
-        where: {
-          issuerId: saved.issuerId,
-          sinterFeedValue: saved.sinterFeed.code,
-          issuerSinterFeedMappingId: null
-        },
-        data: { issuerSinterFeedMappingId: saved.id }
-      });
-      return { ...saved, backfilledCount: backfilled.count };
+      return tx.sinterFeedBlendMapping.create({ data: { ...req.body, startsAt, endsAt }, include: mappingInclude });
     });
     res.status(201).json(result);
   } catch (error) {
@@ -94,15 +84,15 @@ sinterFeedRoutes.post("/issuer-sinter-feed-mappings", validate(createIssuerSinte
     throw error;
   }
 });
-sinterFeedRoutes.post("/issuer-sinter-feed-mappings/:id/deactivate", validate(idParamsSchema, "params"), validate(deactivateIssuerSinterFeedMappingSchema), async (req, res) => {
+sinterFeedRoutes.post("/sinter-feed-blend-mappings/:id/deactivate", validate(idParamsSchema, "params"), validate(deactivateSinterFeedBlendMappingSchema), async (req, res) => {
   const endsAt = req.body.endsAt ?? new Date();
-  const current = await prisma.issuerSinterFeedMapping.findUnique({ where: { id: res.locals.validatedParams.id } });
+  const current = await prisma.sinterFeedBlendMapping.findUnique({ where: { id: res.locals.validatedParams.id } });
   if (!current) { respondNotFound(res); return; }
   if (!current.isActive || current.endsAt) { res.status(409).json({ message: "Historical mappings cannot be changed" }); return; }
   if (endsAt < current.startsAt) { res.status(400).json({ message: "endsAt must not be before startsAt" }); return; }
-  const result = await prisma.issuerSinterFeedMapping.updateMany({ where: { id: current.id, isActive: true, endsAt: null }, data: { isActive: false, endsAt } });
+  const result = await prisma.sinterFeedBlendMapping.updateMany({ where: { id: current.id, isActive: true, endsAt: null }, data: { isActive: false, endsAt } });
   if (result.count === 0) { res.status(409).json({ message: "Historical mappings cannot be changed" }); return; }
-  const saved = await prisma.issuerSinterFeedMapping.findUnique({ where: { id: current.id }, include: mappingInclude });
+  const saved = await prisma.sinterFeedBlendMapping.findUnique({ where: { id: current.id }, include: mappingInclude });
   res.status(200).json(saved);
 });
 
