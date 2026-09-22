@@ -11,7 +11,7 @@ import { ReportsPage } from "./pages/ReportsPage";
 import { ShipmentsPage } from "./pages/ShipmentsPage";
 import { IssuersPage } from "./pages/IssuersPage";
 import { ConfigurationCatalogPage } from "./pages/ConfigurationCatalogPage";
-import { SinterFeedsPage } from "./pages/SinterFeedsPage";
+import { SinterFeedBlendMappingsPage } from "./pages/SinterFeedBlendMappingsPage";
 
 function App() {
   return (
@@ -22,8 +22,9 @@ function App() {
         <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
         <Route path="/emitentes" element={<Navigate to="/fornecedores" replace />} />
         <Route path="/fornecedores" element={<ProtectedRoute><IssuersPage /></ProtectedRoute>} />
-        <Route path="/sinter-feeds" element={<ProtectedRoute><SinterFeedsPage /></ProtectedRoute>} />
+        <Route path="/sinter-feeds" element={<ProtectedRoute><ConfigurationCatalogPage kind="feed" /></ProtectedRoute>} />
         <Route path="/blends" element={<ProtectedRoute><ConfigurationCatalogPage kind="blend" /></ProtectedRoute>} />
+        <Route path="/classificacoes" element={<ProtectedRoute><SinterFeedBlendMappingsPage /></ProtectedRoute>} />
         <Route
           path="/"
           element={
