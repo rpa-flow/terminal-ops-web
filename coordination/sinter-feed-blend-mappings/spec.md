@@ -59,7 +59,7 @@
 |---|---|---|---|
 | Relacionamento | Nova tabela temporal `sinter_feed_blend_mappings`. | Mantém histórico por record sem usar fornecedor. | Remove `issuer_sinter_feed_mappings` e troca a FK de records. |
 | Histórico | `records` aponta para a nova relação. | Relatórios preservam o Blend que classificou o carregamento. | A relação de teste e seus vínculos são apagados conforme autorização. |
-| Administração | A página Sinter Feed e blends gerencia a nova relação; a rota de classificações por fornecedor é removida. | Elimina a noção de classificação por fornecedor da UI. | Endpoints e cliente usam `sinter-feed-blend-mappings`. |
+| Administração | Catálogos e classificações ficam em telas separadas, com navegação lateral persistente; a relação usa a rota `/classificacoes`. | Preserva a UX acordada e elimina apenas a noção de classificação por fornecedor. | Endpoints e cliente usam `sinter-feed-blend-mappings`. |
 
 ## Implementation and verification plan
 
