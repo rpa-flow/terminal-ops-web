@@ -80,8 +80,9 @@ const DailyVolumeChart = ({ items, area }: { items: DailyVolumeItem[]; area: "tb
           {area === "tbjc" && <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-secondary" />Recebimentos</span>}
         </div>
       </div>
+      <p className="mt-3 text-xs text-on-surface-variant md:hidden">Deslize o gráfico para consultar todo o período.</p>
       <div className="mt-4 overflow-x-auto">
-        <svg className="min-w-[680px]" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolução diária de registros">
+        <svg className="min-w-[560px]" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolução diária de registros">
           <line x1={padding} x2={width - padding} y1={height - padding} y2={height - padding} stroke="#c3c7cf" />
           <line x1={padding} x2={padding} y1={padding} y2={height - padding} stroke="#c3c7cf" />
           {[0, 0.5, 1].map((tick) => {
@@ -186,27 +187,26 @@ const SinterFeedDailyChart = ({ items, codes }: { items: DailySinterFeedWeightIt
   const step = items.length > 1 ? chartWidth / items.length : chartWidth;
   const barWidth = Math.max(4, Math.min(18, step / 2));
   const labelEvery = Math.max(1, Math.ceil(items.length / 6));
-  const colors = ["#23a18e", "#2b3a7e", "#b34b00", "#7357c7", "#926f00", "#a43d75"];
-  return <section className="rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-2"><div><h2 className="text-base font-semibold text-on-surface">Quantidade recebida por dia e Sinter Feed</h2><p className="text-sm text-on-surface-variant">Toneladas classificadas</p></div><div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-on-surface-variant">{codes.map((code, index) => <span className="flex items-center gap-1" key={code}><span className="h-2 w-2 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />SF {code}</span>)}</div></div><div className="mt-4 overflow-x-auto"><svg className="min-w-[680px]" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Quantidade recebida por dia e Sinter Feed">{[0, 0.5, 1].map((tick) => { const y = height - padding - tick * chartHeight; return <g key={tick}><line x1={padding} x2={width - padding} y1={y} y2={y} stroke="#e5edff" /><text x={padding - 8} y={y + 4} textAnchor="end" className="fill-outline text-[10px]">{formatNumber(Math.round(max * tick))}</text></g>; })}{items.map((item, index) => { const x = padding + index * step + step / 2; let offset = 0; return <g key={item.date}>{item.weights.map((weight, weightIndex) => { const valueHeight = (weight.totalWeight / max) * chartHeight; const y = height - padding - offset - valueHeight; offset += valueHeight; return <rect key={weight.code} x={x - barWidth / 2} y={y} width={barWidth} height={valueHeight} fill={colors[weightIndex % colors.length]} />; })}{index % labelEvery === 0 && <text x={x} y={height - 10} textAnchor="middle" className="fill-on-surface-variant text-[10px]">{formatDate(item.date)}</text>}</g>; })}</svg></div></section>;
+  const tones = [{ color: "#23a18e", opacity: 1 }, { color: "#2b3a7e", opacity: 1 }, { color: "#23a18e", opacity: 0.65 }, { color: "#2b3a7e", opacity: 0.65 }];
+  return <section className="rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-2"><div><h2 className="text-base font-semibold text-on-surface">Quantidade recebida por dia e Sinter Feed</h2><p className="text-sm text-on-surface-variant">Toneladas classificadas</p></div><div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-on-surface-variant">{codes.map((code, index) => <span className="flex items-center gap-1" key={code}><span className="h-2 w-2 rounded-full" style={{ backgroundColor: tones[index % tones.length].color, opacity: tones[index % tones.length].opacity }} />SF {code}</span>)}</div></div><p className="mt-3 text-xs text-on-surface-variant md:hidden">Deslize o gráfico para consultar todo o período.</p><div className="mt-4 overflow-x-auto"><svg className="min-w-[560px]" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Quantidade recebida por dia e Sinter Feed, em toneladas">{[0, 0.5, 1].map((tick) => { const y = height - padding - tick * chartHeight; return <g key={tick}><line x1={padding} x2={width - padding} y1={y} y2={y} stroke="#e5edff" /><text x={padding - 8} y={y + 4} textAnchor="end" className="fill-outline text-[10px]">{formatNumber(Math.round(max * tick))}</text></g>; })}{items.map((item, index) => { const x = padding + index * step + step / 2; let offset = 0; return <g key={item.date}>{item.weights.map((weight, weightIndex) => { const valueHeight = (weight.totalWeight / max) * chartHeight; const y = height - padding - offset - valueHeight; offset += valueHeight; const tone = tones[weightIndex % tones.length]; return <rect key={weight.code} x={x - barWidth / 2} y={y} width={barWidth} height={valueHeight} fill={tone.color} fillOpacity={tone.opacity} />; })}{index % labelEvery === 0 && <text x={x} y={height - 10} textAnchor="middle" className="fill-on-surface-variant text-[10px]">{formatDate(item.date)}</text>}</g>; })}</svg></div></section>;
 };
 
 const DailySinterFeedTable = ({ items, codes, unclassifiedCount }: { items: DailySinterFeedWeightItem[]; codes: string[]; unclassifiedCount: number }) => (
   <section className="overflow-hidden rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-surface-container-high px-4 py-3">
       <div><h2 className="text-base font-semibold text-on-surface">Quantidade recebida por Sinter Feed</h2><p className="text-sm text-on-surface-variant">Toneladas por dia no período selecionado</p></div>
-      <span className="rounded bg-error-container px-2 py-1 text-sm text-on-error-container">Não classificados: {formatNumber(unclassifiedCount)}</span>
+      <span className="rounded border border-error/30 bg-error/10 px-2 py-1 text-sm text-error">Não classificados: {formatNumber(unclassifiedCount)}</span>
     </div>
-    <div className="overflow-x-auto"><table className="min-w-full text-right text-sm"><thead className="bg-surface text-on-surface-variant"><tr><th className="px-4 py-3 text-left">Data</th>{codes.map((code) => <th className="px-4 py-3" key={code}>SF {code}</th>)}<th className="px-4 py-3">Total</th></tr></thead><tbody>{items.map((item) => <tr className="border-t border-surface-container-high" key={item.date}><td className="px-4 py-3 text-left font-medium">{formatDate(item.date)}</td>{item.weights.map((weight) => <td className="px-4 py-3" key={weight.code}>{formatNumber(weight.totalWeight)}</td>)}<td className="px-4 py-3 font-semibold text-primary">{formatNumber(item.totalWeight)}</td></tr>)}</tbody></table></div>
+    <p className="px-4 pt-3 text-xs text-on-surface-variant md:hidden">Deslize a tabela para consultar todas as colunas.</p><div className="overflow-x-auto"><table className="min-w-full text-right text-sm"><thead className="bg-surface text-on-surface-variant"><tr><th className="px-4 py-3 text-left">Data</th>{codes.map((code) => <th className="px-4 py-3" key={code}>SF {code}</th>)}<th className="px-4 py-3">Total</th></tr></thead><tbody>{items.map((item) => <tr className="border-t border-surface-container-high" key={item.date}><td className="px-4 py-3 text-left font-medium">{formatDate(item.date)}</td>{item.weights.map((weight) => <td className="px-4 py-3" key={weight.code}>{formatNumber(weight.totalWeight)}</td>)}<td className="px-4 py-3 font-semibold text-primary">{formatNumber(item.totalWeight)}</td></tr>)}</tbody></table></div>
   </section>
 );
 
 const BlendBalancePanel = ({ items }: { items: BlendBalanceItem[] }) => {
-  const max = Math.max(...items.map((item) => Math.abs(item.balance)), 1);
   const totals = items.reduce((total, item) => ({ received: total.received + item.received, shipped: total.shipped + item.shipped, balance: total.balance + item.balance }), { received: 0, shipped: 0, balance: 0 });
   return (
     <section className="overflow-hidden rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
       <div className="border-b border-surface-container-high bg-primary px-4 py-3 text-on-primary"><h2 className="text-center text-lg font-semibold uppercase tracking-wide">Saldo atualizado por Blend</h2><p className="mt-1 text-center text-xs text-on-primary/75">Recebido menos embarcado no período selecionado</p></div>
-      {items.length === 0 ? <p className="p-6 text-center text-sm text-on-surface-variant">Nenhum Blend ativo cadastrado.</p> : <div className="grid gap-5 p-4 lg:grid-cols-2"><div className="grid content-start gap-3" role="img" aria-label="Gráfico de saldo por Blend">{items.map((item) => <div key={item.blend}><div className="mb-1 flex justify-between gap-3 text-sm"><span className="font-medium">{item.blend}</span><span>{formatNumber(item.balance)} t</span></div><div className="h-5 overflow-hidden rounded bg-surface-container"><div className={`h-full rounded ${item.balance < 0 ? "bg-error" : "bg-secondary"}`} style={{ width: `${Math.max(2, (Math.abs(item.balance) / max) * 100)}%` }} /></div></div>)}</div><div className="overflow-x-auto"><table className="min-w-full text-right text-sm"><thead className="bg-surface text-on-surface-variant"><tr><th className="px-3 py-2 text-left">Blend</th><th className="px-3 py-2">Recebido</th><th className="px-3 py-2">Embarcado</th><th className="px-3 py-2">Saldo</th></tr></thead><tbody>{items.map((item) => <tr className="border-t border-surface-container-high" key={item.blend}><td className="px-3 py-2 text-left font-medium">{item.blend}</td><td className="px-3 py-2">{formatNumber(item.received)}</td><td className="px-3 py-2 text-error">{formatNumber(item.shipped)}</td><td className={`px-3 py-2 font-semibold ${item.balance < 0 ? "text-error" : "text-primary"}`}>{formatNumber(item.balance)}</td></tr>)}<tr className="border-t-2 border-primary bg-surface"><td className="px-3 py-2 text-left font-semibold">Total</td><td className="px-3 py-2 font-semibold">{formatNumber(totals.received)}</td><td className="px-3 py-2 font-semibold text-error">{formatNumber(totals.shipped)}</td><td className={`px-3 py-2 font-semibold ${totals.balance < 0 ? "text-error" : "text-primary"}`}>{formatNumber(totals.balance)}</td></tr></tbody></table></div></div>}
+      {items.length === 0 ? <p className="p-6 text-center text-sm text-on-surface-variant">Nenhum Blend ativo cadastrado.</p> : <div className="overflow-x-auto p-4"><table className="min-w-full text-right text-sm"><thead className="bg-surface text-on-surface-variant"><tr><th className="px-3 py-2 text-left">Blend</th><th className="px-3 py-2">Recebido</th><th className="px-3 py-2">Embarcado</th><th className="px-3 py-2">Saldo</th></tr></thead><tbody>{items.map((item) => <tr className="border-t border-surface-container-high" key={item.blend}><td className="px-3 py-2 text-left font-medium">{item.blend}</td><td className="px-3 py-2">{formatNumber(item.received)}</td><td className="px-3 py-2 text-error">{formatNumber(item.shipped)}</td><td className={`px-3 py-2 font-semibold ${item.balance < 0 ? "text-error" : "text-primary"}`}>{formatNumber(item.balance)}</td></tr>)}<tr className="border-t-2 border-primary bg-surface"><td className="px-3 py-2 text-left font-semibold">Total</td><td className="px-3 py-2 font-semibold">{formatNumber(totals.received)}</td><td className="px-3 py-2 font-semibold text-error">{formatNumber(totals.shipped)}</td><td className={`px-3 py-2 font-semibold ${totals.balance < 0 ? "text-error" : "text-primary"}`}>{formatNumber(totals.balance)}</td></tr></tbody></table></div>}
     </section>
   );
 };
@@ -267,26 +267,12 @@ export const ReportsPage = () => {
       </header>
 
       <section className="mx-auto grid max-w-7xl gap-4 px-4 py-6">
-        <section className="grid gap-3 rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm md:grid-cols-[1fr_1fr_1.2fr_auto_auto]">
-          <BrazilianDateInput
-            label="Data inicial"
-            className="input"
-            value={filters.startDate}
-            onChange={(value) => setFilters((current) => ({ ...current, startDate: value }))}
-          />
-          <BrazilianDateInput
-            label="Data final"
-            className="input"
-            value={filters.endDate}
-            onChange={(value) => setFilters((current) => ({ ...current, endDate: value }))}
-          />
-          <input
-            aria-label="Terminal"
-            className="input"
-            placeholder="Terminal"
-            value={filters.terminal}
-            readOnly
-          />
+        <section className="surface-card p-4" aria-labelledby="report-filters-title">
+          <div className="mb-4"><h2 id="report-filters-title" className="text-base font-semibold text-on-surface">Período de análise</h2><p className="mt-1 text-sm text-on-surface-variant">Atualize a visão operacional do terminal selecionado.</p></div>
+          <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto_auto_auto]">
+          <label className="grid gap-1.5 text-sm font-medium text-on-surface-variant">Data inicial<BrazilianDateInput label="Data inicial" className="input" value={filters.startDate} onChange={(value) => setFilters((current) => ({ ...current, startDate: value }))} /></label>
+          <label className="grid gap-1.5 text-sm font-medium text-on-surface-variant">Data final<BrazilianDateInput label="Data final" className="input" value={filters.endDate} onChange={(value) => setFilters((current) => ({ ...current, endDate: value }))} /></label>
+          <div className="grid content-end"><span className="rounded-lg bg-surface-container-low px-3 py-2 text-sm font-medium text-on-surface-variant">Terminal: {filters.terminal}</span></div>
           <button className="btn-primary" onClick={() => void loadReport(filters)} disabled={loading}>
             {loading ? "Carregando..." : "Atualizar"}
           </button>
@@ -300,9 +286,14 @@ export const ReportsPage = () => {
           >
             Limpar
           </button>
+          </div>
         </section>
 
-        {error && <p className="rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">{error}</p>}
+        {error && <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error" role="alert"><p>{error}</p><button className="btn-muted" onClick={() => void loadReport(filters)} disabled={loading}>Tentar novamente</button></div>}
+
+        {loading && !report && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy="true" aria-label="Carregando relatório">{Array.from({ length: 4 }, (_, index) => <div key={index} className="h-28 animate-pulse rounded border border-outline-variant bg-surface-container-lowest p-4"><span className="block h-3 w-24 rounded bg-surface-container-low" /><span className="mt-5 block h-7 w-16 rounded bg-surface-container-low" /></div>)}</div>}
+
+        {report && report.dailyVolumes.length === 0 && <section className="surface-card px-4 py-10 text-center"><h2 className="font-semibold text-on-surface">Sem dados para o período selecionado</h2><p className="mt-1 text-sm text-on-surface-variant">Ajuste o intervalo de datas e atualize o relatório.</p></section>}
 
         {report && (
           <>
@@ -313,7 +304,6 @@ export const ReportsPage = () => {
                   <MetricCard label="Volume recebido" value={formatNumber(report.summary.receivedMaterialWeight)} accent="text-on-secondary-container" />
                   <MetricCard label="Volume embarcado" value={formatNumber(report.summary.shippedMaterialWeight)} accent="text-error" />
                   <MetricCard label="Saldo disponível" value={formatNumber(report.summary.availableMaterialWeight)} accent="text-primary" />
-                  <MetricCard label="Não classificados" value={formatNumber(report.unclassifiedReceivedCount)} accent="text-error" />
                 </>
               ) : (
                 <>
@@ -327,21 +317,21 @@ export const ReportsPage = () => {
               )}
             </section>
 
+            <section className={`flex flex-wrap items-center justify-between gap-3 rounded border px-4 py-3 ${report.unclassifiedReceivedCount > 0 ? "border-error/30 bg-error/10" : "border-outline-variant bg-surface-container-lowest"}`}><div><h2 className="font-semibold text-on-surface">Classificação dos recebimentos</h2><p className="text-sm text-on-surface-variant">Registros sem Sinter Feed ou Blend exigem conferência operacional.</p></div><span className={`rounded px-3 py-1.5 text-sm font-semibold ${report.unclassifiedReceivedCount > 0 ? "text-error" : "text-on-surface-variant"}`}>{formatNumber(report.unclassifiedReceivedCount)} não classificados</span></section>
+
             <DailyVolumeChart items={report.dailyVolumes} area={area} />
 
             {isTbjc ? <SinterFeedDailyChart items={report.dailySinterFeedWeights} codes={report.sinterFeedCodes} /> : <DailyWeightChart items={report.dailyReceivedWeights} />}
 
             {isTbjc && <>
-              <DailySinterFeedTable items={report.dailySinterFeedWeights} codes={report.sinterFeedCodes} unclassifiedCount={report.unclassifiedReceivedCount} />
+              <details className="surface-card"><summary className="cursor-pointer px-4 py-3 font-semibold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container">Ver tabela diária por Sinter Feed</summary><DailySinterFeedTable items={report.dailySinterFeedWeights} codes={report.sinterFeedCodes} unclassifiedCount={report.unclassifiedReceivedCount} /></details>
               <BlendBalancePanel items={report.blendBalances} />
             </>}
 
             {!isTbjc && <PileBalanceTable items={report.pileBalances} />}
 
             <div className="grid gap-4">
-              {isTbjc ? (
-                <BreakdownBars title="Recebimentos por terminal" items={report.breakdowns.recordsByTerminal} tone="secondary" />
-              ) : (
+              {!isTbjc && (
                 <BreakdownBars title="Notas por terminal" items={report.breakdowns.notesByTerminal} tone="primary" />
               )}
             </div>
