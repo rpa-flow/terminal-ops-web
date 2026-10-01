@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { HeaderLinkButton } from "../components/AppHeader";
 import { AppNavigation } from "../components/AppNavigation";
 import { CsvUploadModal } from "../components/CsvUploadModal";
@@ -21,8 +21,10 @@ export const RecordsPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCsvModal, setShowCsvModal] = useState(false);
+  const firstRecord = total === 0 ? 0 : (filters.page - 1) * filters.perPage + 1;
+  const lastRecord = Math.min(filters.page * filters.perPage, total);
 
-  const loadRecords = async (activeFilters: RecordFilters) => {
+  const loadRecords = useCallback(async (activeFilters: RecordFilters) => {
     if (!token) {
       return;
     }
@@ -39,11 +41,11 @@ export const RecordsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
-    void loadRecords(filters);
-  }, []);
+    void loadRecords(initialFilters);
+  }, [loadRecords]);
 
   return (
     <main className="app-with-sidebar min-h-screen bg-surface">
@@ -56,9 +58,9 @@ export const RecordsPage = () => {
               <p className="text-sm text-on-surface-variant">Operador: {user?.email}</p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2" aria-label="Ações da página">
             <button className="btn-muted" onClick={() => void loadRecords(filters)} disabled={loading}>
-              Atualizar
+              {loading ? "Atualizando..." : "Atualizar"}
             </button>
             <button className="btn-muted" onClick={() => setShowCsvModal(true)}>
               Importar CSV
@@ -81,14 +83,23 @@ export const RecordsPage = () => {
             setFilters(next);
             void loadRecords(next);
           }}
+          disabled={loading}
         />
 
-        {error && <p className="rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">{error}</p>}
-        <RecordsTable items={items} />
+        {error && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error" role="alert">
+            <p>{error}</p>
+            <button className="btn-muted" onClick={() => void loadRecords(filters)} disabled={loading}>Tentar novamente</button>
+          </div>
+        )}
+        <RecordsTable items={items} loading={loading} />
 
-        <div className="rounded border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface-variant shadow-sm">
+        <nav className="surface-card px-4 py-3 text-sm text-on-surface-variant" aria-label="Paginação dos registros">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="font-medium">Total de registros: {total}</span>
+            <div>
+              <p className="font-medium text-on-surface">{total === 0 ? "Nenhum registro" : `${firstRecord}–${lastRecord} de ${total} registros`}</p>
+              <p className="mt-0.5 text-xs">Resultados por página: {filters.perPage}</p>
+            </div>
             <div className="flex items-center gap-2">
               <button
                 className="btn-muted"
@@ -101,7 +112,7 @@ export const RecordsPage = () => {
               >
                 Anterior
               </button>
-              <span className="rounded-lg bg-surface-container-low px-2 py-1 text-on-surface-variant">Página {filters.page}</span>
+              <span className="rounded-lg bg-surface-container-low px-3 py-1.5 text-on-surface-variant" aria-current="page">Página {filters.page}</span>
               <button
                 className="btn-muted"
                 onClick={() => {
@@ -115,7 +126,7 @@ export const RecordsPage = () => {
               </button>
             </div>
           </div>
-        </div>
+        </nav>
       </section>
 
       {showCsvModal && (
