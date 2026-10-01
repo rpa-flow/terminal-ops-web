@@ -2,11 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 
 import { AppNavigation } from "../components/AppNavigation";
+import { BrazilianDateInput } from "../components/BrazilianDateInput";
 import { useAuth } from "../hooks/useAuth";
 import { getReportOverviewRequest } from "../services/reports.service";
 import type { BlendBalanceItem, DailyReceivedWeightItem, DailySinterFeedWeightItem, DailyVolumeItem, PileBalanceItem, ReportBreakdownItem, ReportOverviewResponse } from "../types/api";
 
-const formatInputDate = (date: Date): string => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+const formatInputDate = (date: Date): string => {
+  const parts = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value;
+  return `${part("year")}-${part("month")}-${part("day")}`;
+};
 
 const getDefaultFilters = (terminal: "TBJC" | "TCS") => {
   const endDate = new Date();
@@ -263,19 +268,17 @@ export const ReportsPage = () => {
 
       <section className="mx-auto grid max-w-7xl gap-4 px-4 py-6">
         <section className="grid gap-3 rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm md:grid-cols-[1fr_1fr_1.2fr_auto_auto]">
-          <input
-            aria-label="Data inicial"
+          <BrazilianDateInput
+            label="Data inicial"
             className="input"
-            type="date"
             value={filters.startDate}
-            onChange={(event) => setFilters((current) => ({ ...current, startDate: event.target.value }))}
+            onChange={(value) => setFilters((current) => ({ ...current, startDate: value }))}
           />
-          <input
-            aria-label="Data final"
+          <BrazilianDateInput
+            label="Data final"
             className="input"
-            type="date"
             value={filters.endDate}
-            onChange={(event) => setFilters((current) => ({ ...current, endDate: event.target.value }))}
+            onChange={(value) => setFilters((current) => ({ ...current, endDate: value }))}
           />
           <input
             aria-label="Terminal"

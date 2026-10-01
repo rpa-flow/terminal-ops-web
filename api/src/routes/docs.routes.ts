@@ -75,6 +75,18 @@ const recordPayloadSchema = {
   }
 } as const;
 
+const ingestRecordPayloadSchema = {
+  ...recordPayloadSchema,
+  properties: {
+    ...recordPayloadSchema.properties,
+    recebimento: {
+      ...recordPayloadSchema.properties.recebimento,
+      required: ["peso"],
+      description: "Em /api/ingest/records, o recebimento pode conter somente o peso."
+    }
+  }
+} as const;
+
 const recordResponseSchema = {
   type: "object",
   properties: {
@@ -207,6 +219,7 @@ const buildOpenApiDocument = (baseUrl: string) => ({
         }
       },
       RecordPayload: recordPayloadSchema,
+      IngestRecordPayload: ingestRecordPayloadSchema,
       RecordResponse: recordResponseSchema,
       RecordsListResponse: {
         type: "object",
@@ -369,7 +382,7 @@ const buildOpenApiDocument = (baseUrl: string) => ({
           required: true,
           content: {
             "application/json": {
-              schema: { $ref: "#/components/schemas/RecordPayload" }
+              schema: { $ref: "#/components/schemas/IngestRecordPayload" }
             }
           }
         },

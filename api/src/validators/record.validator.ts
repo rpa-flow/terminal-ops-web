@@ -70,7 +70,17 @@ const sinterFeedSchema = z
   .transform(normalizeSinterFeed)
   .pipe(z.string().min(1).max(120));
 
-export const createRecordSchema = z
+const recebimentoSchema = z
+  .object({
+    colaborador: z.string().trim().min(1).max(120).optional(),
+    peso: z.union([z.string().trim().min(1).max(32), z.number()]),
+    patioDescarga: z.string().trim().min(1).max(120).optional(),
+    data: z.string().trim().min(1).max(25).optional(),
+    placa: z.string().trim().min(1).max(32).optional()
+  })
+  .strict();
+
+const recordPayloadSchema = z
   .object({
     dataHora: z.string().min(16).max(25),
     nota: z
@@ -106,25 +116,37 @@ export const createRecordSchema = z
         placaRecebimento: z.string().trim().min(1).max(32).optional()
       })
       .strict(),
-    recebimento: z
-      .object({
-        colaborador: z.string().trim().min(1).max(120),
-        peso: z.union([z.string().trim().min(1).max(32), z.number()]),
-        patioDescarga: z.string().trim().min(1).max(120),
-        data: z.string().trim().min(1).max(25),
-        placa: z.string().trim().min(1).max(32).optional()
-      })
-      .strict()
-      .optional(),
+    recebimento: recebimentoSchema.optional(),
     terminal: z.string().trim().min(1).max(120)
   })
-  .strict()
-  .superRefine((value, ctx) => {
+  .strict();
+
+const validateDataHora = (value: { dataHora: string }, ctx: z.RefinementCtx): void => {
     if (!parseDateTime(value.dataHora)) {
       ctx.addIssue({ code: "custom", message: "Invalid dataHora", path: ["dataHora"] });
     }
-  })
-  .transform((input) => ({
+  };
+
+const validateCompleteRecebimento = (
+  value: {
+    recebimento?: {
+      colaborador?: string | undefined;
+      patioDescarga?: string | undefined;
+      data?: string | undefined;
+    } | undefined;
+  },
+  ctx: z.RefinementCtx
+): void => {
+  if (!value.recebimento) return;
+
+  (["colaborador", "patioDescarga", "data"] as const).forEach((field) => {
+    if (!value.recebimento?.[field]) {
+      ctx.addIssue({ code: "custom", message: `recebimento.${field} é obrigatório`, path: ["recebimento", field] });
+    }
+  });
+};
+
+const transformRecordPayload = (input: z.input<typeof recordPayloadSchema>) => ({
     dataHora: parseDateTime(input.dataHora) as Date,
     numeroNota: input.nota.numero,
     notaChave: input.nota.chave ?? null,
@@ -144,17 +166,33 @@ export const createRecordSchema = z
     recebimentoData: input.recebimento?.data ?? null,
     recebimentoPlaca: input.recebimento?.placa?.toUpperCase() ?? null,
     terminal: normalizeTerminal(input.terminal)
-  }));
+});
 
-export const ingestNoteSchema = createRecordSchema.refine(
-  (input): input is typeof input & { notaChave: string } => /^\d{44}$/.test(input.notaChave ?? ""),
-  { message: "nota.chave deve conter exatamente 44 digitos", path: ["nota", "chave"] }
-);
+export const createRecordSchema = recordPayloadSchema
+  .superRefine((value, ctx) => {
+    validateDataHora(value, ctx);
+    validateCompleteRecebimento(value, ctx);
+  })
+  .transform(transformRecordPayload);
 
-export const ingestRecordSchema = createRecordSchema.refine(
-  (input) => input.notaChave === null || /^\d{44}$/.test(input.notaChave),
-  { message: "nota.chave deve conter exatamente 44 digitos quando informada", path: ["nota", "chave"] }
-);
+export const ingestNoteSchema = recordPayloadSchema
+  .superRefine((value, ctx) => {
+    validateDataHora(value, ctx);
+    validateCompleteRecebimento(value, ctx);
+  })
+  .transform(transformRecordPayload)
+  .refine(
+    (input): input is typeof input & { notaChave: string } => /^\d{44}$/.test(input.notaChave ?? ""),
+    { message: "nota.chave deve conter exatamente 44 digitos", path: ["nota", "chave"] }
+  );
+
+export const ingestRecordSchema = recordPayloadSchema
+  .superRefine(validateDataHora)
+  .transform(transformRecordPayload)
+  .refine(
+    (input) => input.notaChave === null || /^\d{44}$/.test(input.notaChave),
+    { message: "nota.chave deve conter exatamente 44 digitos quando informada", path: ["nota", "chave"] }
+  );
 
 export const listRecordsQuerySchema = z
   .object({
