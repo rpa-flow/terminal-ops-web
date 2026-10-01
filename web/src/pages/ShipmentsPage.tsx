@@ -1,6 +1,7 @@
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { AppNavigation } from "../components/AppNavigation";
+import { BrazilianDateInput } from "../components/BrazilianDateInput";
 import { useAuth } from "../hooks/useAuth";
 import { createShipmentRequest, deleteShipmentRequest, listShipmentsRequest } from "../services/shipments.service";
 import { listBlendsRequest, type Blend } from "../services/sinter-feeds.service";
@@ -72,7 +73,7 @@ export const ShipmentsPage = () => {
       </div>
       <form onSubmit={submit} className="grid gap-3 rounded border border-outline-variant bg-surface-container-lowest p-4 md:grid-cols-2 lg:grid-cols-3">
         <h2 className="font-semibold md:col-span-2 lg:col-span-3">Novo embarque</h2>
-        <label className="text-sm">Data<input required type="date" className="input mt-1 w-full" value={form.shippedAt} onChange={(e) => setForm({ ...form, shippedAt: e.target.value })} /></label>
+        <label className="text-sm">Data<BrazilianDateInput required label="Data do embarque" className="input mt-1 w-full" value={form.shippedAt} onChange={(shippedAt) => setForm({ ...form, shippedAt })} /></label>
         <label className="text-sm">Volume<input required inputMode="decimal" className="input mt-1 w-full" value={form.volume} onChange={(e) => setForm({ ...form, volume: e.target.value })} /></label>
         {terminal === "TBJC" && <label className="text-sm">Blend<select required className="input mt-1 w-full" value={form.blendId} onChange={(e) => setForm({ ...form, blendId: e.target.value })}><option value="">Selecione</option>{blends.map((blend) => <option key={blend.id} value={blend.id}>{blend.code}</option>)}</select></label>}
         {terminal === "TCS" && <label className="text-sm">Pilha<input required className="input mt-1 w-full" placeholder="Pilha de origem" value={form.pile} onChange={(e) => setForm({ ...form, pile: e.target.value })} /></label>}
