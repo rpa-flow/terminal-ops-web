@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 type AppNavigationProps = {
@@ -8,11 +9,13 @@ type AppNavigationProps = {
 
 export const AppNavigation = ({ current, reportArea, configurationCurrent }: AppNavigationProps) => {
   const navigate = useNavigate();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const selectedArea = current === "notes" || reportArea === "tcs" ? "tcs" : "tbjc";
   const operationalPath = selectedArea === "tbjc" ? "/" : "/notas";
   const operationalLabel = selectedArea === "tbjc" ? "Registros" : "Notas";
   const isOperationalView = current === "records" || current === "notes";
   const navigateToArea = (area: "tbjc" | "tcs") => {
+    setIsMobileOpen(false);
     if (current === "shipments") {
       navigate(`/embarques/${area}`);
       return;
@@ -27,14 +30,27 @@ export const AppNavigation = ({ current, reportArea, configurationCurrent }: App
   };
 
   return (
-    <aside className="app-sidebar" aria-label="Navegação principal">
-      <div className="mb-8 flex items-center gap-3 md:mb-8">
-        <span className="grid h-9 w-9 place-items-center rounded-lg bg-secondary text-sm font-bold text-on-secondary">MM</span>
-        <div>
-          <p className="text-sm font-semibold tracking-wide">Minas Mineração</p>
-          <p className="text-xs text-primary-container">Operações</p>
+    <>
+      <button
+        type="button"
+        className="btn-muted mobile-nav-toggle"
+        onClick={() => setIsMobileOpen((open) => !open)}
+        aria-expanded={isMobileOpen}
+        aria-controls="primary-navigation"
+      >
+        Menu
+      </button>
+      <aside id="primary-navigation" className="app-sidebar" data-mobile-open={isMobileOpen} aria-label="Navegação principal">
+        <div className="mb-8 flex items-start justify-between gap-3 md:mb-8">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-secondary text-sm font-bold text-on-secondary">MM</span>
+            <div>
+              <p className="text-sm font-semibold tracking-wide">Minas Mineração</p>
+              <p className="text-xs text-primary-container">Operações</p>
+            </div>
+          </div>
+          <button type="button" className="btn-muted mobile-nav-close" onClick={() => setIsMobileOpen(false)} aria-label="Fechar navegação">Fechar</button>
         </div>
-      </div>
       <nav className="grid gap-3 md:gap-4">
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-primary-container" htmlFor="terminal-navigation">
@@ -52,21 +68,22 @@ export const AppNavigation = ({ current, reportArea, configurationCurrent }: App
           </select>
         </div>
         <Link
-          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${isOperationalView ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`}
+          aria-current={isOperationalView ? "page" : undefined}
+          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-secondary ${isOperationalView ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`}
           to={operationalPath}
         >
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5"><path d="M4 5h16M4 12h16M4 19h16" strokeWidth="1.8" strokeLinecap="round" /></svg>
           {operationalLabel}
         </Link>
         <Link
-          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${current === "reports" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`}
+          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-secondary ${current === "reports" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`}
           to={`/relatorios/${selectedArea}`}
         >
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2" strokeWidth="1.8" strokeLinecap="round" /></svg>
           Relatórios
         </Link>
         <Link
-          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${current === "shipments" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`}
+          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-secondary ${current === "shipments" ? "bg-on-primary text-primary" : "text-on-primary hover:bg-on-primary/10"}`}
           to={`/embarques/${selectedArea}`}
         >
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5"><path d="M3 7h11v10H3zM14 11h4l3 3v3h-7M7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -84,6 +101,7 @@ export const AppNavigation = ({ current, reportArea, configurationCurrent }: App
           </div>
         </details>
       </nav>
-    </aside>
+      </aside>
+    </>
   );
 };
