@@ -66,30 +66,42 @@ body {
   background: #ffffff;
 }
 
+.mobile-nav-toggle,
+.mobile-nav-close {
+  display: none;
+}
+
 .surface-card {
   @apply rounded border border-outline-variant bg-surface-container-lowest shadow-sm;
 }
 
 @media (max-width: 767px) {
-  .app-with-sidebar {
-    padding-top: 112px;
-  }
-
   .app-with-sidebar > header,
   .app-with-sidebar > section {
     margin-left: 0;
   }
 
   .app-sidebar {
-    @apply inset-x-0 top-0 bottom-auto h-auto min-h-28 w-full border-b border-r-0 px-4 py-3;
+    @apply invisible inset-x-2 top-2 bottom-auto h-auto max-h-[calc(100dvh-1rem)] w-auto overflow-y-auto rounded-lg border border-outline-variant px-4 py-4 shadow-lg;
+    transform: translateY(-1rem);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 150ms ease, opacity 150ms ease, visibility 150ms ease;
   }
 
-  .app-sidebar > div:first-child {
-    margin-bottom: 8px;
+  .app-sidebar[data-mobile-open="true"] {
+    visibility: visible;
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .app-sidebar nav {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
+    gap: 0.5rem;
+  }
+
+  .mobile-nav-toggle,
+  .mobile-nav-close {
+    display: inline-flex;
   }
 }

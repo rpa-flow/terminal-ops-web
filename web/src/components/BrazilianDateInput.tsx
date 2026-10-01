@@ -8,9 +8,10 @@ type Props = {
   className?: string;
   label: string;
   required?: boolean;
+  disabled?: boolean;
 };
 
-export const BrazilianDateInput = ({ value, onChange, className, label, required = false }: Props) => {
+export const BrazilianDateInput = ({ value, onChange, className, label, required = false, disabled = false }: Props) => {
   const [displayValue, setDisplayValue] = useState(() => formatBrazilianDateInput(value));
 
   useEffect(() => {
@@ -48,6 +49,7 @@ export const BrazilianDateInput = ({ value, onChange, className, label, required
       }}
       placeholder="DD/MM/AAAA"
       required={required}
+      disabled={disabled}
       type="text"
       value={displayValue}
     />
