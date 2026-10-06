@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { formatBrazilianDateInput, parseBrazilianDateInput } from "../utils/dateTime";
+
 type Props = {
   value: string;
   onChange: (value: string) => void;
@@ -28,7 +31,19 @@ export const BrazilianDateInput = ({ value, onChange, className, label, required
     <input
       aria-label={label}
       className={className}
-      onChange={(event) => onChange(event.target.value)}
+      inputMode="numeric"
+      onBlur={(event) => validate(event.currentTarget)}
+      onChange={(event) => {
+        const input = event.currentTarget;
+        const nextValue = input.value;
+        setDisplayValue(nextValue);
+
+        if (!validate(input)) {
+          return;
+        }
+
+        onChange(nextValue ? parseBrazilianDateInput(nextValue)! : "");
+      }}
       required={required}
       disabled={disabled}
       type="text"
