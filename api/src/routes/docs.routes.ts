@@ -5,11 +5,12 @@ const docsRoutes = Router();
 const recordPayloadSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["dataHora", "nota", "veiculo", "terminal"],
+  required: ["nota", "veiculo", "terminal"],
   properties: {
     dataHora: {
       type: "string",
-      example: "2026-04-11 14:32:00"
+      example: "2026-04-11 14:32:00",
+      description: "Opcional e ignorado. O servidor grava a data e hora atuais ao criar o registro."
     },
     nota: {
       type: "object",

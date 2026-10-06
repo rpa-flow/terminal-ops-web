@@ -62,16 +62,18 @@ export const createRecordService = async (input: CreateRecordInput & { materialI
   if (input.materialId && input.supplierId) {
     await resolvePurchaseOrder(input.materialId, input.supplierId);
   }
-  const saved = await createRecord(input);
+  const saved = await createRecord({ ...input, dataHora: new Date() });
   return sanitizeRecord(saved);
 };
 
 export const createIngestedRecordService = async (input: IngestRecordInput) => {
-  const saved = await createIngestedRecord(input);
+  const saved = await createIngestedRecord({ ...input, dataHora: new Date() });
   return sanitizeRecord(saved);
 };
 
-export const importCsvRecordsService = (inputs: CreateRecordInput[]) => createRecords(inputs);
+export const importCsvRecordsService = (inputs: CreateRecordInput[]) => createRecords(
+  inputs.map((input) => ({ ...input, dataHora: new Date() }))
+);
 
 export const listRecordsService = async (filters: ListRecordsFilters) => {
   const result = await listRecords(filters);

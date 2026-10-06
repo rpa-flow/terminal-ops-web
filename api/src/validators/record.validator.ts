@@ -82,7 +82,7 @@ const recebimentoSchema = z
 
 const recordPayloadSchema = z
   .object({
-    dataHora: z.string().min(16).max(25),
+    dataHora: z.string().max(25).optional(),
     nota: z
       .object({
         numero: z.string().trim().min(1).max(64),
@@ -121,12 +121,6 @@ const recordPayloadSchema = z
   })
   .strict();
 
-const validateDataHora = (value: { dataHora: string }, ctx: z.RefinementCtx): void => {
-    if (!parseDateTime(value.dataHora)) {
-      ctx.addIssue({ code: "custom", message: "Invalid dataHora", path: ["dataHora"] });
-    }
-  };
-
 const validateCompleteRecebimento = (
   value: {
     recebimento?: {
@@ -147,7 +141,7 @@ const validateCompleteRecebimento = (
 };
 
 const transformRecordPayload = (input: z.input<typeof recordPayloadSchema>) => ({
-    dataHora: parseDateTime(input.dataHora) as Date,
+    dataHora: new Date(),
     numeroNota: input.nota.numero,
     notaChave: input.nota.chave ?? null,
     sinterFeedValue: input.nota.sinterFeed ?? null,
@@ -170,14 +164,12 @@ const transformRecordPayload = (input: z.input<typeof recordPayloadSchema>) => (
 
 export const createRecordSchema = recordPayloadSchema
   .superRefine((value, ctx) => {
-    validateDataHora(value, ctx);
     validateCompleteRecebimento(value, ctx);
   })
   .transform(transformRecordPayload);
 
 export const ingestNoteSchema = recordPayloadSchema
   .superRefine((value, ctx) => {
-    validateDataHora(value, ctx);
     validateCompleteRecebimento(value, ctx);
   })
   .transform(transformRecordPayload)
@@ -187,7 +179,6 @@ export const ingestNoteSchema = recordPayloadSchema
   );
 
 export const ingestRecordSchema = recordPayloadSchema
-  .superRefine(validateDataHora)
   .transform(transformRecordPayload)
   .refine(
     (input) => input.notaChave === null || /^\d{44}$/.test(input.notaChave),
@@ -265,7 +256,7 @@ export type UpdateStatusBodyInput = z.infer<typeof updateStatusBodySchema>;
 
 export const csvRowSchema = z
   .object({
-    dataHora: z.string().trim().min(10).max(25),
+    dataHora: z.string().trim().max(25).optional(),
     numeroNota: z.string().trim().min(1).max(64),
     notaOriginal: z.string().trim().max(255).default(""),
     status: z.string().trim().max(64).default(""),
@@ -277,13 +268,8 @@ export const csvRowSchema = z
     peso: z.string().trim().max(32).default("")
   })
   .strict()
-  .superRefine((row, ctx) => {
-    if (!parseDateTime(row.dataHora)) {
-      ctx.addIssue({ code: "custom", message: "Invalid dataHora", path: ["dataHora"] });
-    }
-  })
   .transform((row) => ({
-    dataHora: parseDateTime(row.dataHora) as Date,
+    dataHora: new Date(),
     numeroNota: row.numeroNota,
     notaChave: null,
     sinterFeedValue: null,
