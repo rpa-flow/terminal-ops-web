@@ -16,6 +16,13 @@ type ListRecordsResult = {
   items: ListedRecord[];
 };
 
+type ReclassifiableSinterFeedBlendMapping = {
+  id: string;
+  startsAt: Date;
+  endsAt: Date | null;
+  sinterFeed: { code: string };
+};
+
 const buildWhere = (filters: ListRecordsFilters): Prisma.RecordWhereInput => {
   const where: Prisma.RecordWhereInput = {};
 
@@ -58,6 +65,25 @@ const buildWhere = (filters: ListRecordsFilters): Prisma.RecordWhereInput => {
 
 export const createRecord = async (input: CreateRecordInput): Promise<Record> => {
   return prisma.record.create({ data: input });
+};
+
+export const reclassifyUnclassifiedRecordsForMapping = async (
+  tx: Prisma.TransactionClient,
+  mapping: ReclassifiableSinterFeedBlendMapping
+): Promise<number> => {
+  const result = await tx.record.updateMany({
+    where: {
+      sinterFeedValue: mapping.sinterFeed.code,
+      sinterFeedBlendMappingId: null,
+      dataHora: {
+        gte: mapping.startsAt,
+        ...(mapping.endsAt ? { lt: mapping.endsAt } : {})
+      }
+    },
+    data: { sinterFeedBlendMappingId: mapping.id }
+  });
+
+  return result.count;
 };
 
 export const createIngestedRecord = async (input: IngestRecordInput): Promise<Record> => {

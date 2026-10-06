@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
+import { reclassifyUnclassifiedRecordsForMapping } from "../repositories/record.repository";
 import {
   createBlendSchema,
   createSinterFeedBlendMappingSchema,
@@ -73,9 +74,11 @@ sinterFeedRoutes.post("/sinter-feed-blend-mappings", validate(createSinterFeedBl
   if (overlap) { res.status(409).json({ message: "An active mapping already overlaps this period" }); return; }
   try {
     const result = await prisma.$transaction(async (tx) => {
-      return tx.sinterFeedBlendMapping.create({ data: { ...req.body, startsAt, endsAt }, include: mappingInclude });
+      const mapping = await tx.sinterFeedBlendMapping.create({ data: { ...req.body, startsAt, endsAt }, include: mappingInclude });
+      const reclassifiedCount = await reclassifyUnclassifiedRecordsForMapping(tx, mapping);
+      return { mapping, reclassifiedCount };
     });
-    res.status(201).json(result);
+    res.status(201).json({ ...result.mapping, reclassifiedCount: result.reclassifiedCount });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && (error.code === "P2002" || error.code === "P2003" || error.code === "P2004")) {
       res.status(409).json({ message: "The mapping conflicts with an active configuration or references unavailable data" });
@@ -83,6 +86,18 @@ sinterFeedRoutes.post("/sinter-feed-blend-mappings", validate(createSinterFeedBl
     }
     throw error;
   }
+});
+sinterFeedRoutes.post("/sinter-feed-blend-mappings/:id/reclassify", validate(idParamsSchema, "params"), async (_req, res) => {
+  const result = await prisma.$transaction(async (tx) => {
+    const mapping = await tx.sinterFeedBlendMapping.findUnique({ where: { id: res.locals.validatedParams.id }, include: mappingInclude });
+    if (!mapping) return null;
+
+    const reclassifiedCount = await reclassifyUnclassifiedRecordsForMapping(tx, mapping);
+    return { reclassifiedCount };
+  });
+
+  if (!result) { respondNotFound(res); return; }
+  res.status(200).json(result);
 });
 sinterFeedRoutes.post("/sinter-feed-blend-mappings/:id/deactivate", validate(idParamsSchema, "params"), validate(deactivateSinterFeedBlendMappingSchema), async (req, res) => {
   const endsAt = req.body.endsAt ?? new Date();

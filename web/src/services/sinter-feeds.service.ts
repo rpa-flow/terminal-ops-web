@@ -33,6 +33,12 @@ export type SinterFeedBlendMapping = {
   blend: Blend;
 };
 
+export type ReclassificationResponse = {
+  reclassifiedCount: number;
+};
+
+export type CreatedSinterFeedBlendMapping = SinterFeedBlendMapping & ReclassificationResponse;
+
 type CatalogInput = { code: string; description?: string | null; isActive?: boolean };
 type MappingInput = { sinterFeedId: string; blendId: string; startsAt?: string; endsAt?: string | null; isActive?: boolean };
 
@@ -54,6 +60,8 @@ export const updateBlendRequest = (token: string, id: string, input: Pick<Catalo
 
 export const listSinterFeedBlendMappingsRequest = (token: string) => http<SinterFeedBlendMapping[]>("/sinter-feed-blend-mappings", { token });
 export const createSinterFeedBlendMappingRequest = (token: string, input: MappingInput) =>
-  http<SinterFeedBlendMapping>("/sinter-feed-blend-mappings", { method: "POST", token, body: input });
+  http<CreatedSinterFeedBlendMapping>("/sinter-feed-blend-mappings", { method: "POST", token, body: input });
+export const reclassifySinterFeedBlendMappingRequest = (token: string, id: string) =>
+  http<ReclassificationResponse>(`/sinter-feed-blend-mappings/${id}/reclassify`, { method: "POST", token });
 export const deactivateSinterFeedBlendMappingRequest = (token: string, id: string, endsAt?: string) =>
   http<SinterFeedBlendMapping>(`/sinter-feed-blend-mappings/${id}/deactivate`, { method: "POST", token, body: endsAt ? { endsAt } : {} });

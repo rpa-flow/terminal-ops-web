@@ -135,6 +135,7 @@ const buildOpenApiDocument = (baseUrl: string) => ({
     { name: "Ingest" },
     { name: "Provision" },
     { name: "Records" },
+    { name: "Classifications" },
     { name: "PurchaseOrderRules" }
   ],
   components: {
@@ -295,6 +296,18 @@ const buildOpenApiDocument = (baseUrl: string) => ({
                 message: { type: "string", example: "Failed to save record" }
               }
             }
+          }
+        }
+      },
+      ReclassificationResponse: {
+        type: "object",
+        required: ["reclassifiedCount"],
+        properties: {
+          reclassifiedCount: {
+            type: "integer",
+            minimum: 0,
+            example: 12,
+            description: "Quantidade de registros sem classificação que receberam a relação dentro da vigência."
           }
         }
       }
@@ -692,6 +705,48 @@ const buildOpenApiDocument = (baseUrl: string) => ({
           },
           "404": {
             description: "Registro nao encontrado",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sinter-feed-blend-mappings/{id}/reclassify": {
+      post: {
+        tags: ["Classifications"],
+        summary: "Reclassifica registros pendentes para uma relação Sinter Feed → Blend",
+        description: "Atualiza somente registros sem classificação, do mesmo Sinter Feed e com data/hora dentro da vigência [início, fim) da relação. A operação pode ser repetida com segurança.",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            in: "path",
+            name: "id",
+            required: true,
+            schema: { type: "string", format: "uuid" }
+          }
+        ],
+        responses: {
+          "200": {
+            description: "Reclassificação concluída",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ReclassificationResponse" }
+              }
+            }
+          },
+          "401": {
+            description: "Não autenticado",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            description: "Classificação não encontrada",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" }
