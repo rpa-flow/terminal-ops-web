@@ -8,6 +8,22 @@ type Props = {
 };
 
 export const BrazilianDateInput = ({ value, onChange, className, label, required = false, disabled = false }: Props) => {
+  const [displayValue, setDisplayValue] = useState(() => formatBrazilianDateInput(value));
+
+  useEffect(() => {
+    setDisplayValue(formatBrazilianDateInput(value));
+  }, [value]);
+
+  const validate = (input: HTMLInputElement) => {
+    if (!input.value || parseBrazilianDateInput(input.value)) {
+      input.setCustomValidity("");
+      return true;
+    }
+
+    input.setCustomValidity("Informe a data no formato DD/MM/AAAA.");
+    return false;
+  };
+
   return (
     <input
       aria-label={label}
@@ -15,8 +31,8 @@ export const BrazilianDateInput = ({ value, onChange, className, label, required
       onChange={(event) => onChange(event.target.value)}
       required={required}
       disabled={disabled}
-      type="date"
-      value={value}
+      type="text"
+      value={displayValue}
     />
   );
 };
