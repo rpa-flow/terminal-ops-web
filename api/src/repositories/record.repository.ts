@@ -5,6 +5,9 @@ import type { CreateRecordInput, IngestRecordInput, ListRecordsFilters } from ".
 
 type ListedRecord = Prisma.RecordGetPayload<{
   include: {
+    issuer: {
+      select: { descricao: true };
+    };
     sinterFeedBlendMapping: {
       select: { sinterFeed: { select: { code: true } }; blend: { select: { code: true } } };
     };
@@ -152,7 +155,10 @@ export const listRecords = async (filters: ListRecordsFilters): Promise<ListReco
       orderBy: [{ dataHora: "desc" }, { createdAt: "desc" }],
       skip,
       take: filters.perPage,
-      include: { sinterFeedBlendMapping: { select: { sinterFeed: { select: { code: true } }, blend: { select: { code: true } } } } }
+      include: {
+        issuer: { select: { descricao: true } },
+        sinterFeedBlendMapping: { select: { sinterFeed: { select: { code: true } }, blend: { select: { code: true } } } }
+      }
     })
   ]);
 

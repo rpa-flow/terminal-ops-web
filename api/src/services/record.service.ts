@@ -30,9 +30,10 @@ const sanitizeRecord = (record: {
   recebimentoPlaca: string | null;
   terminal: string;
   createdAt: Date;
+  issuer?: { descricao: string | null } | null;
   sinterFeedBlendMapping?: { sinterFeed: { code: string }; blend: { code: string } } | null;
 }) => {
-  const { sinterFeedBlendMapping, ...recordValues } = record;
+  const { issuer, sinterFeedBlendMapping, ...recordValues } = record;
   return {
     ...recordValues,
     numeroNota: sanitizeString(record.numeroNota),
@@ -42,7 +43,7 @@ const sanitizeRecord = (record: {
     status: sanitizeString(record.status),
     notaPesagemId: sanitizeString(record.notaPesagemId),
     emitenteCnpj: sanitizeOptionalString(record.emitenteCnpj),
-    emitenteFornecedor: sanitizeOptionalString(record.emitenteFornecedor),
+    emitenteFornecedor: sanitizeOptionalString(issuer?.descricao ?? record.emitenteCnpj),
     motoristaNome: sanitizeOptionalString(record.motoristaNome),
     motoristaCelular: sanitizeOptionalString(record.motoristaCelular),
     placa: sanitizeString(record.placa),
